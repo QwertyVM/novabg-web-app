@@ -49,11 +49,11 @@ export default function CartPage() {
             <span className="text-xs text-gray-400 font-medium">{totalCount} {totalCount === 1 ? 'producto' : 'productos'}</span>
           </div>
 
-          {/* Free Shipping Alert */}
-          <div className="bg-emerald-50/70 border border-emerald-100 rounded-xl p-3.5 mb-6 flex items-center gap-2.5 text-xs text-emerald-900">
-            <Zap className="w-4 h-4 fill-[#00a650] text-[#00a650] shrink-0" />
+          {/* Shipping Alert */}
+          <div className="bg-blue-50/70 border border-blue-100 rounded-xl p-3.5 mb-6 flex items-center gap-2.5 text-xs text-blue-950">
+            <Zap className="w-4 h-4 fill-[#0066ff] text-[#0066ff] shrink-0" />
             <span>
-              <strong>¡Tienes Envío Gratis FULL!</strong> Llega estimado el <strong>{deliveryDate}</strong>.
+              <strong>Envíos a todo el Perú.</strong> Entrega estimada el <strong>{deliveryDate}</strong> (Lima y Provincias).
             </span>
           </div>
 
@@ -131,7 +131,7 @@ export default function CartPage() {
 
           {/* Subtotal bottom */}
           <div className="text-right pt-6 border-t border-gray-100 text-sm">
-            Subtotal con envío incluido:{' '}
+            Subtotal de artículos:{' '}
             <strong className="text-xl text-gray-900 font-black">{formattedSubtotal}</strong>
           </div>
         </div>
@@ -148,9 +148,9 @@ export default function CartPage() {
                 <span>Productos ({totalCount})</span>
                 <span className="text-gray-900 font-semibold">{formattedSubtotal}</span>
               </div>
-              <div className="flex justify-between text-[#00a650] font-bold">
+              <div className="flex justify-between text-gray-700 font-medium">
                 <span>Envío</span>
-                <span>Gratis</span>
+                <span className="text-gray-500">A coordinar en checkout</span>
               </div>
             </div>
 

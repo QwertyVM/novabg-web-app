@@ -89,13 +89,9 @@ export function ProductCard({ product }: ProductCardProps) {
 
           {/* Shipping & FULL Badge */}
           <div className="flex items-center gap-1.5 mt-2">
-            {isFreeShipping ? (
-              <span className="text-xs font-bold text-[#00a650]">Envío gratis</span>
-            ) : (
-              <span className="text-xs text-gray-500">Envío regular</span>
-            )}
-            <div className="flex items-center gap-0.5 text-[#00a650] font-black text-[10px] bg-emerald-50 px-1 py-0.5 rounded">
-              <Zap className="w-3 h-3 fill-[#00a650]" />
+            <span className="text-xs font-semibold text-gray-700">Envíos a todo el Perú</span>
+            <div className="flex items-center gap-0.5 text-[#0066ff] font-black text-[10px] bg-blue-50 px-1.5 py-0.5 rounded">
+              <Zap className="w-3 h-3 fill-[#0066ff]" />
               <span>FULL</span>
             </div>
           </div>

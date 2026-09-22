@@ -375,9 +375,9 @@ export default function CheckoutPage() {
                 <span>Productos ({totalCount}):</span>
                 <span className="text-gray-900 font-semibold">{formattedSubtotal}</span>
               </div>
-              <div className="flex justify-between text-[#00a650] font-bold">
-                <span>Envío FULL:</span>
-                <span>GRATIS</span>
+              <div className="flex justify-between text-gray-700 font-medium">
+                <span>Costo de Envío:</span>
+                <span className="text-[#0066ff] font-semibold">A coordinar por WhatsApp</span>
               </div>
             </div>
 

@@ -79,13 +79,13 @@ export function BuyBox({ product }: BuyBoxProps) {
       </div>
 
       {/* Shipping & Delivery Box */}
-      <div className="p-3.5 bg-emerald-50/60 rounded-xl border border-emerald-100 text-xs space-y-2">
-        <div className="flex items-center gap-1.5 font-bold text-[#00a650]">
-          <Zap className="w-4 h-4 fill-[#00a650]" />
-          <span>{isFreeShipping ? 'Envío GRATIS FULL' : 'Envío FULL'}</span>
+      <div className="p-3.5 bg-blue-50/60 rounded-xl border border-blue-100 text-xs space-y-2">
+        <div className="flex items-center gap-1.5 font-bold text-[#0066ff]">
+          <Truck className="w-4 h-4 text-[#0066ff]" />
+          <span>Envíos a Nivel Nacional</span>
         </div>
         <p className="text-gray-700 text-[11px] leading-snug">
-          Llega a tu domicilio el <strong className="text-gray-900">{estimatedDate}</strong>
+          Llega estimado el <strong className="text-gray-900">{estimatedDate}</strong> (Lima y Provincias)
         </p>
         <div className="flex items-center gap-1 text-[11px] text-[#0066ff] hover:underline cursor-pointer">
           <MapPin className="w-3 h-3 text-[#0066ff]" />
@@ -161,7 +161,7 @@ export function BuyBox({ product }: BuyBoxProps) {
         <div className="flex items-start gap-2">
           <RotateCcw className="w-4 h-4 text-purple-600 shrink-0 mt-0.5" />
           <p>
-            <strong className="text-gray-800">Devolución gratis:</strong> Tienes 30 días desde que lo recibes.
+            <strong className="text-gray-800">Garantía oficial:</strong> Cobertura de 30 días de satisfacción NOVA BG.
           </p>
         </div>
 

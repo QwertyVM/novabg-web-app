@@ -125,15 +125,15 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </p>
             </div>
 
-            {/* Mercado Libre FULL Delivery Callout */}
-            <div className="flex items-start gap-2.5 p-3 rounded-lg bg-emerald-50/70 border border-emerald-100 text-xs">
-              <Zap className="w-5 h-5 fill-[#00a650] text-[#00a650] shrink-0 mt-0.5" />
+            {/* Delivery Callout */}
+            <div className="flex items-start gap-2.5 p-3 rounded-lg bg-blue-50/70 border border-blue-100 text-xs">
+              <Zap className="w-5 h-5 fill-[#0066ff] text-[#0066ff] shrink-0 mt-0.5" />
               <div>
-                <p className="font-bold text-[#00a650]">
-                  Envío gratis a todo el país con NOVA FULL
+                <p className="font-bold text-[#0066ff]">
+                  Envíos a todo el país con despacho rápido
                 </p>
                 <p className="text-gray-600 text-[11px]">
-                  Llega estimado el <strong>{deliveryDate}</strong>
+                  Llega estimado el <strong>{deliveryDate}</strong> (Lima y Provincias)
                 </p>
               </div>
             </div>

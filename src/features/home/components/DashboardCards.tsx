@@ -37,14 +37,14 @@ export function DashboardCards({ categories = [] }: DashboardCardsProps) {
 
           {/* Benefit 2 */}
           <div className="flex items-center gap-3.5 pt-2 sm:pt-0 sm:pl-6">
-            <div className="w-10 h-10 rounded-full bg-emerald-50 text-[#00a650] flex items-center justify-center shrink-0 border border-emerald-100">
-              <Zap className="w-5 h-5 fill-[#00a650]" />
+            <div className="w-10 h-10 rounded-full bg-blue-50 text-[#0066ff] flex items-center justify-center shrink-0 border border-blue-100">
+              <Zap className="w-5 h-5 fill-[#0066ff]" />
             </div>
             <div>
               <p className="text-xs sm:text-sm font-bold text-gray-900 leading-snug">
-                Envío Gratis FULL
+                Envíos a Todo el Perú
               </p>
-              <p className="text-[11px] text-[#00a650] font-semibold">Despacho rápido y seguro</p>
+              <p className="text-[11px] text-gray-500 font-medium">Lima y Provincias (Olva / Shalom)</p>
             </div>
           </div>
 

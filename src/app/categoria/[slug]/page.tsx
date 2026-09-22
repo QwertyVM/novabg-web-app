@@ -133,12 +133,12 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
           {/* Envíos FULL toggle */}
           <div>
             <h3 className="font-bold text-sm mb-3 text-gray-900">Envíos</h3>
-            <div className="flex items-center justify-between p-2.5 bg-emerald-50/70 border border-emerald-100 rounded-lg">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#00a650]">
-                <Zap className="w-4 h-4 fill-[#00a650]" />
+            <div className="flex items-center justify-between p-2.5 bg-blue-50/70 border border-blue-100 rounded-lg">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#0066ff]">
+                <Zap className="w-4 h-4 fill-[#0066ff]" />
                 <span>FULL</span>
               </div>
-              <span className="text-[11px] text-[#00a650] font-semibold">Envío gratis</span>
+              <span className="text-[11px] text-[#0066ff] font-semibold">Lima y Provincias</span>
             </div>
           </div>
 
