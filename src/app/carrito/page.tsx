@@ -4,14 +4,14 @@ import React from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { Trash2, ShieldCheck, ShoppingCart, ArrowRight, Zap, CheckCircle2 } from 'lucide-react'
-import { useCart } from '@/context/CartContext'
-import { formatPriceParts, getEstimatedDeliveryDate } from '@/lib/utils'
+import { useCart } from '@/features/cart'
+import { formatPrice, getEstimatedDeliveryDate } from '@/shared/utils'
 
 export default function CartPage() {
   const router = useRouter()
-  const { items, removeFromCart, updateQuantity, clearCart, totalCount, subtotal } = useCart()
+  const { items, removeItem, updateQuantity, clearCart, totalCount, subtotal } = useCart()
 
-  const subtotalParts = formatPriceParts(subtotal)
+  const formattedSubtotal = formatPrice(subtotal)
   const deliveryDate = getEstimatedDeliveryDate()
 
   if (items.length === 0) {
@@ -60,7 +60,7 @@ export default function CartPage() {
           {/* Items */}
           <div className="divide-y divide-gray-100">
             {items.map((item) => {
-              const itemPrice = formatPriceParts(item.precio)
+              const itemPrice = formatPrice(item.precioMercado)
               return (
                 <div key={item.id} className="py-5 flex gap-4 sm:gap-6">
                   {/* Thumbnail */}
@@ -69,7 +69,7 @@ export default function CartPage() {
                     className="w-20 h-20 sm:w-28 sm:h-28 bg-[#fafafa] rounded-xl border border-gray-100 shrink-0 overflow-hidden p-2 flex items-center justify-center"
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={item.imagen} alt={item.nombre} className="w-full h-full object-contain" />
+                    <img src={item.imagen} alt={item.nombreModelo} className="w-full h-full object-contain" />
                   </Link>
 
                   {/* Info */}
@@ -80,10 +80,10 @@ export default function CartPage() {
                           href={`/producto/${item.id}`}
                           className="text-sm font-bold text-gray-900 hover:text-[#0066ff] leading-snug line-clamp-2"
                         >
-                          {item.nombre}
+                          {item.nombreModelo}
                         </Link>
                         <div className="text-base font-black text-gray-900 shrink-0">
-                          {itemPrice.full}
+                          {itemPrice}
                         </div>
                       </div>
 
@@ -92,7 +92,7 @@ export default function CartPage() {
                         <span>Disponible en stock</span>
                       </div>
                       <div className="text-[11px] text-gray-400">
-                        {item.categoria || 'Juegos de Mesa'}
+                        {item.lineaCategoria || 'Juegos de Mesa'}
                       </div>
                     </div>
 
@@ -116,7 +116,7 @@ export default function CartPage() {
                       <span className="text-gray-200">|</span>
 
                       <button
-                        onClick={() => removeFromCart(item.id)}
+                        onClick={() => removeItem(item.id)}
                         className="text-gray-400 hover:text-red-600 flex items-center gap-1 transition-colors cursor-pointer text-xs"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -132,7 +132,7 @@ export default function CartPage() {
           {/* Subtotal bottom */}
           <div className="text-right pt-6 border-t border-gray-100 text-sm">
             Subtotal con envío incluido:{' '}
-            <strong className="text-xl text-gray-900 font-black">{subtotalParts.full}</strong>
+            <strong className="text-xl text-gray-900 font-black">{formattedSubtotal}</strong>
           </div>
         </div>
 
@@ -146,7 +146,7 @@ export default function CartPage() {
             <div className="space-y-2 text-xs text-gray-600">
               <div className="flex justify-between">
                 <span>Productos ({totalCount})</span>
-                <span className="text-gray-900 font-semibold">{subtotalParts.full}</span>
+                <span className="text-gray-900 font-semibold">{formattedSubtotal}</span>
               </div>
               <div className="flex justify-between text-[#00a650] font-bold">
                 <span>Envío</span>
@@ -156,12 +156,12 @@ export default function CartPage() {
 
             <div className="pt-3 border-t border-gray-100 flex justify-between items-baseline">
               <span className="text-sm font-bold text-gray-900">Total</span>
-              <span className="text-2xl font-black text-gray-900">{subtotalParts.full}</span>
+              <span className="text-2xl font-black text-gray-900">{formattedSubtotal}</span>
             </div>
 
             <button
               onClick={() => router.push('/checkout')}
-              className="w-full btn-nova-primary py-3.5 text-sm font-bold shadow-sm flex items-center justify-center gap-2"
+              className="w-full btn-nova-primary py-3.5 text-sm font-bold shadow-sm flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>Continuar compra</span>
               <ArrowRight className="w-4 h-4" />

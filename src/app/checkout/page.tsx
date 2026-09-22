@@ -3,11 +3,11 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Lock, CheckCircle2, ShieldCheck, MapPin, CreditCard, ShoppingBag, ArrowRight, Layers, QrCode, Building } from 'lucide-react'
+import { Lock, CheckCircle2, ShieldCheck, ShoppingBag, Layers } from 'lucide-react'
 import { useSession, signIn } from 'next-auth/react'
-import { useCart } from '@/context/CartContext'
-import { createOrder } from '@/actions/order'
-import { formatPriceParts, getEstimatedDeliveryDate } from '@/lib/utils'
+import { useCart } from '@/features/cart'
+import { createOrder } from '@/features/orders'
+import { formatPrice, getEstimatedDeliveryDate } from '@/shared/utils'
 import { toast } from 'sonner'
 
 export default function CheckoutPage() {
@@ -27,7 +27,7 @@ export default function CheckoutPage() {
   const [orderComplete, setOrderComplete] = useState<{ codigo: string } | null>(null)
 
   const deliveryDate = getEstimatedDeliveryDate()
-  const subtotalParts = formatPriceParts(subtotal)
+  const formattedSubtotal = formatPrice(subtotal)
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -55,10 +55,10 @@ export default function CheckoutPage() {
         notas: `Método de pago: ${metodoPago}. ${notas}`,
         items: items.map((i) => ({
           productoId: i.id,
-          nombreProductoSnapshot: i.nombre,
+          nombreProductoSnapshot: i.nombreModelo,
           cantidad: i.cantidad,
-          precioUnitario: i.precio,
-          subtotal: i.precio * i.cantidad,
+          precioUnitario: i.precioMercado,
+          subtotal: i.precioMercado * i.cantidad,
         })),
         metodoPago,
       })
@@ -272,7 +272,7 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Step 3: Payment Method (Mercado Pago style cards) */}
+          {/* Step 3: Payment Method */}
           <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs">
             <h2 className="text-base font-bold text-gray-900 flex items-center gap-2 mb-4">
               <span className="w-6 h-6 rounded-full bg-[#0066ff] text-white flex items-center justify-center text-xs font-bold">
@@ -373,7 +373,7 @@ export default function CheckoutPage() {
             <div className="space-y-2 text-gray-600">
               <div className="flex justify-between">
                 <span>Productos ({totalCount}):</span>
-                <span className="text-gray-900 font-semibold">{subtotalParts.full}</span>
+                <span className="text-gray-900 font-semibold">{formattedSubtotal}</span>
               </div>
               <div className="flex justify-between text-[#00a650] font-bold">
                 <span>Envío FULL:</span>
@@ -383,7 +383,7 @@ export default function CheckoutPage() {
 
             <div className="pt-3 border-t border-gray-100 flex justify-between items-baseline">
               <span className="text-base font-bold text-gray-900">Total a Pagar:</span>
-              <span className="text-2xl font-black text-gray-900">{subtotalParts.full}</span>
+              <span className="text-2xl font-black text-gray-900">{formattedSubtotal}</span>
             </div>
 
             <button

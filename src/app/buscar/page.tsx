@@ -1,10 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
-import prisma from '@/lib/prisma'
-import { ProductCard, ProductItem } from '@/components/product/ProductCard'
-import { getProductImage } from '@/lib/utils'
-import { getNovaBgProductsWhere } from '@/lib/catalog'
-import { getNovaBgCategories, NovaCategory } from '@/actions/categories'
+import prisma from '@/core/database/prisma'
+import { ProductCard, ProductItem, getNovaBgProductsWhere, getNovaBgCategories, NovaCategory } from '@/features/catalog'
+import { getProductImage } from '@/shared/utils'
 import { Search } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'

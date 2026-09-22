@@ -2,13 +2,10 @@ import React from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Star, Zap, MessageSquare } from 'lucide-react'
-import prisma from '@/lib/prisma'
-import { ProductGallery } from '@/components/product/ProductGallery'
-import { BuyBox } from '@/components/product/BuyBox'
-import { ProductRow } from '@/components/home/ProductRow'
-import { ProductItem } from '@/components/product/ProductCard'
-import { formatPriceParts, getProductImage, getEstimatedDeliveryDate } from '@/lib/utils'
-import { getNovaBgProductsWhere } from '@/lib/catalog'
+import prisma from '@/core/database/prisma'
+import { ProductGallery, BuyBox, ProductItem, getNovaBgProductsWhere } from '@/features/catalog'
+import { ProductRow } from '@/features/home'
+import { formatPriceParts, getProductImage, getEstimatedDeliveryDate } from '@/shared/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -119,7 +116,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   {priceParts.integer}
                 </span>
                 <span className="text-sm font-bold text-gray-900 relative top-[-10px]">
-                  {priceParts.decimal}
+                  {priceParts.cents}
                 </span>
               </div>
 

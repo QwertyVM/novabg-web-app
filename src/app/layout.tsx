@@ -1,10 +1,10 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import './globals.css'
-import { AuthProvider } from '@/components/providers/AuthProvider'
-import { CartProvider } from '@/context/CartContext'
-import { StoreLayout } from '@/components/layout/StoreLayout'
-import { getNovaBgCategories } from '@/actions/categories'
+import { AuthProvider } from '@/shared/providers'
+import { CartProvider } from '@/features/cart'
+import { StoreLayout } from '@/shared/components/layout'
+import { getNovaBgCategories } from '@/features/catalog'
 import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })

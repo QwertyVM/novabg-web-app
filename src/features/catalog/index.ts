@@ -1,0 +1,6 @@
+export * from './types/catalog.types'
+export * from './services/catalog.service'
+export * from './actions/category.actions'
+export * from './components/ProductCard'
+export * from './components/ProductGallery'
+export * from './components/BuyBox'

@@ -1,8 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
-import { Package, Truck, CheckCircle2, Clock, ShoppingBag, ArrowRight, Dice5 } from 'lucide-react'
-import prisma from '@/lib/prisma'
-import { formatPriceParts, getProductImage } from '@/lib/utils'
+import { CheckCircle2, ShoppingBag } from 'lucide-react'
+import prisma from '@/core/database/prisma'
+import { formatPrice, getProductImage } from '@/shared/utils'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,7 +56,7 @@ export default async function OrdersPage() {
       ) : (
         <div className="space-y-5">
           {pedidos.map((pedido) => {
-            const totalParts = formatPriceParts(pedido.total)
+            const formattedTotal = formatPrice(pedido.total)
             const dateStr = new Date(pedido.createdAt).toLocaleDateString('es-PE', {
               day: 'numeric',
               month: 'long',
@@ -81,7 +81,7 @@ export default async function OrdersPage() {
                     <span className="block text-[10px] uppercase font-bold text-gray-400">
                       Total
                     </span>
-                    <span className="text-gray-900 font-black">{totalParts.full}</span>
+                    <span className="text-gray-900 font-black">{formattedTotal}</span>
                   </div>
 
                   <div>
@@ -117,7 +117,7 @@ export default async function OrdersPage() {
                   <div className="divide-y divide-gray-100">
                     {pedido.items.map((item: any) => {
                       const itemImg = getProductImage(item.nombreProductoSnapshot || '')
-                      const itemPrice = formatPriceParts(item.precioUnitario)
+                      const itemPrice = formatPrice(item.precioUnitario)
                       return (
                         <div key={item.id} className="py-3.5 flex gap-4 items-center">
                           {/* Thumbnail */}
@@ -136,7 +136,7 @@ export default async function OrdersPage() {
                               {item.nombreProductoSnapshot}
                             </h4>
                             <p className="text-gray-500 text-[11px] mt-0.5">
-                              Cantidad: {item.cantidad} • Precio: {itemPrice.full}
+                              Cantidad: {item.cantidad} • Precio: {itemPrice}
                             </p>
                             <Link
                               href={`/producto/${item.productoId}`}

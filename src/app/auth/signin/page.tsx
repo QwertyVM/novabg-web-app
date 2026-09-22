@@ -28,13 +28,18 @@ export default function SignInPage() {
 
   return (
     <div className="min-h-screen bg-white flex flex-col items-center pt-8 pb-16 px-4 select-none">
-      {/* Amazon Logo */}
+      {/* NOVA BG Logo */}
       <Link href="/" className="mb-6 flex flex-col items-center">
-        <span className="text-3xl font-black tracking-tight text-[#131921]">
-          amazon<span className="text-[#febd69]">.pe</span>
-        </span>
-        <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">
-          Juegos de Mesa
+        <div className="flex items-center gap-1">
+          <span className="text-3xl font-black tracking-tight text-[#0f172a]">
+            NOVA
+          </span>
+          <span className="text-sm font-black px-2 py-0.5 rounded-sm bg-[#0066ff] text-white tracking-wider uppercase shadow-2xs">
+            BG
+          </span>
+        </div>
+        <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider mt-1">
+          Tienda Oficial de Juegos de Mesa
         </span>
       </Link>
 
@@ -100,7 +105,7 @@ export default function SignInPage() {
           <button
             type="submit"
             disabled={loading}
-            className="w-full btn-amazon-primary py-2 text-xs font-semibold shadow-2xs mt-2"
+            className="w-full btn-nova-primary py-2.5 text-xs font-semibold shadow-xs mt-2"
           >
             {loading ? 'Iniciando sesión...' : 'Acceder'}
           </button>
