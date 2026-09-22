@@ -14,15 +14,22 @@ import {
   Package,
   Heart,
   Sparkles,
+  Zap,
+  Box,
+  Layers,
+  HelpCircle,
+  Dice5,
 } from 'lucide-react'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { useCart } from '@/context/CartContext'
+import { NovaCategory } from '@/actions/categories'
 
 interface AmazonHeaderProps {
   onOpenDrawer: () => void
+  categories?: NovaCategory[]
 }
 
-export function AmazonHeader({ onOpenDrawer }: AmazonHeaderProps) {
+export function AmazonHeader({ onOpenDrawer, categories = [] }: AmazonHeaderProps) {
   const router = useRouter()
   const { data: session } = useSession()
   const { totalCount } = useCart()
@@ -30,11 +37,16 @@ export function AmazonHeader({ onOpenDrawer }: AmazonHeaderProps) {
   const [department, setDepartment] = useState('todos')
   const [searchTerm, setSearchTerm] = useState('')
   const [showAccountMenu, setShowAccountMenu] = useState(false)
+  const [showCategoriesMenu, setShowCategoriesMenu] = useState(false)
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (!searchTerm.trim()) {
-      router.push('/categoria/juegos-de-mesa')
+      if (department !== 'todos') {
+        router.push(`/categoria/${department}`)
+      } else {
+        router.push('/categoria/todos')
+      }
       return
     }
     const params = new URLSearchParams()
@@ -46,208 +58,310 @@ export function AmazonHeader({ onOpenDrawer }: AmazonHeaderProps) {
   }
 
   return (
-    <header className="bg-[#131921] text-white select-none sticky top-0 z-40 shadow-md">
-      <div className="max-w-[1500px] mx-auto flex items-center justify-between gap-2 px-3 py-1.5 text-xs">
-        {/* Amazon Logo */}
+    <header className="bg-[#0066ff] text-white select-none sticky top-0 z-40 shadow-sm">
+      {/* Top Main Bar */}
+      <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4 px-4 py-2.5">
+        {/* Mobile menu trigger */}
+        <button
+          onClick={onOpenDrawer}
+          className="md:hidden p-1.5 rounded-lg hover:bg-white/15 text-white cursor-pointer"
+          aria-label="Abrir menú"
+        >
+          <Menu className="w-6 h-6" />
+        </button>
+
+        {/* Brand Logo: NOVA BG */}
         <Link
           href="/"
-          className="amazon-nav-item flex items-center gap-1 py-1 px-2 shrink-0 group"
+          className="flex items-center gap-2 py-0.5 px-1 rounded-lg hover:opacity-95 transition-opacity shrink-0 group"
         >
-          <div className="flex flex-col items-start leading-none">
-            <span className="text-xl font-black tracking-tighter text-white">
-              amazon<span className="text-[#febd69]">.pe</span>
-            </span>
-            <span className="text-[10px] text-[#febd69] font-semibold -mt-1 tracking-wider uppercase">
-              Juegos de Mesa
+          <div className="w-8 h-8 rounded-lg bg-white/15 backdrop-blur-xs flex items-center justify-center border border-white/25 shadow-xs group-hover:scale-105 transition-transform">
+            <Dice5 className="w-5 h-5 text-[#00d2ff]" />
+          </div>
+          <div className="flex flex-col leading-none">
+            <div className="flex items-center gap-1">
+              <span className="text-xl font-black tracking-tight text-white drop-shadow-xs">
+                NOVA
+              </span>
+              <span className="text-xs font-black px-1.5 py-0.5 rounded-sm bg-[#00d2ff] text-[#0f172a] tracking-wider uppercase shadow-2xs">
+                BG
+              </span>
+            </div>
+            <span className="text-[10px] text-white/80 font-medium tracking-wide">
+              Board Games
             </span>
           </div>
         </Link>
 
-        {/* Deliver to Location */}
-        <div className="amazon-nav-item hidden md:flex items-center gap-1 px-2 py-1 shrink-0 text-gray-300">
-          <MapPin className="w-4 h-4 text-white" />
-          <div className="flex flex-col leading-tight">
-            <span className="text-[11px] text-gray-300">Entregar en</span>
-            <span className="text-xs font-bold text-white">Lima, Perú</span>
-          </div>
-        </div>
-
-        {/* Amazon Multi-tier Search Bar */}
+        {/* Mercado Libre Style Minimalist Search Bar */}
         <form
           onSubmit={handleSearch}
-          className="flex-1 max-w-3xl flex items-center h-10 rounded-md overflow-hidden bg-white mx-2 focus-within:ring-2 focus-within:ring-[#f90] shadow-xs"
+          className="flex-1 max-w-2xl flex items-center h-10 rounded-md overflow-hidden bg-white shadow-xs focus-within:ring-2 focus-within:ring-[#00d2ff] transition-all"
         >
-          {/* Department dropdown */}
-          <div className="relative h-full bg-gray-100 border-r border-gray-300 text-gray-700 hover:bg-gray-200 shrink-0">
-            <select
-              value={department}
-              onChange={(e) => setDepartment(e.target.value)}
-              className="h-full bg-transparent text-xs pl-3 pr-6 py-0 appearance-none outline-none cursor-pointer font-medium"
-            >
-              <option value="todos">Todos los departamentos</option>
-              <option value="juegos-de-mesa">Juegos de Mesa</option>
-              <option value="insertos">Insertos & Organizadores</option>
-              <option value="rol">Torres de Dados & Rol</option>
-              <option value="accesorios">Accesorios & Miniaturas</option>
-            </select>
-            <ChevronDown className="w-3.5 h-3.5 absolute right-1.5 top-1/2 -translate-y-1/2 pointer-events-none text-gray-500" />
-          </div>
-
-          {/* Search Input */}
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Buscar juegos de mesa, insertos, dados, organizadores..."
-            className="flex-1 px-3 text-sm text-[#0f1111] outline-none h-full placeholder:text-gray-500"
+            placeholder="Buscar juegos de mesa, organizadores, cartas, accesorios..."
+            className="flex-1 px-4 text-sm text-[#191919] outline-none h-full placeholder:text-gray-400 bg-transparent font-normal"
           />
 
-          {/* Search Submit Button */}
+          {/* Department Filter (Desktop) with Dynamic Categories */}
+          <div className="hidden sm:flex items-center border-l border-gray-200 h-6 px-2 text-xs text-gray-500 bg-gray-50/80">
+            <select
+              value={department}
+              onChange={(e) => setDepartment(e.target.value)}
+              className="bg-transparent text-xs text-gray-700 outline-none cursor-pointer pr-1 font-medium"
+            >
+              <option value="todos">Todo</option>
+              {categories.map((c) => (
+                <option key={c.id} value={c.slug}>
+                  {c.nombre}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          {/* Search Button */}
           <button
             type="submit"
-            className="h-full px-4 bg-[#febd69] hover:bg-[#f3a847] text-[#131921] flex items-center justify-center transition-colors cursor-pointer"
+            className="h-full px-4 text-gray-500 hover:text-[#0066ff] hover:bg-blue-50 transition-colors flex items-center justify-center cursor-pointer border-l border-gray-100"
             title="Buscar"
           >
-            <Search className="w-5 h-5 text-gray-900" />
+            <Search className="w-4 h-4 text-gray-600" />
           </button>
         </form>
 
-        {/* Language / Country */}
-        <div className="amazon-nav-item hidden lg:flex items-center gap-1 px-2 py-2 shrink-0">
-          <span className="text-base">🇵🇪</span>
-          <span className="font-bold text-xs">ES (PEN)</span>
-          <ChevronDown className="w-3 h-3 text-gray-400" />
-        </div>
-
-        {/* Account & Lists */}
-        <div
-          className="relative"
-          onMouseEnter={() => setShowAccountMenu(true)}
-          onMouseLeave={() => setShowAccountMenu(false)}
-        >
-          <button
-            onClick={() => {
-              if (!session) signIn('google')
-              else router.push('/pedidos')
-            }}
-            className="amazon-nav-item flex flex-col items-start leading-tight px-2 py-1 text-left"
+        {/* Right Action Icons & User Menu */}
+        <div className="flex items-center gap-1 sm:gap-3 text-xs">
+          {/* User Account / Login */}
+          <div
+            className="relative"
+            onMouseEnter={() => setShowAccountMenu(true)}
+            onMouseLeave={() => setShowAccountMenu(false)}
           >
-            <span className="text-[11px] text-gray-200">
-              Hola, {session?.user?.name ? session.user.name.split(' ')[0] : 'identifícate'}
-            </span>
-            <div className="flex items-center gap-1">
-              <span className="text-xs font-bold text-white">Cuenta y Listas</span>
-              <ChevronDown className="w-3 h-3 text-gray-400" />
-            </div>
-          </button>
+            <button
+              onClick={() => {
+                if (!session) signIn('google')
+                else router.push('/pedidos')
+              }}
+              className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-md hover:bg-white/15 text-white transition-colors cursor-pointer"
+            >
+              {session?.user?.image ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={session.user.image}
+                  alt={session.user.name || 'User'}
+                  className="w-6 h-6 rounded-full border border-white/40"
+                />
+              ) : (
+                <UserIcon className="w-5 h-5 text-white/90" />
+              )}
+              <div className="hidden lg:flex flex-col items-start leading-tight">
+                <span className="text-[11px] text-white/80 font-normal">
+                  {session?.user?.name ? `Hola, ${session.user.name.split(' ')[0]}` : 'Ingresa'}
+                </span>
+                <span className="text-xs font-bold text-white flex items-center gap-0.5">
+                  Mi Cuenta <ChevronDown className="w-3 h-3 text-white/70" />
+                </span>
+              </div>
+            </button>
 
-          {/* Account Dropdown */}
-          {showAccountMenu && (
-            <div className="absolute right-0 top-full mt-0.5 w-64 bg-white text-[#0f1111] rounded shadow-xl border border-gray-200 py-3 px-4 z-50 animate-in fade-in duration-150">
-              <div className="text-center pb-3 border-b border-gray-200">
-                {session ? (
-                  <div className="flex flex-col items-center">
-                    <div className="w-10 h-10 rounded-full bg-amber-100 text-amber-800 font-bold flex items-center justify-center text-sm mb-1">
-                      {session.user?.name?.charAt(0) || 'U'}
+            {/* Account Popover */}
+            {showAccountMenu && (
+              <div className="absolute right-0 top-full mt-1 w-64 bg-white text-[#191919] rounded-lg shadow-xl border border-gray-100 py-3 px-4 z-50 animate-in fade-in duration-150">
+                <div className="text-center pb-3 border-b border-gray-100">
+                  {session ? (
+                    <div className="flex flex-col items-center">
+                      <div className="w-10 h-10 rounded-full bg-blue-100 text-[#0066ff] font-bold flex items-center justify-center text-sm mb-1.5">
+                        {session.user?.name?.charAt(0) || 'U'}
+                      </div>
+                      <p className="font-bold text-xs text-gray-900">{session.user?.name}</p>
+                      <p className="text-[11px] text-gray-500 truncate max-w-full">
+                        {session.user?.email}
+                      </p>
                     </div>
-                    <p className="font-bold text-xs text-gray-900">{session.user?.name}</p>
-                    <p className="text-[11px] text-gray-500 truncate max-w-full">{session.user?.email}</p>
-                  </div>
-                ) : (
-                  <div>
-                    <button
-                      onClick={() => signIn('google')}
-                      className="w-full btn-amazon-primary text-xs py-2 shadow-xs mb-2 flex items-center justify-center gap-2"
-                    >
-                      <svg className="w-4 h-4" viewBox="0 0 24 24">
-                        <path
-                          fill="#4285F4"
-                          d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                        />
-                        <path
-                          fill="#34A853"
-                          d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                        />
-                        <path
-                          fill="#FBBC05"
-                          d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                        />
-                        <path
-                          fill="#EA4335"
-                          d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                        />
-                      </svg>
-                      Identificarse con Google
-                    </button>
-                    <p className="text-[11px] text-gray-500">
-                      ¿Cliente nuevo? Conéctate con Google
-                    </p>
-                  </div>
-                )}
+                  ) : (
+                    <div>
+                      <p className="text-xs text-gray-600 mb-2 font-medium">
+                        Ingresa a tu cuenta de NOVA BG
+                      </p>
+                      <button
+                        onClick={() => signIn('google')}
+                        className="w-full btn-nova-primary text-xs py-2 shadow-xs mb-1.5 flex items-center justify-center gap-2"
+                      >
+                        <svg className="w-4 h-4 bg-white rounded-full p-0.5" viewBox="0 0 24 24">
+                          <path
+                            fill="#4285F4"
+                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                          />
+                          <path
+                            fill="#34A853"
+                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                          />
+                          <path
+                            fill="#FBBC05"
+                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                          />
+                          <path
+                            fill="#EA4335"
+                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                          />
+                        </svg>
+                        Continuar con Google
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-2 text-xs space-y-1">
+                  <Link
+                    href="/pedidos"
+                    className="flex items-center gap-2.5 p-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#0066ff] transition-colors"
+                  >
+                    <Package className="w-4 h-4 text-gray-400" />
+                    <span>Mis Compras</span>
+                  </Link>
+                  <Link
+                    href="/carrito"
+                    className="flex items-center gap-2.5 p-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#0066ff] transition-colors"
+                  >
+                    <ShoppingCart className="w-4 h-4 text-gray-400" />
+                    <span>Mi Carrito</span>
+                  </Link>
+                  <Link
+                    href="/categoria/ofertas"
+                    className="flex items-center gap-2.5 p-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#0066ff] transition-colors"
+                  >
+                    <Sparkles className="w-4 h-4 text-[#0066ff]" />
+                    <span>Ofertas Especiales</span>
+                  </Link>
+
+                  {session && (
+                    <div className="pt-2 border-t border-gray-100 mt-1">
+                      <button
+                        onClick={() => signOut()}
+                        className="flex items-center gap-2.5 p-2 rounded-md text-red-600 hover:bg-red-50 w-full text-left transition-colors cursor-pointer"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        <span>Cerrar sesión</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
-
-              <div className="pt-2 text-xs space-y-2">
-                <div className="font-bold text-gray-900 mb-1">Mi Cuenta</div>
-                <Link
-                  href="/pedidos"
-                  className="flex items-center gap-2 text-gray-700 hover:text-[#c7511f] hover:underline"
-                >
-                  <Package className="w-3.5 h-3.5" />
-                  Mis Pedidos & Devoluciones
-                </Link>
-                <Link
-                  href="/carrito"
-                  className="flex items-center gap-2 text-gray-700 hover:text-[#c7511f] hover:underline"
-                >
-                  <ShoppingCart className="w-3.5 h-3.5" />
-                  Mi Carrito de Juegos
-                </Link>
-                <Link
-                  href="/categoria/ofertas"
-                  className="flex items-center gap-2 text-gray-700 hover:text-[#c7511f] hover:underline"
-                >
-                  <Sparkles className="w-3.5 h-3.5 text-amber-600" />
-                  Ofertas y Promociones
-                </Link>
-
-                {session && (
-                  <div className="pt-2 border-t border-gray-200 mt-2">
-                    <button
-                      onClick={() => signOut()}
-                      className="flex items-center gap-2 text-red-600 hover:underline w-full text-left"
-                    >
-                      <LogOut className="w-3.5 h-3.5" />
-                      Cerrar sesión
-                    </button>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Returns & Orders */}
-        <Link
-          href="/pedidos"
-          className="amazon-nav-item hidden sm:flex flex-col items-start leading-tight px-2 py-1 shrink-0"
-        >
-          <span className="text-[11px] text-gray-200">Devoluciones</span>
-          <span className="text-xs font-bold text-white">y Pedidos</span>
-        </Link>
-
-        {/* Shopping Cart */}
-        <Link
-          href="/carrito"
-          className="amazon-nav-item flex items-end gap-1 px-2 py-1 relative shrink-0"
-        >
-          <div className="relative">
-            <ShoppingCart className="w-7 h-7 text-white" />
-            <span className="absolute -top-1 left-1/2 -translate-x-1/2 text-[#f08804] font-bold text-xs bg-transparent">
-              {totalCount}
-            </span>
+            )}
           </div>
-          <span className="font-bold text-xs text-white hidden sm:inline pb-0.5">Carrito</span>
-        </Link>
+
+          {/* Mis Compras Link */}
+          <Link
+            href="/pedidos"
+            className="hidden sm:flex items-center gap-1.5 py-1.5 px-2.5 rounded-md hover:bg-white/15 text-white transition-colors"
+          >
+            <Package className="w-4 h-4 text-white/90" />
+            <span className="font-medium hidden md:inline">Mis compras</span>
+          </Link>
+
+          {/* Cart with Badge */}
+          <Link
+            href="/carrito"
+            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-md hover:bg-white/15 text-white transition-colors relative"
+          >
+            <div className="relative">
+              <ShoppingCart className="w-5 h-5 text-white" />
+              {totalCount > 0 && (
+                <span className="absolute -top-2 -right-2 bg-[#00d2ff] text-[#0f172a] font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                  {totalCount}
+                </span>
+              )}
+            </div>
+            <span className="font-semibold hidden lg:inline">Carrito</span>
+          </Link>
+        </div>
+      </div>
+
+      {/* Second Row: Mercado Libre Navigation & Delivery Location */}
+      <div className="border-t border-white/15 bg-[#0055d4] text-xs px-4 py-1.5 hidden md:block">
+        <div className="max-w-[1400px] mx-auto flex items-center justify-between">
+          {/* Location deliver-to */}
+          <div className="flex items-center gap-1.5 text-white/90 hover:text-white cursor-pointer py-1 px-2 rounded hover:bg-white/10 transition-colors">
+            <MapPin className="w-4 h-4 text-[#00d2ff]" />
+            <div className="flex items-center gap-1">
+              <span className="text-white/70">Enviar a</span>
+              <span className="font-bold text-white">Lima, Perú</span>
+            </div>
+          </div>
+
+          {/* Categories & Main Navigation */}
+          <nav className="flex items-center gap-1 text-white">
+            {/* Categorías Dropdown */}
+            <div
+              className="relative"
+              onMouseEnter={() => setShowCategoriesMenu(true)}
+              onMouseLeave={() => setShowCategoriesMenu(false)}
+            >
+              <button className="nova-nav-link flex items-center gap-1 cursor-pointer font-semibold">
+                <span>Categorías</span>
+                <ChevronDown className="w-3.5 h-3.5 text-white/70" />
+              </button>
+
+              {showCategoriesMenu && (
+                <div className="absolute left-0 top-full mt-1 w-60 bg-white text-[#191919] rounded-lg shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in duration-100">
+                  {categories.length === 0 ? (
+                    <div className="px-4 py-3 text-xs text-gray-500">
+                      <p className="font-medium text-gray-700 mb-1">Sin categorías registradas</p>
+                      <p className="text-[11px] text-gray-400">
+                        Registra categorías en NOVA BG para verlas aquí.
+                      </p>
+                    </div>
+                  ) : (
+                    categories.map((cat) => (
+                      <Link
+                        key={cat.id}
+                        href={`/categoria/${cat.slug}`}
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50 hover:text-[#0066ff] transition-colors"
+                      >
+                        <Layers className="w-4 h-4 text-[#0066ff]" />
+                        <span>{cat.nombre}</span>
+                      </Link>
+                    ))
+                  )}
+                  <div className="border-t border-gray-100 my-1"></div>
+                  <Link
+                    href="/categoria/todos"
+                    className="flex items-center justify-between px-4 py-2 text-xs font-semibold text-[#0066ff] hover:bg-blue-50"
+                  >
+                    <span>Ver catálogo completo</span>
+                    <span>&rarr;</span>
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Dynamic Navbar Links for registered NOVA BG categories */}
+            {categories.slice(0, 4).map((cat) => (
+              <Link key={cat.id} href={`/categoria/${cat.slug}`} className="nova-nav-link">
+                {cat.nombre}
+              </Link>
+            ))}
+
+            <Link href="/categoria/ofertas" className="nova-nav-link">
+              Ofertas
+            </Link>
+            <Link href="/pedidos" className="nova-nav-link">
+              Mis Compras
+            </Link>
+            <Link href="/servicio-al-cliente" className="nova-nav-link hidden lg:inline-flex">
+              Ayuda
+            </Link>
+          </nav>
+
+          {/* NOVA FULL Badge */}
+          <div className="flex items-center gap-1 text-[#00d2ff] font-bold text-xs">
+            <Zap className="w-3.5 h-3.5 fill-[#00d2ff]" />
+            <span>NOVA FULL • Envíos 24h</span>
+          </div>
+        </div>
       </div>
     </header>
   )

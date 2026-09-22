@@ -1,9 +1,11 @@
 import React from 'react'
 import Link from 'next/link'
-import { Star, Check, Filter } from 'lucide-react'
+import { Star, Zap, ChevronRight } from 'lucide-react'
 import prisma from '@/lib/prisma'
 import { ProductCard, ProductItem } from '@/components/product/ProductCard'
 import { getProductImage } from '@/lib/utils'
+import { getNovaBgProductsWhere } from '@/lib/catalog'
+import { getNovaBgCategories } from '@/actions/categories'
 
 export const dynamic = 'force-dynamic'
 
@@ -16,54 +18,37 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   const { slug } = await params
   const sParams = await searchParams
 
-  const categoryTitles: Record<string, string> = {
-    'juegos-de-mesa': 'Juegos de Mesa y Sets de Tablero',
-    insertos: 'Insertos & Organizadores de Juegos de Mesa',
-    rol: 'Torres de Dados & Accesorios de Rol',
-    ofertas: 'Ofertas del Día & Descuentos',
-    'mas-vendidos': 'Los Más Vendidos en Juegos de Mesa',
-    todos: 'Todos los Artículos de Juegos de Mesa',
-  }
+  // Fetch dynamic categories from NOVA BG
+  const categories = await getNovaBgCategories()
+  const matchedCat = categories.find((c) => c.slug === slug)
 
-  const categoryName = categoryTitles[slug] || 'Catálogo de Juegos de Mesa'
+  const categoryName =
+    slug === 'todos'
+      ? 'Todos los Artículos de NOVA BG'
+      : slug === 'ofertas'
+      ? 'Ofertas y Descuentos'
+      : matchedCat
+      ? matchedCat.nombre
+      : 'Catálogo de NOVA BG'
 
-  // Fetch all active products
+  // Fetch active products strictly for NOVA BG
   let productsDb: any[] = []
   try {
     productsDb = await prisma.producto.findMany({
-      where: { activo: true },
+      where: getNovaBgProductsWhere(),
       orderBy: { nombreModelo: 'asc' },
     })
   } catch (e) {
     console.error('Error cargando categoría:', e)
   }
 
-  // Filter based on category slug
+  // Filter based on category slug if matched
   let filtered = productsDb
-  if (slug === 'insertos') {
+  if (matchedCat) {
     filtered = productsDb.filter(
       (p) =>
-        p.lineaCategoria.toLowerCase().includes('inserto') ||
-        p.nombreModelo.toLowerCase().includes('organizador') ||
-        p.nombreModelo.toLowerCase().includes('inserto') ||
-        p.nombreModelo.toLowerCase().includes('seti')
-    )
-  } else if (slug === 'rol') {
-    filtered = productsDb.filter(
-      (p) =>
-        p.lineaCategoria.toLowerCase().includes('rol') ||
-        p.nombreModelo.toLowerCase().includes('torre') ||
-        p.nombreModelo.toLowerCase().includes('dado') ||
-        p.nombreModelo.toLowerCase().includes('dragón')
-    )
-  } else if (slug === 'juegos-de-mesa') {
-    filtered = productsDb.filter(
-      (p) =>
-        p.lineaCategoria.toLowerCase().includes('juegos') ||
-        p.nombreModelo.toLowerCase().includes('mansiones') ||
-        p.nombreModelo.toLowerCase().includes('locura') ||
-        p.nombreModelo.toLowerCase().includes('zombicide') ||
-        p.nombreModelo.toLowerCase().includes('gloomhaven')
+        p.lineaCategoria.toLowerCase().includes(matchedCat.nombre.toLowerCase()) ||
+        p.nombreModelo.toLowerCase().includes(matchedCat.nombre.toLowerCase())
     )
   }
 
@@ -80,143 +65,135 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   }))
 
   return (
-    <div className="py-4 px-4 max-w-[1500px] mx-auto">
-      {/* Top Banner with result count */}
-      <div className="bg-white p-3 rounded-sm border border-gray-200 shadow-2xs mb-4 flex items-center justify-between text-xs text-gray-700">
+    <div className="py-6 px-4 max-w-[1400px] mx-auto">
+      {/* Breadcrumb Header */}
+      <div className="flex items-center gap-2 text-xs text-gray-500 mb-4">
+        <Link href="/" className="hover:text-[#0066ff]">
+          Inicio
+        </Link>
+        <span>/</span>
+        <span className="text-gray-900 font-semibold">{categoryName}</span>
+      </div>
+
+      {/* Top Banner with result count & sort */}
+      <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-xs mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-gray-700">
         <div>
-          <span>1-{formattedProducts.length} de {formattedProducts.length} resultados para </span>
-          <strong className="text-amber-800 font-bold">&quot;{categoryName}&quot;</strong>
+          <span className="text-gray-500">{formattedProducts.length} productos en </span>
+          <strong className="text-gray-900 font-bold">&quot;{categoryName}&quot;</strong>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-gray-500">Ordenar por:</span>
-          <select className="border border-gray-300 rounded bg-gray-50 px-2 py-1 text-xs outline-none cursor-pointer">
-            <option>Destacados</option>
-            <option>Precio: Menor a Mayor</option>
-            <option>Precio: Mayor a Menor</option>
-            <option>Calificación promedio</option>
+          <span className="text-gray-500">Más relevantes:</span>
+          <select className="border border-gray-300 rounded-lg bg-gray-50 px-3 py-1.5 text-xs outline-none cursor-pointer font-medium">
+            <option>Más relevantes</option>
+            <option>Menor precio</option>
+            <option>Mayor precio</option>
+            <option>Mejor calificados</option>
           </select>
         </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
-        {/* Amazon Left Filters Sidebar */}
-        <div className="md:col-span-3 bg-white p-4 rounded-sm border border-gray-200 space-y-5 text-xs text-[#0f1111] h-fit">
-          {/* Department */}
+        {/* Left Filters Sidebar */}
+        <div className="md:col-span-3 bg-white p-5 rounded-xl border border-gray-200/80 space-y-6 text-xs text-[#191919] h-fit shadow-xs">
+          {/* Categorías Dinámicas */}
           <div>
-            <h3 className="font-bold text-sm mb-2 text-gray-900">Departamento</h3>
-            <ul className="space-y-1.5 text-gray-700 pl-1">
+            <h3 className="font-bold text-sm mb-3 text-gray-900">Categorías NOVA BG</h3>
+            {categories.length === 0 ? (
+              <p className="text-gray-400 text-xs">Sin categorías registradas en BG</p>
+            ) : (
+              <ul className="space-y-2 text-gray-600">
+                {categories.map((cat) => (
+                  <li key={cat.id}>
+                    <Link
+                      href={`/categoria/${cat.slug}`}
+                      className={`flex items-center justify-between hover:text-[#0066ff] ${
+                        slug === cat.slug ? 'font-bold text-[#0066ff]' : ''
+                      }`}
+                    >
+                      <span>{cat.nombre}</span>
+                      <ChevronRight className="w-3.5 h-3.5" />
+                    </Link>
+                  </li>
+                ))}
+                <li>
+                  <Link
+                    href="/categoria/todos"
+                    className={`flex items-center justify-between hover:text-[#0066ff] ${
+                      slug === 'todos' ? 'font-bold text-[#0066ff]' : ''
+                    }`}
+                  >
+                    <span>Ver Todos</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </Link>
+                </li>
+              </ul>
+            )}
+          </div>
+
+          <hr className="border-gray-100" />
+
+          {/* Envíos FULL toggle */}
+          <div>
+            <h3 className="font-bold text-sm mb-3 text-gray-900">Envíos</h3>
+            <div className="flex items-center justify-between p-2.5 bg-emerald-50/70 border border-emerald-100 rounded-lg">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#00a650]">
+                <Zap className="w-4 h-4 fill-[#00a650]" />
+                <span>FULL</span>
+              </div>
+              <span className="text-[11px] text-[#00a650] font-semibold">Envío gratis</span>
+            </div>
+          </div>
+
+          <hr className="border-gray-100" />
+
+          {/* Price Filters */}
+          <div>
+            <h3 className="font-bold text-sm mb-3 text-gray-900">Precio</h3>
+            <ul className="space-y-2 text-gray-600">
               <li>
-                <Link
-                  href="/categoria/juegos-de-mesa"
-                  className={`hover:text-[#c7511f] ${
-                    slug === 'juegos-de-mesa' ? 'font-bold text-amber-800' : ''
-                  }`}
-                >
-                  Juegos de Mesa y Sets
-                </Link>
+                <span className="hover:text-[#0066ff] cursor-pointer">Hasta S/ 35</span>
               </li>
               <li>
-                <Link
-                  href="/categoria/insertos"
-                  className={`hover:text-[#c7511f] ${
-                    slug === 'insertos' ? 'font-bold text-amber-800' : ''
-                  }`}
-                >
-                  Insertos & Organizadores
-                </Link>
+                <span className="hover:text-[#0066ff] cursor-pointer">S/ 35 a S/ 70</span>
               </li>
               <li>
-                <Link
-                  href="/categoria/rol"
-                  className={`hover:text-[#c7511f] ${
-                    slug === 'rol' ? 'font-bold text-amber-800' : ''
-                  }`}
-                >
-                  Torres de Dados & Rol
-                </Link>
+                <span className="hover:text-[#0066ff] cursor-pointer">S/ 70 a S/ 120</span>
               </li>
               <li>
-                <Link
-                  href="/categoria/todos"
-                  className={`hover:text-[#c7511f] ${
-                    slug === 'todos' ? 'font-bold text-amber-800' : ''
-                  }`}
-                >
-                  Ver Todos los Artículos
-                </Link>
+                <span className="hover:text-[#0066ff] cursor-pointer">Más de S/ 120</span>
               </li>
             </ul>
           </div>
 
-          <hr className="border-gray-200" />
+          <hr className="border-gray-100" />
 
           {/* Customer Reviews */}
           <div>
-            <h3 className="font-bold text-sm mb-2 text-gray-900">Opiniones de Clientes</h3>
-            <div className="space-y-1.5 pl-1">
-              <div className="flex items-center gap-1.5 cursor-pointer hover:text-[#c7511f]">
-                <div className="flex text-[#de7921]">
+            <h3 className="font-bold text-sm mb-3 text-gray-900">Calificación</h3>
+            <div className="space-y-2">
+              <div className="flex items-center gap-1.5 cursor-pointer hover:text-[#0066ff]">
+                <div className="flex text-[#ff9900]">
                   {[1, 2, 3, 4].map((i) => (
                     <Star key={i} className="w-3.5 h-3.5 fill-current" />
                   ))}
                   <Star className="w-3.5 h-3.5 text-gray-300" />
                 </div>
-                <span>y más (4★+)</span>
+                <span className="text-gray-600 font-medium">(4 estrellas o más)</span>
               </div>
-              <div className="flex items-center gap-1.5 cursor-pointer hover:text-[#c7511f]">
-                <div className="flex text-[#de7921]">
-                  {[1, 2, 3].map((i) => (
-                    <Star key={i} className="w-3.5 h-3.5 fill-current" />
-                  ))}
-                  <Star className="w-3.5 h-3.5 text-gray-300" />
-                  <Star className="w-3.5 h-3.5 text-gray-300" />
-                </div>
-                <span>y más (3★+)</span>
-              </div>
-            </div>
-          </div>
-
-          <hr className="border-gray-200" />
-
-          {/* Price Filters */}
-          <div>
-            <h3 className="font-bold text-sm mb-2 text-gray-900">Precio</h3>
-            <ul className="space-y-1.5 text-gray-700 pl-1">
-              <li>
-                <span className="hover:text-[#c7511f] cursor-pointer">Hasta S/ 30</span>
-              </li>
-              <li>
-                <span className="hover:text-[#c7511f] cursor-pointer">S/ 30 a S/ 60</span>
-              </li>
-              <li>
-                <span className="hover:text-[#c7511f] cursor-pointer">S/ 60 a S/ 100</span>
-              </li>
-              <li>
-                <span className="hover:text-[#c7511f] cursor-pointer">Más de S/ 100</span>
-              </li>
-            </ul>
-          </div>
-
-          <hr className="border-gray-200" />
-
-          {/* Delivery & Prime */}
-          <div>
-            <h3 className="font-bold text-sm mb-2 text-gray-900">Tipo de Envío</h3>
-            <div className="flex items-center gap-1.5 text-emerald-700 font-semibold">
-              <Check className="w-4 h-4 text-emerald-600" />
-              <span>Envío Rápido a Lima & Provincias</span>
             </div>
           </div>
         </div>
 
-        {/* Product Grid (9 cols on md) */}
+        {/* Product Grid */}
         <div className="md:col-span-9">
-          <h1 className="text-xl font-bold text-gray-900 mb-4">{categoryName}</h1>
           {formattedProducts.length === 0 ? (
-            <div className="bg-white p-8 rounded border border-gray-200 text-center">
-              <p className="text-gray-500 text-sm">No se encontraron productos en esta categoría.</p>
-              <Link href="/" className="btn-amazon-primary text-xs mt-4 inline-block">
-                Volver al Inicio
+            <div className="bg-white p-12 rounded-xl border border-gray-200 text-center shadow-xs space-y-3">
+              <p className="text-gray-700 font-bold text-base">No hay productos en esta categoría</p>
+              <p className="text-gray-500 text-xs max-w-md mx-auto">
+                Los productos registrados bajo NOVA BG aparecerán automáticamente aquí al ser ingresados en el sistema financiero.
+              </p>
+              <Link href="/" className="btn-nova-primary text-xs inline-block mt-2">
+                Volver a la portada
               </Link>
             </div>
           ) : (

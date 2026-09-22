@@ -3,6 +3,9 @@ import Link from 'next/link'
 import prisma from '@/lib/prisma'
 import { ProductCard, ProductItem } from '@/components/product/ProductCard'
 import { getProductImage } from '@/lib/utils'
+import { getNovaBgProductsWhere } from '@/lib/catalog'
+import { getNovaBgCategories, NovaCategory } from '@/actions/categories'
+import { Search } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -15,18 +18,20 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const query = typeof sParams.q === 'string' ? sParams.q.trim() : ''
   const dept = typeof sParams.dept === 'string' ? sParams.dept : 'todos'
 
-  // Fetch all active products
+  // Fetch active products strictly for NOVA BG
   let productsDb: any[] = []
   try {
     productsDb = await prisma.producto.findMany({
-      where: {
-        activo: true,
-      },
+      where: getNovaBgProductsWhere(),
       orderBy: { nombreModelo: 'asc' },
     })
   } catch (e) {
     console.error('Error en búsqueda:', e)
   }
+
+  // Fetch categories to match department dynamically
+  const categories = await getNovaBgCategories()
+  const matchedCat = dept !== 'todos' ? categories.find((c) => c.slug === dept) : null
 
   // Filter products by query and department
   const filtered = productsDb.filter((p) => {
@@ -37,28 +42,13 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
     if (!textMatch) return false
 
-    if (dept === 'insertos') {
+    if (matchedCat) {
       return (
-        p.lineaCategoria.toLowerCase().includes('inserto') ||
-        p.nombreModelo.toLowerCase().includes('organizador') ||
-        p.nombreModelo.toLowerCase().includes('inserto') ||
-        p.nombreModelo.toLowerCase().includes('seti')
+        p.lineaCategoria.toLowerCase().includes(matchedCat.nombre.toLowerCase()) ||
+        p.nombreModelo.toLowerCase().includes(matchedCat.nombre.toLowerCase())
       )
     }
-    if (dept === 'rol') {
-      return (
-        p.lineaCategoria.toLowerCase().includes('rol') ||
-        p.nombreModelo.toLowerCase().includes('torre') ||
-        p.nombreModelo.toLowerCase().includes('dado')
-      )
-    }
-    if (dept === 'juegos-de-mesa') {
-      return (
-        p.lineaCategoria.toLowerCase().includes('juegos') ||
-        p.nombreModelo.toLowerCase().includes('mansiones') ||
-        p.nombreModelo.toLowerCase().includes('locura')
-      )
-    }
+
     return true
   })
 
@@ -75,35 +65,38 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   }))
 
   return (
-    <div className="py-4 px-4 max-w-[1500px] mx-auto">
+    <div className="py-6 px-4 max-w-[1400px] mx-auto">
       {/* Search Header Banner */}
-      <div className="bg-white p-3 rounded-sm border border-gray-200 shadow-2xs mb-4 flex items-center justify-between text-xs text-gray-700">
+      <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-xs mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-gray-700">
         <div>
-          <span>
+          <span className="text-gray-500">
             {formattedProducts.length} resultados para{' '}
           </span>
-          <strong className="text-[#c7511f] font-bold">&quot;{query || 'Todos los juegos'}&quot;</strong>
+          <strong className="text-gray-900 font-bold">&quot;{query || 'Todos los artículos'}&quot;</strong>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-gray-500">Ordenar por:</span>
-          <select className="border border-gray-300 rounded bg-gray-50 px-2 py-1 text-xs outline-none cursor-pointer">
-            <option>Relevancia</option>
+          <span className="text-gray-500">Ordenar:</span>
+          <select className="border border-gray-300 rounded-lg bg-gray-50 px-3 py-1.5 text-xs outline-none cursor-pointer font-medium">
+            <option>Más relevantes</option>
             <option>Precio: Menor a Mayor</option>
             <option>Precio: Mayor a Menor</option>
-            <option>Mejor valorados</option>
+            <option>Mejor calificados</option>
           </select>
         </div>
       </div>
 
       {formattedProducts.length === 0 ? (
-        <div className="bg-white p-12 rounded border border-gray-200 text-center max-w-xl mx-auto my-8">
+        <div className="bg-white p-12 rounded-xl border border-gray-200 text-center max-w-lg mx-auto my-12 shadow-xs">
+          <div className="w-12 h-12 rounded-full bg-blue-50 text-[#0066ff] flex items-center justify-center mx-auto mb-3">
+            <Search className="w-6 h-6" />
+          </div>
           <h2 className="text-lg font-bold text-gray-900 mb-2">
-            No se encontraron resultados para &quot;{query}&quot;
+            No encontramos publicaciones para &quot;{query}&quot;
           </h2>
-          <p className="text-xs text-gray-600 mb-6">
-            Revisa la ortografía o intenta buscar con términos más generales como &quot;inserto&quot;, &quot;torre&quot; o &quot;tablero&quot;.
+          <p className="text-xs text-gray-500 mb-6">
+            Revisa la ortografía o intenta buscar con términos como &quot;organizador&quot;, &quot;torre&quot;, &quot;dados&quot; o &quot;tablero&quot;.
           </p>
-          <Link href="/categoria/todos" className="btn-amazon-primary text-xs">
+          <Link href="/categoria/todos" className="btn-nova-primary text-xs">
             Ver todo el catálogo
           </Link>
         </div>

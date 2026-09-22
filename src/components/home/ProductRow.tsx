@@ -17,7 +17,7 @@ export function ProductRow({ title, subtitle, viewAllLink, products }: ProductRo
 
   const scroll = (direction: 'left' | 'right') => {
     if (rowRef.current) {
-      const scrollAmount = direction === 'left' ? -600 : 600
+      const scrollAmount = direction === 'left' ? -650 : 650
       rowRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' })
     }
   }
@@ -25,19 +25,20 @@ export function ProductRow({ title, subtitle, viewAllLink, products }: ProductRo
   if (!products || products.length === 0) return null
 
   return (
-    <div className="bg-white p-5 rounded-sm shadow-sm border border-gray-200 mb-6 relative select-none">
+    <div className="bg-white p-5 sm:p-6 rounded-xl shadow-xs border border-gray-200/80 mb-6 relative select-none">
       {/* Header */}
-      <div className="flex items-baseline justify-between mb-4">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <h2 className="text-xl font-bold text-gray-900">{title}</h2>
-          {subtitle && <p className="text-xs text-gray-500">{subtitle}</p>}
+          <h2 className="text-lg sm:text-xl font-bold text-gray-900 leading-snug">{title}</h2>
+          {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
         </div>
         {viewAllLink && (
           <Link
             href={viewAllLink}
-            className="text-xs text-[#007185] hover:text-[#c7511f] hover:underline font-semibold"
+            className="text-xs font-bold text-[#0066ff] hover:text-[#0052cc] hover:underline flex items-center gap-0.5"
           >
-            Ver más &rarr;
+            <span>Ver más</span>
+            <ChevronRight className="w-4 h-4" />
           </Link>
         )}
       </div>
@@ -45,10 +46,10 @@ export function ProductRow({ title, subtitle, viewAllLink, products }: ProductRo
       {/* Navigation Left Arrow */}
       <button
         onClick={() => scroll('left')}
-        className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-10 h-16 bg-white/90 hover:bg-white text-gray-800 border border-gray-300 rounded shadow-md flex items-center justify-center transition-all cursor-pointer"
+        className="absolute left-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 bg-white/95 hover:bg-white text-gray-700 hover:text-[#0066ff] border border-gray-200 rounded-full shadow-md flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
         aria-label="Desplazar a la izquierda"
       >
-        <ChevronLeft className="w-6 h-6" />
+        <ChevronLeft className="w-5 h-5" />
       </button>
 
       {/* Product List Container */}
@@ -57,7 +58,7 @@ export function ProductRow({ title, subtitle, viewAllLink, products }: ProductRo
         className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth py-1 px-1"
       >
         {products.map((prod) => (
-          <div key={prod.id} className="w-[230px] shrink-0">
+          <div key={prod.id} className="w-[220px] sm:w-[240px] shrink-0">
             <ProductCard product={prod} />
           </div>
         ))}
@@ -66,10 +67,10 @@ export function ProductRow({ title, subtitle, viewAllLink, products }: ProductRo
       {/* Navigation Right Arrow */}
       <button
         onClick={() => scroll('right')}
-        className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-10 h-16 bg-white/90 hover:bg-white text-gray-800 border border-gray-300 rounded shadow-md flex items-center justify-center transition-all cursor-pointer"
+        className="absolute right-2 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-10 sm:h-10 bg-white/95 hover:bg-white text-gray-700 hover:text-[#0066ff] border border-gray-200 rounded-full shadow-md flex items-center justify-center transition-all cursor-pointer hover:scale-105 active:scale-95"
         aria-label="Desplazar a la derecha"
       >
-        <ChevronRight className="w-6 h-6" />
+        <ChevronRight className="w-5 h-5" />
       </button>
     </div>
   )

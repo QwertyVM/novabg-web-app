@@ -4,26 +4,31 @@ import './globals.css'
 import { AuthProvider } from '@/components/providers/AuthProvider'
 import { CartProvider } from '@/context/CartContext'
 import { StoreLayout } from '@/components/layout/StoreLayout'
+import { getNovaBgCategories } from '@/actions/categories'
 import { Toaster } from 'sonner'
 
 const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
-  title: 'Amazon.pe: Juegos de Mesa, Insertos 3D y Accesorios',
-  description: 'Descubre los mejores juegos de mesa, insertos organizadores 3D, torres de dados y accesorios con envío rápido.',
+  title: 'NOVA BG: Tienda de Juegos de Mesa y Accesorios',
+  description: 'Descubre el catálogo oficial de NOVA BG: juegos de mesa, organizadores, torres de dados y accesorios exclusivos con envío rápido FULL.',
 }
 
-export default function RootLayout({
+export const dynamic = 'force-dynamic'
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const categories = await getNovaBgCategories()
+
   return (
     <html lang="es">
       <body className={inter.className}>
         <AuthProvider>
           <CartProvider>
-            <StoreLayout>{children}</StoreLayout>
+            <StoreLayout categories={categories}>{children}</StoreLayout>
             <Toaster position="top-right" richColors />
           </CartProvider>
         </AuthProvider>

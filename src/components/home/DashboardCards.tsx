@@ -2,214 +2,118 @@
 
 import React from 'react'
 import Link from 'next/link'
+import {
+  CreditCard,
+  ShieldCheck,
+  Box,
+  ChevronRight,
+  Zap,
+  Dice5,
+  Layers,
+} from 'lucide-react'
+import { NovaCategory } from '@/actions/categories'
 
-export function DashboardCards() {
+interface DashboardCardsProps {
+  categories?: NovaCategory[]
+}
+
+export function DashboardCards({ categories = [] }: DashboardCardsProps) {
   return (
-    <div className="relative z-30 -mt-20 sm:-mt-32 md:-mt-44 px-4 max-w-[1500px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      {/* Card 1: 4-Quadrant Card for Insertos */}
-      <div className="bg-white p-5 rounded-sm shadow-sm flex flex-col justify-between border border-gray-200">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-3 leading-snug">
-            Insertos & Organizadores de Juego
-          </h2>
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <Link href="/categoria/insertos" className="group block">
-              <div className="aspect-square bg-gray-100 rounded-xs overflow-hidden mb-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1585504198199-20277593b94f?auto=format&fit=crop&w=400&q=80"
-                  alt="Insertos Zombicide"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
-              </div>
-              <p className="text-[11px] text-gray-700 font-medium line-clamp-1 group-hover:text-[#c7511f]">
-                Zombicide 2ª Ed.
-              </p>
-            </Link>
-
-            <Link href="/categoria/insertos" className="group block">
-              <div className="aspect-square bg-gray-100 rounded-xs overflow-hidden mb-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1606167668584-78701c57f13d?auto=format&fit=crop&w=400&q=80"
-                  alt="Gloomhaven Jaws"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
-              </div>
-              <p className="text-[11px] text-gray-700 font-medium line-clamp-1 group-hover:text-[#c7511f]">
-                Gloomhaven Jaws
-              </p>
-            </Link>
-
-            <Link href="/categoria/insertos" className="group block">
-              <div className="aspect-square bg-gray-100 rounded-xs overflow-hidden mb-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=400&q=80"
-                  alt="SETI Organizador"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
-              </div>
-              <p className="text-[11px] text-gray-700 font-medium line-clamp-1 group-hover:text-[#c7511f]">
-                SETI Organizador
-              </p>
-            </Link>
-
-            <Link href="/categoria/insertos" className="group block">
-              <div className="aspect-square bg-gray-100 rounded-xs overflow-hidden mb-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=400&q=80"
-                  alt="Bandejas de Fichas"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
-              </div>
-              <p className="text-[11px] text-gray-700 font-medium line-clamp-1 group-hover:text-[#c7511f]">
-                Bandejas Token
-              </p>
-            </Link>
-          </div>
-        </div>
-        <Link
-          href="/categoria/insertos"
-          className="text-xs text-[#007185] hover:text-[#c7511f] hover:underline font-semibold"
-        >
-          Ver todos los insertos &rarr;
-        </Link>
-      </div>
-
-      {/* Card 2: 4-Quadrant Card for RPG / Rol */}
-      <div className="bg-white p-5 rounded-sm shadow-sm flex flex-col justify-between border border-gray-200">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-3 leading-snug">
-            Accesorios de Rol & Fantasía
-          </h2>
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <Link href="/categoria/rol" className="group block">
-              <div className="aspect-square bg-gray-100 rounded-xs overflow-hidden mb-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=400&q=80"
-                  alt="Torre de Dragón"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
-              </div>
-              <p className="text-[11px] text-gray-700 font-medium line-clamp-1 group-hover:text-[#c7511f]">
-                Torre de Dragón
-              </p>
-            </Link>
-
-            <Link href="/categoria/rol" className="group block">
-              <div className="aspect-square bg-gray-100 rounded-xs overflow-hidden mb-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=400&q=80"
-                  alt="Castillo Escalera"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
-              </div>
-              <p className="text-[11px] text-gray-700 font-medium line-clamp-1 group-hover:text-[#c7511f]">
-                Castillo Escalera
-              </p>
-            </Link>
-
-            <Link href="/categoria/rol" className="group block">
-              <div className="aspect-square bg-gray-100 rounded-xs overflow-hidden mb-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1606167668584-78701c57f13d?auto=format&fit=crop&w=400&q=80"
-                  alt="Bandejas de Dados"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
-              </div>
-              <p className="text-[11px] text-gray-700 font-medium line-clamp-1 group-hover:text-[#c7511f]">
-                Bandejas de Tiradas
-              </p>
-            </Link>
-
-            <Link href="/categoria/rol" className="group block">
-              <div className="aspect-square bg-gray-100 rounded-xs overflow-hidden mb-1">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="https://images.unsplash.com/photo-1585504198199-20277593b94f?auto=format&fit=crop&w=400&q=80"
-                  alt="Contadores de Vida"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-                />
-              </div>
-              <p className="text-[11px] text-gray-700 font-medium line-clamp-1 group-hover:text-[#c7511f]">
-                Contadores de Vida
-              </p>
-            </Link>
-          </div>
-        </div>
-        <Link
-          href="/categoria/rol"
-          className="text-xs text-[#007185] hover:text-[#c7511f] hover:underline font-semibold"
-        >
-          Explorar accesorios de rol &rarr;
-        </Link>
-      </div>
-
-      {/* Card 3: Single Feature Card for Board Games */}
-      <div className="bg-white p-5 rounded-sm shadow-sm flex flex-col justify-between border border-gray-200">
-        <div>
-          <h2 className="text-lg font-bold text-gray-900 mb-3 leading-snug">
-            Mansiones de la Locura & Sets
-          </h2>
-          <Link href="/categoria/juegos-de-mesa" className="group block mb-4">
-            <div className="aspect-[4/3] bg-gray-100 rounded-xs overflow-hidden mb-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=600&q=80"
-                alt="Mansiones de la Locura"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-              />
+    <div className="px-4 max-w-[1400px] mx-auto -mt-6 sm:-mt-10 relative z-20 space-y-6 mb-8">
+      {/* 1. Mercado Libre Iconic Benefits Bar Strip */}
+      <div className="bg-white rounded-xl shadow-xs border border-gray-200/80 p-4 sm:p-5">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 divide-y sm:divide-y-0 sm:divide-x divide-gray-100">
+          {/* Benefit 1 */}
+          <div className="flex items-center gap-3.5 pt-2 sm:pt-0">
+            <div className="w-10 h-10 rounded-full bg-blue-50 text-[#0066ff] flex items-center justify-center shrink-0 border border-blue-100">
+              <CreditCard className="w-5 h-5" />
             </div>
-            <p className="text-xs text-gray-700 font-medium group-hover:text-[#c7511f]">
-              Kits de 1 a 3 jugadores con tableros individuales y marcadores
-            </p>
-          </Link>
+            <div>
+              <p className="text-xs sm:text-sm font-bold text-gray-900 leading-snug">
+                Paga a tu manera
+              </p>
+              <p className="text-[11px] text-gray-500">Yape, Plin o Tarjetas</p>
+            </div>
+          </div>
+
+          {/* Benefit 2 */}
+          <div className="flex items-center gap-3.5 pt-2 sm:pt-0 sm:pl-6">
+            <div className="w-10 h-10 rounded-full bg-emerald-50 text-[#00a650] flex items-center justify-center shrink-0 border border-emerald-100">
+              <Zap className="w-5 h-5 fill-[#00a650]" />
+            </div>
+            <div>
+              <p className="text-xs sm:text-sm font-bold text-gray-900 leading-snug">
+                Envío Gratis FULL
+              </p>
+              <p className="text-[11px] text-[#00a650] font-semibold">Despacho en 24h</p>
+            </div>
+          </div>
+
+          {/* Benefit 3 */}
+          <div className="flex items-center gap-3.5 pt-2 sm:pt-0 sm:pl-6">
+            <div className="w-10 h-10 rounded-full bg-blue-50 text-[#0066ff] flex items-center justify-center shrink-0 border border-blue-100">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs sm:text-sm font-bold text-gray-900 leading-snug">
+                Compra Protegida
+              </p>
+              <p className="text-[11px] text-gray-500">Garantía oficial NOVA BG</p>
+            </div>
+          </div>
+
+          {/* Benefit 4 */}
+          <div className="flex items-center gap-3.5 pt-2 sm:pt-0 sm:pl-6">
+            <div className="w-10 h-10 rounded-full bg-cyan-50 text-[#0084ff] flex items-center justify-center shrink-0 border border-cyan-100">
+              <Dice5 className="w-5 h-5" />
+            </div>
+            <div>
+              <p className="text-xs sm:text-sm font-bold text-gray-900 leading-snug">
+                Juegos Oficiales
+              </p>
+              <p className="text-[11px] text-gray-500">Catálogo certificado NOVA BG</p>
+            </div>
+          </div>
         </div>
-        <Link
-          href="/categoria/juegos-de-mesa"
-          className="text-xs text-[#007185] hover:text-[#c7511f] hover:underline font-semibold"
-        >
-          Ver juegos y sets &rarr;
-        </Link>
       </div>
 
-      {/* Card 4: Deals & Promotions */}
-      <div className="bg-white p-5 rounded-sm shadow-sm flex flex-col justify-between border border-gray-200">
-        <div>
-          <div className="flex items-center gap-2 mb-2">
-            <span className="bg-[#cc0c39] text-white text-[10px] font-bold px-2 py-0.5 rounded-xs uppercase">
-              Oferta destacada
-            </span>
+      {/* 2. Mercado Libre Category Quick-Access (Rendered Dynamically from NOVA BG) */}
+      {categories.length > 0 && (
+        <div className="bg-white rounded-xl shadow-xs border border-gray-200/80 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-sm font-bold text-gray-900 uppercase tracking-wider text-xs">
+              Categorías de NOVA BG
+            </h2>
+            <Link
+              href="/categoria/todos"
+              className="text-xs text-[#0066ff] hover:underline font-semibold flex items-center gap-1"
+            >
+              <span>Ver todas</span>
+              <ChevronRight className="w-3.5 h-3.5" />
+            </Link>
           </div>
-          <h2 className="text-lg font-bold text-gray-900 mb-3 leading-snug">
-            Descuentos de Temporada
-          </h2>
-          <Link href="/categoria/ofertas" className="group block mb-4">
-            <div className="aspect-[4/3] bg-gray-100 rounded-xs overflow-hidden mb-2">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="https://images.unsplash.com/photo-1606167668584-78701c57f13d?auto=format&fit=crop&w=600&q=80"
-                alt="Ofertas en Juegos"
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform"
-              />
-            </div>
-            <p className="text-xs text-gray-700 font-medium group-hover:text-[#c7511f]">
-              Hasta 20% de descuento en insertos y accesorios seleccionados
-            </p>
-          </Link>
+
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            {categories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/categoria/${cat.slug}`}
+                className="group p-3 rounded-lg border border-gray-100 hover:border-[#0066ff]/40 bg-gray-50/50 hover:bg-blue-50/30 transition-all flex items-center gap-3"
+              >
+                <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#0066ff] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
+                  <Layers className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-xs font-bold text-gray-900 group-hover:text-[#0066ff] leading-tight">
+                    {cat.nombre}
+                  </p>
+                  <p className="text-[10px] text-gray-500">Ver artículos</p>
+                </div>
+              </Link>
+            ))}
+          </div>
         </div>
-        <Link
-          href="/categoria/ofertas"
-          className="text-xs text-[#007185] hover:text-[#c7511f] hover:underline font-semibold"
-        >
-          Ver todas las ofertas &rarr;
-        </Link>
-      </div>
+      )}
     </div>
   )
 }

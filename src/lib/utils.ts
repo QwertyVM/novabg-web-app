@@ -5,6 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function slugify(text: string): string {
+  return text
+    .toString()
+    .toLowerCase()
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[^a-z0-9 -]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/-+/g, '-')
+}
+
 export function formatPriceParts(price: number | string) {
   const num = typeof price === 'string' ? parseFloat(price) : price
   if (isNaN(num)) return { symbol: 'S/', integer: '0', decimal: '00', full: 'S/ 0.00' }
@@ -19,7 +31,7 @@ export function formatPriceParts(price: number | string) {
   }
 }
 
-// Map product models to high quality board game photography
+// Map board game product models to high quality photography
 export function getProductImage(productName: string, category: string = ''): string {
   const lower = (productName + ' ' + category).toLowerCase()
   
@@ -38,14 +50,14 @@ export function getProductImage(productName: string, category: string = ''): str
   if (lower.includes('seti') || lower.includes('organizador') || lower.includes('inserto')) {
     return 'https://images.unsplash.com/photo-1585504198199-20277593b94f?auto=format&fit=crop&w=800&q=80'
   }
+  if (lower.includes('munchkin') || lower.includes('contador')) {
+    return 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=800&q=80'
+  }
   if (lower.includes('catan') || lower.includes('carcassonne')) {
     return 'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=800&q=80'
   }
-  if (lower.includes('vela') || lower.includes('decoracion') || lower.includes('miniatura')) {
-    return 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=800&q=80'
-  }
 
-  // Generic premium board game accessory image
+  // Generic premium board game image
   return 'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=800&q=80'
 }
 

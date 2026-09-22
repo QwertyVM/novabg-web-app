@@ -2,15 +2,17 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { X, User, ChevronRight, Dice5, Box, Shield, Sparkles, Phone, HelpCircle } from 'lucide-react'
+import { X, User, ChevronRight, HelpCircle, Layers, LogOut, Package, ShoppingCart, Sparkles } from 'lucide-react'
 import { useSession, signIn, signOut } from 'next-auth/react'
+import { NovaCategory } from '@/actions/categories'
 
 interface SideDrawerProps {
   isOpen: boolean
   onClose: () => void
+  categories?: NovaCategory[]
 }
 
-export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
+export function SideDrawer({ isOpen, onClose, categories = [] }: SideDrawerProps) {
   const { data: session } = useSession()
 
   if (!isOpen) return null
@@ -19,168 +21,132 @@ export function SideDrawer({ isOpen, onClose }: SideDrawerProps) {
     <div className="fixed inset-0 z-50 flex">
       {/* Backdrop */}
       <div
-        className="fixed inset-0 bg-black/60 transition-opacity backdrop-blur-xs"
+        className="fixed inset-0 bg-black/50 transition-opacity backdrop-blur-xs"
         onClick={onClose}
       />
 
       {/* Drawer */}
       <div className="relative w-80 max-w-[85vw] bg-white h-full shadow-2xl flex flex-col z-10 animate-in slide-in-from-left duration-200">
         {/* Header */}
-        <div className="bg-[#232f3e] text-white p-4 flex items-center justify-between">
+        <div className="bg-[#0066ff] text-white p-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-full bg-white/20 flex items-center justify-center border border-white/30">
               <User className="w-5 h-5 text-white" />
             </div>
             <div>
-              <p className="text-sm font-semibold">
-                Hola, {session?.user?.name ? session.user.name.split(' ')[0] : 'Identifícate'}
+              <p className="text-sm font-bold">
+                {session?.user?.name ? `Hola, ${session.user.name.split(' ')[0]}` : 'Bienvenido'}
               </p>
-              {!session && (
+              {!session ? (
                 <button
                   onClick={() => {
                     onClose()
                     signIn('google')
                   }}
-                  className="text-xs text-amber-300 hover:underline"
+                  className="text-xs text-[#00d2ff] hover:underline font-medium cursor-pointer"
                 >
-                  Conectar con Google
+                  Ingresa con Google
                 </button>
+              ) : (
+                <p className="text-[11px] text-white/80 truncate max-w-[150px]">
+                  {session.user?.email}
+                </p>
               )}
             </div>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-300 hover:text-white p-1 rounded-sm hover:bg-white/10"
+            className="text-white/80 hover:text-white p-1 rounded-lg hover:bg-white/15 cursor-pointer"
           >
             <X className="w-6 h-6" />
           </button>
         </div>
 
         {/* Content */}
-        <div className="flex-1 overflow-y-auto py-2 text-sm text-[#0f1111]">
-          <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
-            Tendencias y Destacados
+        <div className="flex-1 overflow-y-auto py-3 text-sm text-[#191919]">
+          <div className="px-5 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+            Categorías NOVA BG
           </div>
-          <Link
-            href="/categoria/juegos-de-mesa"
-            onClick={onClose}
-            className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-100"
-          >
-            <span className="flex items-center gap-2.5">
-              <Dice5 className="w-4 h-4 text-amber-600" />
-              Los Más Vendidos
-            </span>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </Link>
-          <Link
-            href="/categoria/insertos"
-            onClick={onClose}
-            className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-100"
-          >
-            <span className="flex items-center gap-2.5">
-              <Box className="w-4 h-4 text-amber-600" />
-              Insertos & Organizadores
-            </span>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </Link>
-          <Link
-            href="/categoria/rol"
-            onClick={onClose}
-            className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-100"
-          >
-            <span className="flex items-center gap-2.5">
-              <Shield className="w-4 h-4 text-amber-600" />
-              Torres de Dados & Rol
-            </span>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </Link>
+
+          {categories.length === 0 ? (
+            <div className="px-5 py-3 text-xs text-gray-400">
+              Sin categorías registradas en NOVA BG
+            </div>
+          ) : (
+            categories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/categoria/${cat.slug}`}
+                onClick={onClose}
+                className="flex items-center justify-between px-5 py-3 hover:bg-blue-50/70 hover:text-[#0066ff] transition-colors"
+              >
+                <span className="flex items-center gap-3">
+                  <Layers className="w-4 h-4 text-[#0066ff]" />
+                  <span className="font-medium">{cat.nombre}</span>
+                </span>
+                <ChevronRight className="w-4 h-4 text-gray-300" />
+              </Link>
+            ))
+          )}
+
           <Link
             href="/categoria/ofertas"
             onClick={onClose}
-            className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-100"
+            className="flex items-center justify-between px-5 py-3 hover:bg-blue-50/70 hover:text-[#0066ff] transition-colors"
           >
-            <span className="flex items-center gap-2.5">
-              <Sparkles className="w-4 h-4 text-amber-600" />
-              Ofertas Relámpago
+            <span className="flex items-center gap-3">
+              <Sparkles className="w-4 h-4 text-[#0066ff]" />
+              <span className="font-medium">Ofertas Especiales</span>
             </span>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <ChevronRight className="w-4 h-4 text-gray-300" />
           </Link>
 
-          <hr className="my-2 border-gray-200" />
+          <hr className="my-3 border-gray-100" />
 
-          <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
-            Departamentos de Juegos
-          </div>
-          <Link
-            href="/categoria/juegos-de-mesa"
-            onClick={onClose}
-            className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-100"
-          >
-            <span>Juegos de Tablero & Estrategia</span>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </Link>
-          <Link
-            href="/categoria/insertos"
-            onClick={onClose}
-            className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-100"
-          >
-            <span>Insertos 3D para Cajas de Juegos</span>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </Link>
-          <Link
-            href="/categoria/rol"
-            onClick={onClose}
-            className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-100"
-          >
-            <span>Accesorios de Rol (D&D, Torres, Dados)</span>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
-          </Link>
-
-          <hr className="my-2 border-gray-200" />
-
-          <div className="px-4 py-2 text-xs font-bold text-gray-500 uppercase tracking-wider">
-            Ayuda y Configuración
+          <div className="px-5 py-2 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+            Mi Cuenta
           </div>
           <Link
             href="/pedidos"
             onClick={onClose}
-            className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-100"
+            className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
           >
-            <span>Mis Pedidos</span>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <span className="font-medium">Mis Compras</span>
+            <ChevronRight className="w-4 h-4 text-gray-300" />
+          </Link>
+          <Link
+            href="/carrito"
+            onClick={onClose}
+            className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
+          >
+            <span className="font-medium">Mi Carrito</span>
+            <ChevronRight className="w-4 h-4 text-gray-300" />
           </Link>
           <Link
             href="/servicio-al-cliente"
             onClick={onClose}
-            className="flex items-center justify-between px-4 py-2.5 hover:bg-gray-100"
+            className="flex items-center justify-between px-5 py-3 hover:bg-gray-50 transition-colors"
           >
             <span className="flex items-center gap-2">
-              <HelpCircle className="w-4 h-4 text-gray-500" />
-              Servicio al Cliente
+              <HelpCircle className="w-4 h-4 text-gray-400" />
+              <span>Ayuda y Contacto</span>
             </span>
-            <ChevronRight className="w-4 h-4 text-gray-400" />
+            <ChevronRight className="w-4 h-4 text-gray-300" />
           </Link>
 
-          {session ? (
-            <button
-              onClick={() => {
-                onClose()
-                signOut()
-              }}
-              className="w-full text-left px-4 py-2.5 text-red-600 font-medium hover:bg-gray-100"
-            >
-              Cerrar Sesión
-            </button>
-          ) : (
-            <button
-              onClick={() => {
-                onClose()
-                signIn('google')
-              }}
-              className="w-full text-left px-4 py-2.5 text-blue-600 font-medium hover:bg-gray-100"
-            >
-              Identificarse con Google
-            </button>
+          {session && (
+            <div className="pt-3 px-5 border-t border-gray-100 mt-3">
+              <button
+                onClick={() => {
+                  onClose()
+                  signOut()
+                }}
+                className="flex items-center gap-2 text-red-600 font-medium py-2 hover:underline cursor-pointer"
+              >
+                <LogOut className="w-4 h-4" />
+                <span>Cerrar sesión</span>
+              </button>
+            </div>
           )}
         </div>
       </div>

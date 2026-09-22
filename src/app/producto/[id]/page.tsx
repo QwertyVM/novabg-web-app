@@ -1,13 +1,14 @@
 import React from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Star, Check, ShieldCheck, Truck, RotateCcw, Share2 } from 'lucide-react'
+import { Star, Zap, MessageSquare } from 'lucide-react'
 import prisma from '@/lib/prisma'
 import { ProductGallery } from '@/components/product/ProductGallery'
 import { BuyBox } from '@/components/product/BuyBox'
 import { ProductRow } from '@/components/home/ProductRow'
 import { ProductItem } from '@/components/product/ProductCard'
 import { formatPriceParts, getProductImage, getEstimatedDeliveryDate } from '@/lib/utils'
+import { getNovaBgProductsWhere } from '@/lib/catalog'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,18 +19,22 @@ interface ProductPageProps {
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { id } = await params
 
-  const product = await prisma.producto.findUnique({
-    where: { id },
+  // Find product strictly belonging to NOVA BG
+  const product = await prisma.producto.findFirst({
+    where: {
+      id,
+      ...getNovaBgProductsWhere(),
+    },
   })
 
   if (!product) {
     notFound()
   }
 
-  // Related products
+  // Related products strictly from NOVA BG
   const relatedDb = await prisma.producto.findMany({
     where: {
-      activo: true,
+      ...getNovaBgProductsWhere(),
       id: { not: id },
     },
     take: 6,
@@ -38,6 +43,8 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const imageSrc = getProductImage(product.nombreModelo, product.lineaCategoria)
   const priceParts = formatPriceParts(Number(product.precioMercado))
   const deliveryDate = getEstimatedDeliveryDate()
+  const originalPrice = (Number(product.precioMercado) * 1.2).toFixed(2)
+  const installment12x = (Number(product.precioMercado) / 12).toFixed(2)
 
   const formattedRelated: ProductItem[] = relatedDb.map((p, idx) => ({
     id: p.id,
@@ -50,177 +57,189 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   }))
 
   return (
-    <div className="py-4 px-4 max-w-[1500px] mx-auto bg-white min-h-screen my-4 rounded-sm border border-gray-200 shadow-xs">
-      {/* Breadcrumbs */}
-      <nav className="text-xs text-gray-500 mb-4 flex items-center gap-1.5 flex-wrap">
-        <Link href="/" className="hover:text-[#c7511f] hover:underline">
+    <div className="py-6 px-4 max-w-[1400px] mx-auto">
+      {/* Breadcrumbs (Mercado Libre Style) */}
+      <nav className="text-xs text-gray-500 mb-4 flex items-center gap-2 flex-wrap">
+        <Link href="/" className="hover:text-[#0066ff] transition-colors">
           Inicio
         </Link>
-        <span>&rsaquo;</span>
-        <Link href="/categoria/juegos-de-mesa" className="hover:text-[#c7511f] hover:underline">
+        <span className="text-gray-300">/</span>
+        <Link href="/categoria/juegos-de-mesa" className="hover:text-[#0066ff] transition-colors">
           {product.lineaCategoria || 'Juegos de Mesa'}
         </Link>
-        <span>&rsaquo;</span>
+        <span className="text-gray-300">/</span>
         <span className="text-gray-800 font-medium truncate max-w-xs">{product.nombreModelo}</span>
       </nav>
 
-      {/* Main 3-Column Product View */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
-        {/* Left Column: Image Gallery (5 cols on lg) */}
-        <div className="lg:col-span-5">
-          <ProductGallery mainImage={imageSrc} title={product.nombreModelo} />
-        </div>
+      {/* Main Product Container */}
+      <div className="bg-white rounded-2xl border border-gray-200/90 p-5 sm:p-8 shadow-xs mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          {/* Left Column: Image Gallery (5 cols) */}
+          <div className="lg:col-span-5">
+            <ProductGallery mainImage={imageSrc} title={product.nombreModelo} />
+          </div>
 
-        {/* Center Column: Product Information & Specs (4 cols on lg) */}
-        <div className="lg:col-span-4 space-y-4">
-          <div>
-            <span className="text-xs text-[#007185] hover:text-[#c7511f] hover:underline font-semibold block mb-1">
-              Visita la tienda de Juegos de Mesa & 3D Studio
-            </span>
+          {/* Center Column: Product Details (4 cols) */}
+          <div className="lg:col-span-4 space-y-4">
+            {/* Condition & Sales */}
+            <div className="text-xs text-gray-400 font-medium">
+              <span>Nuevo</span> • <span>+500 vendidos</span>
+            </div>
+
+            {/* Title */}
             <h1 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
               {product.nombreModelo}
             </h1>
+
+            {/* Ratings */}
+            <div className="flex items-center gap-2 text-xs">
+              <div className="flex items-center text-[#ff9900]">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star key={i} className="w-4 h-4 fill-current" />
+                ))}
+              </div>
+              <span className="font-bold text-gray-800">4.9</span>
+              <span className="text-gray-400">(86 opiniones)</span>
+            </div>
+
+            {/* Price Section */}
+            <div className="py-3 border-y border-gray-100 space-y-1">
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-400 line-through">
+                  S/ {originalPrice}
+                </span>
+                <span className="text-xs font-bold text-[#00a650] bg-emerald-50 px-2 py-0.5 rounded">
+                  20% OFF
+                </span>
+              </div>
+
+              <div className="flex items-baseline gap-1">
+                <span className="text-base font-bold text-gray-900">S/</span>
+                <span className="text-4xl font-black text-gray-900 tracking-tight">
+                  {priceParts.integer}
+                </span>
+                <span className="text-sm font-bold text-gray-900 relative top-[-10px]">
+                  {priceParts.decimal}
+                </span>
+              </div>
+
+              <p className="text-xs text-gray-600">
+                en <strong className="text-[#00a650]">12x S/ {installment12x} sin interés</strong>
+              </p>
+            </div>
+
+            {/* Mercado Libre FULL Delivery Callout */}
+            <div className="flex items-start gap-2.5 p-3 rounded-lg bg-emerald-50/70 border border-emerald-100 text-xs">
+              <Zap className="w-5 h-5 fill-[#00a650] text-[#00a650] shrink-0 mt-0.5" />
+              <div>
+                <p className="font-bold text-[#00a650]">
+                  Envío gratis a todo el país con NOVA FULL
+                </p>
+                <p className="text-gray-600 text-[11px]">
+                  Llega estimado el <strong>{deliveryDate}</strong>
+                </p>
+              </div>
+            </div>
+
+            {/* Highlights bullet points */}
+            <div className="space-y-2 pt-2">
+              <h3 className="font-bold text-sm text-gray-900">Lo que tienes que saber de este producto</h3>
+              <ul className="text-xs text-gray-600 space-y-2 list-disc pl-4">
+                <li>
+                  <strong className="text-gray-800">Compatibilidad:</strong> Diseñado a medida para {product.nombreModelo}.
+                </li>
+                <li>
+                  <strong className="text-gray-800">Material de calidad:</strong> Componentes de alta densidad y durabilidad para proteger tus cartas y fichas.
+                </li>
+                <li>
+                  <strong className="text-gray-800">Setup optimizado:</strong> Acomoda las piezas rápidamente sobre la mesa para empezar a jugar de inmediato.
+                </li>
+                <li>
+                  <strong className="text-gray-800">Acabado suave:</strong> Cuida tus cartas y las cajas de tus juegos de mesa.
+                </li>
+              </ul>
+            </div>
+
+            {/* Technical Specifications (Strictly NO horizontal scroll per rules/tabla.md) */}
+            <div className="pt-4 border-t border-gray-100">
+              <h3 className="font-bold text-sm text-gray-900 mb-3">Características principales</h3>
+              <div className="nova-table-container">
+                <table className="nova-table text-xs text-left border border-gray-200 rounded-lg overflow-hidden">
+                  <tbody>
+                    <tr className="border-b border-gray-200 bg-gray-50/70">
+                      <td className="p-2.5 font-bold text-gray-700 w-1/3">Categoría</td>
+                      <td className="p-2.5 text-gray-900 w-2/3">{product.lineaCategoria}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="p-2.5 font-bold text-gray-700">Modelo</td>
+                      <td className="p-2.5 text-gray-900">{product.nombreModelo}</td>
+                    </tr>
+                    <tr className="border-b border-gray-200 bg-gray-50/70">
+                      <td className="p-2.5 font-bold text-gray-700">Peso aproximado</td>
+                      <td className="p-2.5 text-gray-900">
+                        {product.pesoGramos ? `${Number(product.pesoGramos)} g` : 'Optimizado'}
+                      </td>
+                    </tr>
+                    <tr className="border-b border-gray-200">
+                      <td className="p-2.5 font-bold text-gray-700">Disponibilidad</td>
+                      <td className="p-2.5 text-emerald-700 font-bold">En Stock Inmediato</td>
+                    </tr>
+                    <tr className="bg-gray-50/70">
+                      <td className="p-2.5 font-bold text-gray-700">Garantía</td>
+                      <td className="p-2.5 text-gray-900 font-semibold">NOVA BG (Tienda Oficial)</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
           </div>
 
-          {/* Ratings & Amazon's Choice */}
-          <div className="flex items-center gap-2 flex-wrap text-xs pb-3 border-b border-gray-200">
-            <div className="flex items-center text-[#de7921]">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Star key={i} className="w-4 h-4 fill-current text-[#de7921]" />
-              ))}
-            </div>
-            <span className="text-[#007185] hover:text-[#c7511f] font-semibold">4.9 de 5</span>
-            <span className="text-gray-400">|</span>
-            <span className="text-[#007185] hover:text-[#c7511f] hover:underline">
-              86 calificaciones
-            </span>
-            <span className="ml-auto bg-[#0f1111] text-white text-[11px] font-bold px-2 py-0.5 rounded-sm">
-              <span className="text-[#febd69]">Opción</span> Amazon
-            </span>
-          </div>
-
-          {/* Price Box */}
-          <div className="py-2 border-b border-gray-200 space-y-1">
-            <div className="flex items-baseline gap-1">
-              <span className="text-sm font-semibold text-gray-800 relative top-[-8px]">
-                {priceParts.symbol}
-              </span>
-              <span className="text-3xl font-extrabold text-gray-900 leading-none">
-                {priceParts.integer}
-              </span>
-              <span className="text-sm font-semibold text-gray-800 relative top-[-8px]">
-                {priceParts.decimal}
-              </span>
-            </div>
-            <div className="flex items-center gap-2 text-xs text-gray-600">
-              <span className="bg-[#cc0c39] text-white text-[10px] font-bold px-1.5 py-0.5 rounded-xs">
-                Precio Especial
-              </span>
-              <span>Incluye garantía y soporte oficial</span>
-            </div>
-          </div>
-
-          {/* Feature Highlights Grid */}
-          <div className="grid grid-cols-3 gap-2 py-2 border-b border-gray-200 text-center text-[11px] text-gray-700">
-            <div className="p-2 bg-gray-50 rounded flex flex-col items-center gap-1">
-              <Truck className="w-5 h-5 text-amber-600" />
-              <span className="font-semibold">Envío Rápido</span>
-              <span className="text-gray-500 text-[10px]">Todo el Perú</span>
-            </div>
-            <div className="p-2 bg-gray-50 rounded flex flex-col items-center gap-1">
-              <ShieldCheck className="w-5 h-5 text-amber-600" />
-              <span className="font-semibold">100% Precisión</span>
-              <span className="text-gray-500 text-[10px]">Garantía</span>
-            </div>
-            <div className="p-2 bg-gray-50 rounded flex flex-col items-center gap-1">
-              <RotateCcw className="w-5 h-5 text-amber-600" />
-              <span className="font-semibold">Devoluciones</span>
-              <span className="text-gray-500 text-[10px]">30 días</span>
-            </div>
-          </div>
-
-          {/* About this item (Bullets) */}
-          <div className="space-y-2 pt-2">
-            <h3 className="font-bold text-sm text-gray-900">Sobre este artículo</h3>
-            <ul className="text-xs text-gray-700 space-y-1.5 list-disc pl-4">
-              <li>
-                <strong className="text-gray-900">Compatibilidad y Diseño:</strong> Diseñado
-                especialmente para {product.nombreModelo}, optimizando el espacio y facilitando la
-                organización de componentes y cartas.
-              </li>
-              <li>
-                <strong className="text-gray-900">Material de Fabricación:</strong> Fabricado en
-                polímero termoplástico resistente, duradero y de alta densidad para máxima
-                resistencia.
-              </li>
-              <li>
-                <strong className="text-gray-900">Setup Inmediato:</strong> Reduce drásticamente el
-                tiempo de preparación de la mesa para empezar a jugar de inmediato.
-              </li>
-              <li>
-                <strong className="text-gray-900">Acabado Premium:</strong> Textura lisa de alta
-                calidad y esquinas reforzadas para proteger las cajas de tus juegos.
-              </li>
-            </ul>
-          </div>
-
-          {/* Specifications Table (Strictly NO horizontal scroll per rules/tabla.md) */}
-          <div className="pt-4 border-t border-gray-200">
-            <h3 className="font-bold text-sm text-gray-900 mb-2">Especificaciones del Producto</h3>
-            <div className="amazon-table-container">
-              <table className="amazon-table text-xs text-left border border-gray-200">
-                <tbody>
-                  <tr className="border-b border-gray-200 bg-gray-50">
-                    <td className="p-2.5 font-bold text-gray-700 w-1/3">Categoría</td>
-                    <td className="p-2.5 text-gray-900 w-2/3">{product.lineaCategoria}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="p-2.5 font-bold text-gray-700">Modelo</td>
-                    <td className="p-2.5 text-gray-900">{product.nombreModelo}</td>
-                  </tr>
-                  <tr className="border-b border-gray-200 bg-gray-50">
-                    <td className="p-2.5 font-bold text-gray-700">Peso Estimado</td>
-                    <td className="p-2.5 text-gray-900">
-                      {product.pesoGramos ? `${Number(product.pesoGramos)} gramos` : 'N/A'}
-                    </td>
-                  </tr>
-                  <tr className="border-b border-gray-200">
-                    <td className="p-2.5 font-bold text-gray-700">Disponibilidad</td>
-                    <td className="p-2.5 text-emerald-700 font-semibold">En Stock</td>
-                  </tr>
-                  <tr className="bg-gray-50">
-                    <td className="p-2.5 font-bold text-gray-700">Garantía</td>
-                    <td className="p-2.5 text-gray-900">30 días de satisfacción total</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
+          {/* Right Column: Buy Box (3 cols) */}
+          <div className="lg:col-span-3">
+            <BuyBox
+              product={{
+                id: product.id,
+                nombreModelo: product.nombreModelo,
+                precioMercado: Number(product.precioMercado),
+                lineaCategoria: product.lineaCategoria,
+                imagen: imageSrc,
+              }}
+            />
           </div>
         </div>
 
-        {/* Right Column: Amazon Buy Box (3 cols on lg) */}
-        <div className="lg:col-span-3">
-          <BuyBox
-            product={{
-              id: product.id,
-              nombreModelo: product.nombreModelo,
-              precioMercado: Number(product.precioMercado),
-              lineaCategoria: product.lineaCategoria,
-              imagen: imageSrc,
-            }}
-          />
+        {/* Questions and Answers Section */}
+        <div className="mt-12 pt-8 border-t border-gray-100">
+          <h3 className="font-bold text-base text-gray-900 mb-4 flex items-center gap-2">
+            <MessageSquare className="w-5 h-5 text-[#0066ff]" />
+            <span>Preguntas y respuestas frecuentes</span>
+          </h3>
+
+          <div className="space-y-4 text-xs">
+            <div className="p-4 bg-gray-50/80 rounded-xl border border-gray-100 space-y-1">
+              <p className="font-bold text-gray-900">¿Entran las cartas con fundas (sleeves/micas)?</p>
+              <p className="text-gray-600">
+                ¡Hola! Sí, consideramos el grosor extra de cartas enfundadas (Premium y estándar).
+              </p>
+            </div>
+
+            <div className="p-4 bg-gray-50/80 rounded-xl border border-gray-100 space-y-1">
+              <p className="font-bold text-gray-900">¿Hacen envíos a provincias de todo el Perú?</p>
+              <p className="text-gray-600">
+                ¡Correcto! Despachamos a nivel nacional mediante Olva Courier y Shalom con código de seguimiento en tiempo real.
+              </p>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* Related Products Shelf */}
+      {/* Related Products Carousel */}
       {formattedRelated.length > 0 && (
-        <div className="mt-12 pt-6 border-t border-gray-200">
-          <ProductRow
-            title="Clientes que vieron este producto también compraron"
-            subtitle="Basado en recomendaciones de la comunidad"
-            products={formattedRelated}
-          />
-        </div>
+        <ProductRow
+          title="Quienes vieron este producto también compraron"
+          subtitle="Accesorios y complementos recomendados para tu colección"
+          products={formattedRelated}
+        />
       )}
     </div>
   )

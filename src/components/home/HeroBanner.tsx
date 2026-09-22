@@ -2,41 +2,44 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, Zap, Sparkles, ArrowRight } from 'lucide-react'
 
 const BANNERS = [
   {
     id: 1,
-    title: 'Insertos & Organizadores de Juegos',
-    subtitle: 'Mantén tus cajas impecables con piezas de alta precisión',
+    title: 'Organizadores de Juegos de Mesa',
+    subtitle: 'Mantén tus cajas impecables, tus cartas protegidas y agiliza tus partidas.',
     tag: 'ORGANIZACIÓN PREMIUM',
-    cta: 'Ver insertos disponibles',
+    highlight: 'HASTA 30% OFF',
+    cta: 'Ver Organizadores',
     link: '/categoria/insertos',
-    bgGradient: 'from-amber-950 via-slate-900 to-stone-900',
-    accentColor: 'text-amber-400',
-    image: 'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=1400&q=80',
+    bgGradient: 'from-[#0047b3] via-[#0066ff] to-[#0f172a]',
+    badgeBg: 'bg-[#00d2ff] text-[#0f172a]',
+    image: 'https://images.unsplash.com/photo-1610890716171-6b1bb98ffd09?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 2,
-    title: 'Torres de Dados & Accesorios de Rol',
-    subtitle: 'Lleva tus sesiones de D&D y rol al siguiente nivel',
-    tag: 'ROL & FANTASÍA',
-    cta: 'Explorar colección de rol',
+    title: 'Torres de Dados & Rol Épico',
+    subtitle: 'Diseños temáticos para tus campañas de D&D, dados poliédricos y accesorios.',
+    tag: 'FULL 24H DELIVERY',
+    highlight: 'ENVÍO GRATIS FULL',
+    cta: 'Explorar Colección',
     link: '/categoria/rol',
-    bgGradient: 'from-indigo-950 via-slate-900 to-purple-950',
-    accentColor: 'text-indigo-400',
-    image: 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=1400&q=80',
+    bgGradient: 'from-[#0f172a] via-[#1e293b] to-[#0052cc]',
+    badgeBg: 'bg-emerald-400 text-[#0f172a]',
+    image: 'https://images.unsplash.com/photo-1563089145-599997674d42?auto=format&fit=crop&w=1200&q=80',
   },
   {
     id: 3,
-    title: 'Kits y Tableros para Mansiones de la Locura',
-    subtitle: 'Sets para 1 a 4 jugadores con marcadores de alta calidad',
-    tag: 'DESTACADO DE LA SEMANA',
-    cta: 'Comprar sets de juego',
+    title: 'Mansiones de la Locura & Sets',
+    subtitle: 'Tableros y organizadores de mesa para 1 a 4 jugadores listos para jugar.',
+    tag: 'TENDENCIA EN JUEGOS',
+    highlight: 'EDICIÓN ESPECIAL',
+    cta: 'Comprar Sets',
     link: '/categoria/juegos-de-mesa',
-    bgGradient: 'from-stone-950 via-red-950 to-neutral-900',
-    accentColor: 'text-orange-400',
-    image: 'https://images.unsplash.com/photo-1606167668584-78701c57f13d?auto=format&fit=crop&w=1400&q=80',
+    bgGradient: 'from-[#1e1b4b] via-[#312e81] to-[#0066ff]',
+    badgeBg: 'bg-amber-300 text-gray-900',
+    image: 'https://images.unsplash.com/photo-1606167668584-78701c57f13d?auto=format&fit=crop&w=1200&q=80',
   },
 ]
 
@@ -46,7 +49,7 @@ export function HeroBanner() {
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % BANNERS.length)
-    }, 6000)
+    }, 6500)
     return () => clearInterval(timer)
   }, [])
 
@@ -61,7 +64,7 @@ export function HeroBanner() {
   const banner = BANNERS[currentSlide]
 
   return (
-    <div className="relative w-full h-[280px] sm:h-[360px] md:h-[420px] lg:h-[480px] overflow-hidden select-none">
+    <div className="relative w-full h-[260px] sm:h-[320px] md:h-[380px] lg:h-[420px] overflow-hidden select-none bg-gray-900 rounded-none md:rounded-b-2xl shadow-xs">
       {/* Background Slides */}
       {BANNERS.map((item, index) => (
         <div
@@ -75,27 +78,36 @@ export function HeroBanner() {
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: `url(${item.image})` }}
           >
-            <div className={`absolute inset-0 bg-gradient-to-r ${item.bgGradient} opacity-90`} />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#e3e6e6] via-transparent to-black/30" />
+            <div className={`absolute inset-0 bg-gradient-to-r ${item.bgGradient} opacity-92`} />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-transparent" />
           </div>
 
           {/* Banner Content */}
-          <div className="relative max-w-[1500px] mx-auto h-full flex flex-col justify-center px-6 md:px-12 text-white pb-20 md:pb-32">
-            <span className={`text-xs md:text-sm font-extrabold tracking-widest uppercase ${item.accentColor} mb-1 drop-shadow`}>
-              {item.tag}
-            </span>
-            <h1 className="text-2xl sm:text-3xl md:text-5xl font-black max-w-2xl leading-tight mb-2 drop-shadow-md">
+          <div className="relative max-w-[1400px] mx-auto h-full flex flex-col justify-center px-6 sm:px-12 md:px-16 text-white pb-6">
+            <div className="flex items-center gap-2 mb-2">
+              <span className={`text-[10px] sm:text-xs font-black px-2.5 py-1 rounded-full uppercase tracking-wider ${item.badgeBg}`}>
+                {item.tag}
+              </span>
+              <span className="text-[11px] sm:text-xs text-white/90 font-bold tracking-wide uppercase">
+                {item.highlight}
+              </span>
+            </div>
+
+            <h1 className="text-2xl sm:text-4xl md:text-5xl font-black max-w-2xl leading-tight mb-2 tracking-tight">
               {item.title}
             </h1>
-            <p className="text-xs sm:text-sm md:text-base text-gray-200 max-w-xl mb-5 drop-shadow">
+
+            <p className="text-xs sm:text-sm md:text-base text-gray-200 max-w-lg mb-6 leading-relaxed hidden sm:block">
               {item.subtitle}
             </p>
+
             <div>
               <Link
                 href={item.link}
-                className="btn-amazon-primary text-xs md:text-sm font-bold px-6 py-2.5 shadow-lg inline-flex items-center gap-2"
+                className="bg-white text-[#0066ff] hover:bg-gray-100 text-xs sm:text-sm font-bold px-6 py-3 rounded-lg shadow-md inline-flex items-center gap-2 transition-all hover:scale-105 active:scale-95"
               >
-                {item.cta} &rarr;
+                <span>{item.cta}</span>
+                <ArrowRight className="w-4 h-4 text-[#0066ff]" />
               </Link>
             </div>
           </div>
@@ -105,21 +117,32 @@ export function HeroBanner() {
       {/* Navigation Arrows */}
       <button
         onClick={prevSlide}
-        className="absolute left-2 top-1/3 -translate-y-1/2 z-20 w-10 h-20 flex items-center justify-center bg-black/20 hover:bg-black/50 text-white border border-transparent hover:border-white/40 rounded transition-all cursor-pointer"
+        className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-black/25 hover:bg-white hover:text-[#0066ff] text-white rounded-full transition-all cursor-pointer backdrop-blur-xs"
         aria-label="Anterior"
       >
-        <ChevronLeft className="w-8 h-8" />
+        <ChevronLeft className="w-6 h-6" />
       </button>
       <button
         onClick={nextSlide}
-        className="absolute right-2 top-1/3 -translate-y-1/2 z-20 w-10 h-20 flex items-center justify-center bg-black/20 hover:bg-black/50 text-white border border-transparent hover:border-white/40 rounded transition-all cursor-pointer"
+        className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-9 h-9 sm:w-11 sm:h-11 flex items-center justify-center bg-black/25 hover:bg-white hover:text-[#0066ff] text-white rounded-full transition-all cursor-pointer backdrop-blur-xs"
         aria-label="Siguiente"
       >
-        <ChevronRight className="w-8 h-8" />
+        <ChevronRight className="w-6 h-6" />
       </button>
 
-      {/* Bottom Gradient Overlay for Seamless Card Intersect */}
-      <div className="absolute bottom-0 left-0 right-0 h-28 bg-gradient-to-t from-[#e3e6e6] to-transparent z-20 pointer-events-none" />
+      {/* Slide Indicator Dots */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2">
+        {BANNERS.map((_, idx) => (
+          <button
+            key={idx}
+            onClick={() => setCurrentSlide(idx)}
+            className={`h-2 rounded-full transition-all cursor-pointer ${
+              idx === currentSlide ? 'w-6 bg-[#00d2ff]' : 'w-2 bg-white/50 hover:bg-white/80'
+            }`}
+            aria-label={`Slide ${idx + 1}`}
+          />
+        ))}
+      </div>
     </div>
   )
 }

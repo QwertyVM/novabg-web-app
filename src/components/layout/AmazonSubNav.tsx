@@ -2,68 +2,50 @@
 
 import React from 'react'
 import Link from 'next/link'
-import { Menu } from 'lucide-react'
+import { Menu, Zap, Flame } from 'lucide-react'
+import { NovaCategory } from '@/actions/categories'
 
 interface AmazonSubNavProps {
   onOpenDrawer: () => void
+  categories?: NovaCategory[]
 }
 
-export function AmazonSubNav({ onOpenDrawer }: AmazonSubNavProps) {
+export function AmazonSubNav({ onOpenDrawer, categories = [] }: AmazonSubNavProps) {
   return (
-    <div className="bg-[#232f3e] text-white text-xs px-3 py-1.5 flex items-center gap-1 overflow-x-auto no-scrollbar shadow-xs">
-      <button
-        onClick={onOpenDrawer}
-        className="amazon-nav-item flex items-center gap-1 font-bold shrink-0 text-white"
-      >
-        <Menu className="w-4 h-4" />
-        <span>Todo</span>
-      </button>
+    <div className="bg-[#0f172a] text-white text-xs px-4 py-2 flex items-center justify-between overflow-x-auto no-scrollbar md:hidden">
+      <div className="flex items-center gap-2">
+        <button
+          onClick={onOpenDrawer}
+          className="flex items-center gap-1 font-semibold text-white/90 hover:text-white shrink-0 cursor-pointer"
+        >
+          <Menu className="w-4 h-4" />
+          <span>Menú</span>
+        </button>
 
-      <Link
-        href="/categoria/juegos-de-mesa"
-        className="amazon-nav-item shrink-0 whitespace-nowrap text-gray-100"
-      >
-        Juegos de Mesa
-      </Link>
-      <Link
-        href="/categoria/insertos"
-        className="amazon-nav-item shrink-0 whitespace-nowrap text-gray-100"
-      >
-        Insertos y Organizadores
-      </Link>
-      <Link
-        href="/categoria/rol"
-        className="amazon-nav-item shrink-0 whitespace-nowrap text-gray-100"
-      >
-        Torres de Dados & Rol
-      </Link>
-      <Link
-        href="/categoria/ofertas"
-        className="amazon-nav-item shrink-0 whitespace-nowrap text-gray-100"
-      >
-        Ofertas del Día
-      </Link>
-      <Link
-        href="/categoria/mas-vendidos"
-        className="amazon-nav-item shrink-0 whitespace-nowrap text-gray-100"
-      >
-        Los Más Vendidos
-      </Link>
-      <Link
-        href="/pedidos"
-        className="amazon-nav-item shrink-0 whitespace-nowrap text-gray-100 hidden md:inline"
-      >
-        Mis Pedidos
-      </Link>
-      <Link
-        href="/servicio-al-cliente"
-        className="amazon-nav-item shrink-0 whitespace-nowrap text-gray-100 hidden lg:inline"
-      >
-        Servicio al Cliente
-      </Link>
+        <div className="h-4 w-px bg-white/20 shrink-0"></div>
 
-      <div className="ml-auto hidden xl:flex items-center gap-2 font-medium text-amber-300 pr-2">
-        <span>⚡ Envíos rápidos a todo el Perú</span>
+        {categories.slice(0, 3).map((cat) => (
+          <Link
+            key={cat.id}
+            href={`/categoria/${cat.slug}`}
+            className="text-white/80 hover:text-white shrink-0"
+          >
+            {cat.nombre}
+          </Link>
+        ))}
+
+        <Link
+          href="/categoria/ofertas"
+          className="flex items-center gap-1 text-[#00d2ff] font-semibold shrink-0"
+        >
+          <Flame className="w-3.5 h-3.5" />
+          <span>Ofertas</span>
+        </Link>
+      </div>
+
+      <div className="flex items-center gap-1 text-[11px] text-[#00d2ff] font-bold shrink-0 ml-2">
+        <Zap className="w-3 h-3 fill-[#00d2ff]" />
+        <span>FULL 24h</span>
       </div>
     </div>
   )

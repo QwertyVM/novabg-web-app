@@ -24,7 +24,7 @@ export async function createOrder(data: CreateOrderInput) {
     const subtotal = data.items.reduce((acc, item) => acc + item.subtotal, 0)
     const costoEnvio = 0
     const total = subtotal + costoEnvio
-    const codigo = `JM-${Date.now().toString().slice(-6)}`
+    const codigo = `BG-${Date.now().toString().slice(-6)}`
 
     const pedido = await prisma.pedido.create({
       data: {
@@ -33,7 +33,7 @@ export async function createOrder(data: CreateOrderInput) {
         cliente: data.cliente.trim(),
         dni: data.dni?.trim(),
         telefono: data.telefono?.trim(),
-        canalVenta: data.canalVenta || 'Web Store',
+        canalVenta: data.canalVenta || 'Web Oficial NOVA BG',
         destinoEnvio: data.destinoEnvio?.trim(),
         notas: data.notas?.trim(),
         subtotal,
@@ -66,6 +66,12 @@ export async function createOrder(data: CreateOrderInput) {
 export async function getOrdersByUser(emailOrName?: string) {
   try {
     const pedidos = await prisma.pedido.findMany({
+      where: {
+        OR: [
+          { negocio: 'BG' },
+          { canalVenta: { contains: 'NOVA BG' } },
+        ],
+      },
       orderBy: { createdAt: 'desc' },
       include: {
         items: true,
