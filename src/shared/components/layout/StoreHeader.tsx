@@ -47,27 +47,8 @@ export function StoreHeader({
   const [showAccountMenu, setShowAccountMenu] = useState(false)
   const [showCategoriesMenu, setShowCategoriesMenu] = useState(false)
 
-  // Auth Popup Logic
-  React.useEffect(() => {
-    const handleMessage = (event: MessageEvent) => {
-      if (event.data === 'popup-signin-success') {
-        window.location.reload()
-      }
-    }
-    window.addEventListener('message', handleMessage)
-    return () => window.removeEventListener('message', handleMessage)
-  }, [])
-
   const handleSignIn = () => {
-    const width = 500
-    const height = 600
-    const left = window.screen.width / 2 - width / 2
-    const top = window.screen.height / 2 - height / 2
-    window.open(
-      '/auth/google-redirect',
-      'GoogleSignIn',
-      `width=${width},height=${height},top=${top},left=${left},toolbar=no,menubar=no,scrollbars=yes,resizable=no`
-    )
+    signIn('google', { callbackUrl: window.location.href })
   }
 
   const handleSearch = (e: React.FormEvent) => {
