@@ -1,69 +1,112 @@
-import Image from "next/image";
+import React from 'react'
+import prisma from '@/lib/prisma'
+import { HeroBanner } from '@/components/home/HeroBanner'
+import { DashboardCards } from '@/components/home/DashboardCards'
+import { ProductRow } from '@/components/home/ProductRow'
+import { ProductItem } from '@/components/product/ProductCard'
+import { getProductImage } from '@/lib/utils'
 
-export default function Home() {
+export const dynamic = 'force-dynamic'
+
+export default async function HomePage() {
+  // Query all active products from PostgreSQL database
+  let productosDb: any[] = []
+  try {
+    productosDb = await prisma.producto.findMany({
+      where: { activo: true },
+      orderBy: [{ nombreModelo: 'asc' }],
+    })
+  } catch (error) {
+    console.error('Error cargando productos desde la base de datos:', error)
+  }
+
+  // Format products for Amazon product cards
+  const formattedProducts: ProductItem[] = productosDb.map((p, idx) => ({
+    id: p.id,
+    nombreModelo: p.nombreModelo,
+    lineaCategoria: p.lineaCategoria,
+    precioMercado: Number(p.precioMercado),
+    precioAmigos: p.precioAmigos ? Number(p.precioAmigos) : undefined,
+    costoBase: p.costoBase ? Number(p.costoBase) : undefined,
+    pesoGramos: p.pesoGramos ? Number(p.pesoGramos) : 0,
+    activo: p.activo ?? true,
+    imagen: getProductImage(p.nombreModelo, p.lineaCategoria),
+    rating: 4.8 + (idx % 3) * 0.1,
+    reviewsCount: 24 + ((idx * 17) % 180),
+    isBestSeller: idx === 0 || idx === 2,
+    isAmazonChoice: idx === 1 || idx === 3,
+  }))
+
+  // Categorized product rows
+  const insertosProducts = formattedProducts.filter(
+    (p) =>
+      p.lineaCategoria.toLowerCase().includes('inserto') ||
+      p.nombreModelo.toLowerCase().includes('organizador') ||
+      p.nombreModelo.toLowerCase().includes('inserto') ||
+      p.nombreModelo.toLowerCase().includes('seti')
+  )
+
+  const juegosMesaProducts = formattedProducts.filter(
+    (p) =>
+      p.lineaCategoria.toLowerCase().includes('juegos') ||
+      p.nombreModelo.toLowerCase().includes('mansiones') ||
+      p.nombreModelo.toLowerCase().includes('locura') ||
+      p.nombreModelo.toLowerCase().includes('zombicide') ||
+      p.nombreModelo.toLowerCase().includes('gloomhaven')
+  )
+
+  const rolProducts = formattedProducts.filter(
+    (p) =>
+      p.lineaCategoria.toLowerCase().includes('rol') ||
+      p.nombreModelo.toLowerCase().includes('torre') ||
+      p.nombreModelo.toLowerCase().includes('dado') ||
+      p.nombreModelo.toLowerCase().includes('dragón')
+  )
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <div className="pb-12">
+      {/* 1. Amazon Hero Banner Carousel */}
+      <HeroBanner />
+
+      {/* 2. Amazon Multi-Quadrant Dashboard Cards (overlapping hero) */}
+      <DashboardCards />
+
+      {/* 3. Product Shelves / Rows */}
+      <div className="px-4 space-y-4">
+        {/* Row 1: Best Sellers in Board Games */}
+        <ProductRow
+          title="Los más vendidos en Juegos de Mesa & Sets"
+          subtitle="Los productos preferidos por la comunidad de juegos"
+          viewAllLink="/categoria/juegos-de-mesa"
+          products={juegosMesaProducts.length > 0 ? juegosMesaProducts : formattedProducts}
         />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
+
+        {/* Row 2: Inserts & Organizers */}
+        <ProductRow
+          title="Insertos y Organizadores de Máxima Precisión"
+          subtitle="Diseñados a medida para optimizar el espacio de tus cajas y agilizar el setup"
+          viewAllLink="/categoria/insertos"
+          products={insertosProducts.length > 0 ? insertosProducts : formattedProducts}
+        />
+
+        {/* Row 3: RPG / Rol & Dice Towers */}
+        {rolProducts.length > 0 && (
+          <ProductRow
+            title="Torres de Dados & Accesorios de Rol"
+            subtitle="Accesorios y escenografía para Dungeons & Dragons y rol"
+            viewAllLink="/categoria/rol"
+            products={rolProducts}
+          />
+        )}
+
+        {/* Row 4: Complete Catalog Shelf */}
+        <ProductRow
+          title="Catálogo Completo Disponible"
+          subtitle="Todos los artículos listos para entrega inmediata o pedido personalizado"
+          viewAllLink="/categoria/todos"
+          products={formattedProducts}
+        />
+      </div>
     </div>
-  );
+  )
 }

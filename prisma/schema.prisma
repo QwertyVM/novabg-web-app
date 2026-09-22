@@ -1,0 +1,378 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum CategoriaInversion {
+  ACTIVO_FIJO
+  INSUMO
+  SERVICIO
+  APORTE_CAPITAL
+}
+
+enum EstadoVenta {
+  PENDIENTE
+  EN_PRODUCCION
+  ENTREGADO
+  CANCELADO
+}
+
+enum EstadoPedido {
+  PENDIENTE
+  EN_PRODUCCION
+  LISTO_ENTREGA
+  ENTREGADO
+  CANCELADO
+}
+
+enum TipoPrecio {
+  AMIGOS
+  MERCADO
+  COMUNIDAD
+  PERSONALIZADO
+}
+
+model Inversion {
+  id                  String             @id @default(uuid())
+  negocio             String             @default("3D")
+  persona             String             @default("Víctor")
+  categoria           CategoriaInversion
+  subcategoria        String?
+  itemConcepto        String
+  especificacionColor String?
+  presentacion        String?
+  cantidad            Int                @default(1)
+  costoUnitario       Decimal            @db.Decimal(10, 2)
+  costoEnvio          Decimal?           @default(0.00) @db.Decimal(10, 2)
+  costoTotal          Decimal            @db.Decimal(10, 2)
+  costoPorGramo       Decimal?           @db.Decimal(10, 4)
+  numeroCuotas        Int?
+  montoCuota          Decimal?           @db.Decimal(10, 2)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
+}
+
+model Categoria {
+  id          String   @id @default(uuid())
+  negocio     String   @default("3D")
+  nombre      String
+  descripcion String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([nombre, negocio])
+}
+
+model Cliente {
+  id           String    @id @default(uuid())
+  negocio      String    @default("3D")
+  nombre       String
+  dni          String?   // DNI / RUC / CE
+  telefono     String?   // WhatsApp / Celular
+  email        String?   // Correo electrónico
+  canalOrigen  String?   // WhatsApp, Instagram, TikTok, Feria, Recomendación, Directo
+  handleSocial String?   // @usuario_instagram
+  direccion    String?
+  distrito     String?
+  notas        String?
+  activo       Boolean   @default(true)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([nombre, negocio])
+}
+
+model TagInsumo {
+  id          String   @id @default(uuid())
+  negocio     String   @default("3D")
+  nombre      String
+  descripcion String?
+  color       String?  @default("amber") // blue, emerald, purple, amber, pink, indigo
+  categoria   String?  @default("INSUMO") // INSUMO, ACTIVO_FIJO, SERVICIO
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([nombre, negocio])
+}
+
+model InventarioFilamento {
+  id                      String   @id @default(uuid())
+  nombreColor             String
+  codigoHex               String?  @default("#1E1E1E")
+  tipoMaterial            String   @default("PLA") // PLA, PLA Matte, PLA+, PETG, TPU, ABS, Resina
+  marca                   String?  @default("Genérica")
+  formato                 String?  @default("CON_BOBINA") // CON_BOBINA (Con Bobina Reutilizable BR), REFILL (Refill sin bobina)
+  estadoStock             String   @default("ABIERTO") // ABIERTO (En Uso), SELLADO (Cajas Selladas / Reserva), FALTANTE (Por Reponer)
+  numeroBobina            Int?     @default(1) // Ej: Bobina #1, Bobina #2 para instancias independientes
+  porcentajeRestante      Decimal? @default(100.0) @db.Decimal(5, 2) // % restante estimado
+  stockBobinas            Decimal  @default(1.0) @db.Decimal(10, 2)
+  stockGramos             Decimal? @default(1000.0) @db.Decimal(10, 2)
+  pesoInicialGramos       Decimal? @default(1000.0) @db.Decimal(10, 2)
+  cajasSelladasDisponibles Int?    @default(1) // Conteo de cajas selladas en reserva
+  cantidadCompradaRef     Decimal? @default(1.0) @db.Decimal(10, 2)
+  costoBobinaRef          Decimal? @default(0.00) @db.Decimal(10, 2)
+  ubicacion               String?  @default("Taller Principal")
+  temperaturaImpresion    String?
+  temperaturaCama         String?
+  estado                  String   @default("DISPONIBLE") // DISPONIBLE, BAJO_STOCK, AGOTADO
+  alertaCritica           Boolean  @default(false)
+  notaProduccion          String?
+  notas                   String?
+  activo                  Boolean      @default(true)
+  ventas                  Venta[]
+  itemPedidos             ItemPedido[]
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+}
+
+model ConsumibleTaller {
+  id        String   @id @default(uuid())
+  nombre    String   @unique
+  categoria String   @default("POSTPROCESADO") // POSTPROCESADO, SEGURIDAD, ADHESION, HERRAMIENTA
+  estado    String   @default("DISPONIBLE") // DISPONIBLE, BAJO_STOCK, AGOTADO
+  cantidad  String?  @default("1 ud")
+  notas     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Producto {
+  id               String       @id @default(uuid())
+  negocio          String       @default("3D")
+  lineaCategoria   String
+  nombreModelo     String
+  costoBase        Decimal      @db.Decimal(10, 2)
+  precioAmigos     Decimal      @db.Decimal(10, 2)
+  precioMercado    Decimal      @db.Decimal(10, 2)
+  precioComunidad  Decimal      @db.Decimal(10, 2)
+  pesoGramos       Decimal?     @default(0.00) @db.Decimal(10, 2)
+  activo           Boolean      @default(true)
+  ventas           Venta[]
+  itemPedidos      ItemPedido[]
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+
+  @@unique([nombreModelo, negocio])
+}
+
+model Venta {
+  id                     String               @id @default(uuid())
+  negocio                String               @default("3D")
+  fecha                  DateTime             @default(now())
+  cliente                String
+  productoId             String
+  producto               Producto             @relation(fields: [productoId], references: [id])
+  nombreProductoSnapshot String?
+  costoBaseSnapshot      Decimal?             @default(0.00) @db.Decimal(10, 2)
+  colorFilamentoId       String?
+  colorFilamento         InventarioFilamento? @relation(fields: [colorFilamentoId], references: [id])
+  coloresIds             String[]             @default([])
+  personalizacion        String?
+  gramosConsumidos       Decimal?             @default(0.00) @db.Decimal(10, 2) // Gramos descontados de la bobina
+  cantidad               Int                  @default(1)
+  tipoPrecio             TipoPrecio           @default(COMUNIDAD)
+  precioUnitario         Decimal              @db.Decimal(10, 2)
+  total                  Decimal              @db.Decimal(10, 2)
+  montoPagado            Decimal              @db.Decimal(10, 2)
+  saldoPendiente         Decimal              @db.Decimal(10, 2)
+  costoPackaging         Decimal?             @default(0.00) @db.Decimal(10, 2)
+  porcentajeAdicional    Decimal?             @default(0.00) @db.Decimal(5, 2)
+  estado                 EstadoVenta          @default(PENDIENTE)
+  diaEntregaPrometida    String?
+  destinoEnvio           String?
+  canalVenta             String?
+  pagos                  PagoVenta[]
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+}
+
+model PagoVenta {
+  id          String   @id @default(uuid())
+  ventaId     String
+  venta       Venta    @relation(fields: [ventaId], references: [id], onDelete: Cascade)
+  fecha       DateTime @default(now())
+  monto       Decimal  @db.Decimal(10, 2)
+  metodoPago  String?  @default("YAPE") // YAPE, PLIN, TRANSFERENCIA, EFECTIVO
+  tipo        String?  @default("ANTICIPO") // ANTICIPO, SALDO_ENTREGA, ABONO
+  notas       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Ingreso {
+  id          String   @id @default(uuid())
+  negocio     String   @default("3D")
+  fecha       DateTime @default(now())
+  cliente     String
+  concepto    String
+  categoria   String   @default("SERVICIO") // VENTA_DIRECTA, SERVICIO, DISENO_CAD, OTRO
+  monto       Decimal  @db.Decimal(10, 2)
+  metodoPago  String?  @default("YAPE") // YAPE, PLIN, TRANSFERENCIA, EFECTIVO
+  notas       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model CierreMes {
+  id                       String   @id @default(uuid())
+  negocio                  String   @default("3D")
+  mes                      Int      // 1-12 (ej. 8 para Agosto)
+  anio                     Int      // ej. 2026
+  nombrePeriodo            String   // "Agosto 2026"
+  fechaCierre              DateTime @default(now())
+  
+  // Métricas del Mes
+  totalIngresosVentas      Decimal  @db.Decimal(10, 2)
+  totalIngresosDirectos    Decimal  @db.Decimal(10, 2)
+  totalIngresos            Decimal  @db.Decimal(10, 2)
+  
+  totalEgresosInsumos      Decimal  @db.Decimal(10, 2)
+  totalEgresosMaquinaria   Decimal  @db.Decimal(10, 2)
+  totalEgresosServicios    Decimal  @db.Decimal(10, 2)
+  totalEgresos             Decimal  @db.Decimal(10, 2)
+  
+  flujoNetoMes             Decimal  @db.Decimal(10, 2)
+  
+  // Arqueo y Conciliación
+  saldoSistema             Decimal  @db.Decimal(10, 2)
+  saldoRealBCP             Decimal  @default(0.00) @db.Decimal(10, 2)
+  saldoRealYape            Decimal  @default(0.00) @db.Decimal(10, 2)
+  saldoRealTotal           Decimal  @db.Decimal(10, 2)
+  descuadreCaja            Decimal  @default(0.00) @db.Decimal(10, 2)
+  
+  // Asignación y Blindaje de Fondos
+  montoCuotaPrestamo       Decimal  @default(0.00) @db.Decimal(10, 2)
+  montoReservaMaquina      Decimal  @default(0.00) @db.Decimal(10, 2)
+  montoColchonEmergencia   Decimal  @default(0.00) @db.Decimal(10, 2)
+  totalFondosBlindados     Decimal  @db.Decimal(10, 2)
+  liquidezLibreFinal       Decimal  @db.Decimal(10, 2)
+  
+  cuentasPorCobrarTraspaso Decimal  @default(0.00) @db.Decimal(10, 2)
+  totalPedidosMes          Int      @default(0)
+  
+  notas                    String?
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
+
+  @@unique([mes, anio, negocio])
+}
+
+model Pedido {
+  id                  String        @id @default(uuid())
+  negocio             String        @default("3D")
+  codigo              String        // Ej: "PED-001" o "BG-001"
+  fecha               DateTime      @default(now())
+  cliente             String
+  dni                 String?       // DNI / RUC del cliente
+  telefono            String?
+  canalVenta          String?       // WhatsApp, Instagram, TikTok, Feria, Recomendación, Directo
+  destinoEnvio        String?
+  diaEntregaPrometida String?
+  notas               String?
+  estado              EstadoPedido  @default(PENDIENTE)
+  
+  costoEnvio          Decimal       @default(0.00) @db.Decimal(10, 2)
+  subtotal            Decimal       @default(0.00) @db.Decimal(10, 2)
+  total               Decimal       @default(0.00) @db.Decimal(10, 2)
+  montoPagado         Decimal       @default(0.00) @db.Decimal(10, 2)
+  saldoPendiente      Decimal       @default(0.00) @db.Decimal(10, 2)
+  
+  items               ItemPedido[]
+  pagos               PagoPedido[]
+  
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@unique([codigo, negocio])
+}
+
+model ItemPedido {
+  id                     String               @id @default(uuid())
+  pedidoId               String
+  pedido                 Pedido               @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  productoId             String
+  producto               Producto             @relation(fields: [productoId], references: [id])
+  nombreProductoSnapshot String?
+  costoBaseSnapshot      Decimal?             @default(0.00) @db.Decimal(10, 2)
+  colorFilamentoId       String?
+  colorFilamento         InventarioFilamento? @relation(fields: [colorFilamentoId], references: [id])
+  coloresIds             String[]             @default([])
+  personalizacion        String?
+  cantidad               Int                  @default(1)
+  tipoPrecio             TipoPrecio           @default(COMUNIDAD)
+  precioUnitario         Decimal              @db.Decimal(10, 2)
+  costoPackaging         Decimal?             @default(0.00) @db.Decimal(10, 2)
+  porcentajeAdicional    Decimal?             @default(0.00) @db.Decimal(5, 2)
+  gramosConsumidos       Decimal?             @default(0.00) @db.Decimal(10, 2)
+  subtotal               Decimal              @db.Decimal(10, 2)
+  estado                 EstadoPedido         @default(PENDIENTE)
+  
+  createdAt              DateTime             @default(now())
+  updatedAt              DateTime             @updatedAt
+}
+
+model PagoPedido {
+  id          String   @id @default(uuid())
+  pedidoId    String
+  pedido      Pedido   @relation(fields: [pedidoId], references: [id], onDelete: Cascade)
+  fecha       DateTime @default(now())
+  monto       Decimal  @db.Decimal(10, 2)
+  metodoPago  String?  @default("YAPE") // YAPE, PLIN, TRANSFERENCIA, EFECTIVO
+  tipo        String?  @default("ANTICIPO") // ANTICIPO, SALDO_ENTREGA, ABONO, PAGO_TOTAL
+  notas       String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// NextAuth & Usuario
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          String    @default("CUSTOMER")
+  accounts      Account[]
+  sessions      Session[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
