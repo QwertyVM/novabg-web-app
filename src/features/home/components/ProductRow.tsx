@@ -26,22 +26,22 @@ export function ProductRow({ title, subtitle, viewAllLink, products }: ProductRo
   if (products.length === 0) return null
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200/80 p-5 shadow-xs relative group select-none">
+    <div className="bg-white rounded-3xl border border-[#EBE5DF] p-5 sm:p-6 shadow-sm relative group select-none">
       {/* Header */}
       <div className="flex items-end justify-between mb-4">
         <div>
-          <h2 className="text-base sm:text-lg font-bold text-gray-900 tracking-tight flex items-center gap-2">
+          <h2 className="text-base sm:text-lg font-black text-[#2B231F] tracking-tight flex items-center gap-2">
             <span>{title}</span>
           </h2>
-          {subtitle && <p className="text-xs text-gray-500 mt-0.5">{subtitle}</p>}
+          {subtitle && <p className="text-xs text-[#6E655F] mt-0.5">{subtitle}</p>}
         </div>
 
         {viewAllLink && (
           <Link
             href={viewAllLink}
-            className="text-xs font-semibold text-[#0066ff] hover:underline flex items-center gap-0.5 shrink-0"
+            className="text-xs font-bold text-[#C85A32] hover:text-[#A64724] hover:underline flex items-center gap-0.5 shrink-0"
           >
-            <span>Ver historial completo</span>
+            <span>Ver todo</span>
             <ArrowIcon className="w-3.5 h-3.5" />
           </Link>
         )}
@@ -50,7 +50,7 @@ export function ProductRow({ title, subtitle, viewAllLink, products }: ProductRo
       {/* Scroll Controls (Desktop) */}
       <button
         onClick={() => scroll('left')}
-        className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center bg-white hover:bg-gray-50 text-gray-700 hover:text-[#0066ff] rounded-full shadow-md border border-gray-200 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+        className="absolute left-1 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center bg-white hover:bg-[#FDFBF7] text-[#2B231F] hover:text-[#C85A32] rounded-full shadow-md border border-[#EBE5DF] transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
         aria-label="Anterior"
       >
         <ChevronLeft className="w-5 h-5" />
@@ -58,7 +58,7 @@ export function ProductRow({ title, subtitle, viewAllLink, products }: ProductRo
 
       <button
         onClick={() => scroll('right')}
-        className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center bg-white hover:bg-gray-50 text-gray-700 hover:text-[#0066ff] rounded-full shadow-md border border-gray-200 transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
+        className="absolute right-1 top-1/2 -translate-y-1/2 z-20 w-9 h-9 flex items-center justify-center bg-white hover:bg-[#FDFBF7] text-[#2B231F] hover:text-[#C85A32] rounded-full shadow-md border border-[#EBE5DF] transition-all opacity-0 group-hover:opacity-100 cursor-pointer"
         aria-label="Siguiente"
       >
         <ChevronRight className="w-5 h-5" />

@@ -1,0 +1,1 @@
+export { NovaLogo } from './NovaLogo'

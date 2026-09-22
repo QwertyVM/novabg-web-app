@@ -368,6 +368,10 @@ model ConfiguracionTienda {
   fraseHero         String?  // Frase principal en el home
   subtituloHero     String?
   
+  // Control de Secciones en la Web
+  habilitarSeccion3d Boolean @default(true) // Permite encender o apagar la sección 3D en la tienda web
+  habilitarSeccionBg Boolean @default(true) // Permite encender o apagar la sección BG en la tienda web
+  
   // Redes Sociales & Mensajería
   instagramUrl      String?
   tiktokUrl         String?

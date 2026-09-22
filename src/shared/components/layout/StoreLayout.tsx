@@ -24,7 +24,7 @@ export function StoreLayout({
   const [drawerOpen, setDrawerOpen] = useState(false)
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f5f5f7]">
+    <div className="min-h-screen flex flex-col bg-[#FDFBF7]">
       <StoreHeader
         categories={categories}
         storeConfig={storeConfig}

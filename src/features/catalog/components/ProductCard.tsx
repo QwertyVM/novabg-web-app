@@ -27,7 +27,6 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const { integer, cents } = formatPriceParts(finalPrice)
   const { integer: origInt, cents: origCents } = formatPriceParts(product.precioMercado)
-  const isFreeShipping = finalPrice >= 35
   const installmentValue = (finalPrice / 3).toFixed(2)
 
   // Stock status
@@ -36,17 +35,17 @@ export function ProductCard({ product }: ProductCardProps) {
   const isLowStock = isControlledStock && (product.stock ?? 0) > 0 && (product.stock ?? 0) <= 3
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200/80 overflow-hidden flex flex-col justify-between hover:shadow-lg hover:border-gray-300 transition-all duration-200 group relative select-none">
+    <div className="bg-white rounded-3xl border border-[#EBE5DF] overflow-hidden flex flex-col justify-between hover:shadow-md hover:border-[#C85A32]/40 transition-all duration-200 group relative select-none">
       {/* Top badges (Promo & Favorite) */}
-      <div className="absolute top-2.5 left-2.5 z-10 flex flex-col gap-1">
+      <div className="absolute top-3.5 left-3.5 z-10 flex flex-col gap-1">
         {isEnOferta && (
-          <span className="bg-amber-500 text-white font-black text-[10px] px-2 py-0.5 rounded shadow-xs flex items-center gap-1 uppercase tracking-wider">
+          <span className="bg-[#C85A32] text-white font-black text-[10px] px-2.5 py-0.5 rounded-lg shadow-xs flex items-center gap-1 uppercase tracking-wider">
             <Flame className="w-3 h-3 fill-white" />
             <span>{product.badgePromocion || `${product.porcentajeDescuento || 15}% OFF`}</span>
           </span>
         )}
         {product.isBestSeller && !isEnOferta && (
-          <span className="bg-[#ff9900] text-[#191919] font-black text-[10px] px-2 py-0.5 rounded shadow-xs uppercase tracking-wider">
+          <span className="bg-[#F3ECE2] text-[#2B231F] border border-[#D9B89C]/60 font-black text-[10px] px-2.5 py-0.5 rounded-lg shadow-2xs uppercase tracking-wider">
             MÁS VENDIDO
           </span>
         )}
@@ -59,20 +58,20 @@ export function ProductCard({ product }: ProductCardProps) {
           e.stopPropagation()
           setIsFavorite(!isFavorite)
         }}
-        className="absolute top-2.5 right-2.5 z-10 p-1.5 rounded-full bg-white/80 backdrop-blur-xs text-gray-400 hover:text-red-500 hover:bg-white shadow-xs transition-colors cursor-pointer"
+        className="absolute top-3.5 right-3.5 z-10 p-1.5 rounded-full bg-white/90 backdrop-blur-xs text-[#6E655F] hover:text-[#C85A32] hover:bg-white shadow-2xs border border-[#EBE5DF] transition-colors cursor-pointer"
         title="Guardar en favoritos"
         aria-label="Favorito"
       >
         <Heart
           className={`w-4 h-4 ${
-            isFavorite ? 'fill-red-500 text-red-500' : 'fill-none text-gray-400'
+            isFavorite ? 'fill-[#C85A32] text-[#C85A32]' : 'fill-none text-[#6E655F]'
           }`}
         />
       </button>
 
-      {/* Product Image & Link */}
+      {/* Product Image with Generous Padding */}
       <Link href={`/producto/${product.id}`} className="block overflow-hidden relative">
-        <div className="w-full aspect-square bg-[#f8fafc] flex items-center justify-center p-3 relative overflow-hidden group-hover:scale-102 transition-transform duration-300">
+        <div className="w-full aspect-square bg-[#FDFBF7] flex items-center justify-center p-4 relative overflow-hidden group-hover:scale-102 transition-transform duration-300">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={product.imagen}
@@ -81,8 +80,8 @@ export function ProductCard({ product }: ProductCardProps) {
             loading="lazy"
           />
           {isOutOfStock && (
-            <div className="absolute inset-0 bg-white/70 backdrop-blur-2xs flex items-center justify-center">
-              <span className="bg-red-600 text-white text-xs font-black px-3 py-1 rounded-full uppercase tracking-wider shadow-sm">
+            <div className="absolute inset-0 bg-white/85 backdrop-blur-2xs flex items-center justify-center">
+              <span className="bg-[#2B231F] text-white text-xs font-black px-3.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
                 Agotado
               </span>
             </div>
@@ -91,16 +90,16 @@ export function ProductCard({ product }: ProductCardProps) {
       </Link>
 
       {/* Card Content */}
-      <div className="p-3.5 flex flex-col flex-1 justify-between gap-2.5">
+      <div className="p-4.5 flex flex-col flex-1 justify-between gap-3">
         <div>
           {/* Category Tag */}
-          <div className="text-[11px] text-gray-400 font-medium uppercase tracking-wider mb-1 line-clamp-1">
+          <div className="text-[11px] text-[#6E655F] font-bold uppercase tracking-wider mb-1 line-clamp-1">
             {product.lineaCategoria || 'Juegos de Mesa'}
           </div>
 
-          {/* Title */}
+          {/* Title in text-main */}
           <Link href={`/producto/${product.id}`}>
-            <h3 className="text-xs sm:text-sm font-normal text-gray-800 line-clamp-2 hover:text-[#0066ff] transition-colors leading-snug">
+            <h3 className="text-xs sm:text-sm font-bold text-[#2B231F] line-clamp-2 hover:text-[#C85A32] transition-colors leading-snug">
               {product.nombreModelo}
             </h3>
           </Link>
@@ -109,23 +108,23 @@ export function ProductCard({ product }: ProductCardProps) {
         <div>
           {/* Pricing with Strike-through if on offer */}
           {isEnOferta && (
-            <div className="flex items-center gap-1.5 text-xs text-gray-400 line-through -mb-0.5">
+            <div className="flex items-center gap-1.5 text-xs text-[#6E655F] line-through -mb-0.5">
               <span>S/ {origInt}.{origCents}</span>
             </div>
           )}
 
           <div className="flex items-baseline gap-1 mt-0.5">
-            <span className="text-xs text-gray-900 font-medium">S/</span>
+            <span className="text-xs text-[#2B231F] font-bold">S/</span>
             <span
-              className={`text-xl sm:text-2xl font-bold tracking-tight leading-none ${
-                isEnOferta ? 'text-amber-600' : 'text-gray-900'
+              className={`text-xl sm:text-2xl font-black tracking-tight leading-none ${
+                isEnOferta ? 'text-[#C85A32]' : 'text-[#2B231F]'
               }`}
             >
               {integer}
             </span>
             <span
-              className={`text-[10px] font-bold self-start leading-none -ml-0.5 ${
-                isEnOferta ? 'text-amber-600' : 'text-gray-900'
+              className={`text-[10px] font-black self-start leading-none -ml-0.5 ${
+                isEnOferta ? 'text-[#C85A32]' : 'text-[#2B231F]'
               }`}
             >
               {cents}
@@ -133,8 +132,8 @@ export function ProductCard({ product }: ProductCardProps) {
           </div>
 
           {/* Installment Info */}
-          <p className="text-[11px] text-[#00a650] font-medium mt-1">
-            en <span className="font-bold">3x S/ {installmentValue}</span> sin interés
+          <p className="text-[11px] text-[#10B981] font-bold mt-1">
+            en <span>3x S/ {installmentValue}</span> sin interés
           </p>
 
           {/* Stock Indicator */}
@@ -146,11 +145,11 @@ export function ProductCard({ product }: ProductCardProps) {
                   <span>Sin stock disponible</span>
                 </span>
               ) : isLowStock ? (
-                <span className="text-[10px] text-amber-700 font-bold">
+                <span className="text-[10px] text-[#C85A32] font-bold">
                   🔥 ¡Solo quedan {product.stock} unidades!
                 </span>
               ) : (
-                <span className="text-[10px] text-emerald-700 font-medium">
+                <span className="text-[10px] text-[#10B981] font-bold">
                   En stock ({product.stock} disponibles)
                 </span>
               )}
@@ -158,32 +157,32 @@ export function ProductCard({ product }: ProductCardProps) {
           ) : (
             /* Shipping & FULL Badge */
             <div className="flex items-center gap-1.5 mt-1.5">
-              <span className="text-xs font-semibold text-gray-700">Envíos a todo el Perú</span>
-              <div className="flex items-center gap-0.5 text-[#0066ff] font-black text-[10px] bg-blue-50 px-1.5 py-0.5 rounded">
-                <Zap className="w-3 h-3 fill-[#0066ff]" />
+              <span className="text-xs font-semibold text-[#6E655F]">Envíos a todo el Perú</span>
+              <div className="flex items-center gap-0.5 text-[#C85A32] font-black text-[10px] bg-[#FDF4EE] border border-[#C85A32]/20 px-1.5 py-0.5 rounded">
+                <Zap className="w-3 h-3 fill-[#C85A32]" />
                 <span>FULL</span>
               </div>
             </div>
           )}
 
           {/* Rating */}
-          <div className="flex items-center gap-1 mt-2 text-[11px] text-gray-500">
-            <div className="flex text-[#ff9900]">
+          <div className="flex items-center gap-1 mt-2 text-[11px] text-[#6E655F]">
+            <div className="flex text-[#F59E0B]">
               {[1, 2, 3, 4, 5].map((i) => (
                 <Star
                   key={i}
                   className={`w-3 h-3 ${
                     i <= Math.floor(product.rating || 5)
-                      ? 'fill-current text-[#ff9900]'
-                      : 'text-gray-300'
+                      ? 'fill-current text-[#F59E0B]'
+                      : 'text-[#EBE5DF]'
                   }`}
                 />
               ))}
             </div>
-            <span className="text-xs font-semibold text-gray-700 ml-0.5">
+            <span className="text-xs font-bold text-[#2B231F] ml-0.5">
               {product.rating?.toFixed(1) || '4.8'}
             </span>
-            <span className="text-gray-400">({product.reviewsCount || 24})</span>
+            <span className="text-[#6E655F]">({product.reviewsCount || 24})</span>
           </div>
         </div>
 
@@ -199,10 +198,10 @@ export function ProductCard({ product }: ProductCardProps) {
               imagen: product.imagen,
             })
           }
-          className={`w-full text-xs py-2 mt-1 shadow-2xs font-semibold cursor-pointer rounded-lg border transition-all ${
+          className={`w-full text-xs py-2.5 mt-1 shadow-2xs font-bold cursor-pointer rounded-xl border transition-all ${
             isOutOfStock
-              ? 'bg-gray-100 text-gray-400 border-gray-200 cursor-not-allowed'
-              : 'btn-nova-outline hover:bg-blue-50'
+              ? 'bg-[#FDFBF7] text-[#6E655F] border-[#EBE5DF] cursor-not-allowed'
+              : 'btn-nova-outline hover:bg-[#FDF4EE]'
           }`}
         >
           {isOutOfStock ? 'Agotado temporalmente' : 'Agregar al carrito'}
@@ -211,4 +210,3 @@ export function ProductCard({ product }: ProductCardProps) {
     </div>
   )
 }
-

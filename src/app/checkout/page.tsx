@@ -1,17 +1,16 @@
 'use client'
 
 import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { Lock, CheckCircle2, ShieldCheck, ShoppingBag, Layers } from 'lucide-react'
+import { Lock, CheckCircle2, ShieldCheck, ShoppingBag } from 'lucide-react'
 import { useSession, signIn } from 'next-auth/react'
 import { useCart } from '@/features/cart'
 import { createOrder } from '@/features/orders'
 import { formatPrice, getEstimatedDeliveryDate } from '@/shared/utils'
+import { NovaLogo } from '@/shared/components/branding'
 import { toast } from 'sonner'
 
 export default function CheckoutPage() {
-  const router = useRouter()
   const { data: session } = useSession()
   const { items, totalCount, subtotal, clearCart } = useCart()
 
@@ -80,19 +79,19 @@ export default function CheckoutPage() {
   if (orderComplete) {
     return (
       <div className="py-16 px-4 max-w-[700px] mx-auto">
-        <div className="bg-white p-8 sm:p-10 rounded-2xl border border-gray-200/90 shadow-sm text-center space-y-5">
-          <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mx-auto shadow-xs">
+        <div className="bg-white p-8 sm:p-10 rounded-3xl border border-[#EBE5DF] shadow-sm text-center space-y-5">
+          <div className="w-16 h-16 bg-[#EBF7F0] text-[#10B981] border border-[#10B981]/30 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
             <CheckCircle2 className="w-10 h-10" />
           </div>
-          <h1 className="text-2xl font-bold text-gray-900">¡Gracias por tu compra en NOVA BG!</h1>
-          <div className="bg-blue-50/60 border border-blue-100 rounded-xl p-5 max-w-md mx-auto text-xs text-gray-700 space-y-1">
-            <p className="text-gray-500">Código de confirmación:</p>
-            <p className="text-xl font-black text-[#0066ff] tracking-wider py-1">{orderComplete.codigo}</p>
-            <p className="text-gray-600">
-              Fecha estimada de entrega: <strong className="text-gray-900">{deliveryDate}</strong>
+          <h1 className="text-2xl font-black text-[#2B231F]">¡Gracias por tu compra en NOVA!</h1>
+          <div className="bg-[#FDFBF7] border border-[#EBE5DF] rounded-2xl p-5 max-w-md mx-auto text-xs text-[#6E655F] space-y-1">
+            <p className="text-[#6E655F]">Código de confirmación:</p>
+            <p className="text-2xl font-black text-[#C85A32] tracking-wider py-1">{orderComplete.codigo}</p>
+            <p className="text-[#2B231F]">
+              Fecha estimada de entrega: <strong className="text-[#C85A32]">{deliveryDate}</strong>
             </p>
           </div>
-          <p className="text-xs text-gray-600 max-w-md mx-auto leading-relaxed">
+          <p className="text-xs text-[#6E655F] max-w-md mx-auto leading-relaxed">
             Hemos registrado tu orden exitosamente. Te contactaremos vía WhatsApp al número <strong>{telefono}</strong> para coordinar el despacho inmediato.
           </p>
           <div className="pt-4 flex justify-center gap-3">
@@ -110,11 +109,11 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="py-16 px-4 max-w-[600px] mx-auto text-center bg-white p-8 rounded-2xl border border-gray-200">
-        <ShoppingBag className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-        <h2 className="text-xl font-bold text-gray-900 mb-2">No tienes productos en tu carrito</h2>
+      <div className="py-16 px-4 max-w-[600px] mx-auto text-center bg-white p-8 rounded-3xl border border-[#EBE5DF]">
+        <ShoppingBag className="w-12 h-12 text-[#6E655F] mx-auto mb-3" />
+        <h2 className="text-xl font-bold text-[#2B231F] mb-2">No tienes productos en tu carrito</h2>
         <Link href="/" className="btn-nova-primary text-xs mt-3 inline-block">
-          Explorar Catálogo NOVA BG
+          Explorar Catálogo NOVA
         </Link>
       </div>
     )
@@ -123,18 +122,13 @@ export default function CheckoutPage() {
   return (
     <div className="py-8 px-4 max-w-[1200px] mx-auto">
       {/* Checkout Top Bar */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-xs mb-6 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <div className="w-7 h-7 rounded bg-[#0066ff] flex items-center justify-center">
-            <Layers className="w-4 h-4 text-white" />
-          </div>
-          <span className="text-lg font-black tracking-tight text-gray-900">
-            NOVA <span className="text-[#0066ff]">BG</span>{' '}
-            <span className="text-xs font-normal text-gray-400">| Checkout Seguro</span>
-          </span>
+      <div className="bg-white p-4 rounded-2xl border border-[#EBE5DF] shadow-sm mb-6 flex items-center justify-between">
+        <div className="flex items-center gap-3">
+          <NovaLogo size="sm" showBadge={false} />
+          <span className="text-xs font-bold text-[#6E655F] hidden sm:inline">| Checkout Seguro</span>
         </div>
-        <div className="flex items-center gap-1.5 text-xs text-emerald-700 font-bold">
-          <Lock className="w-4 h-4 text-emerald-600" />
+        <div className="flex items-center gap-1.5 text-xs text-[#10B981] font-bold">
+          <Lock className="w-4 h-4 text-[#10B981]" />
           <span>Pago 100% Protegido</span>
         </div>
       </div>
@@ -143,10 +137,10 @@ export default function CheckoutPage() {
         {/* Left: Form Steps (8 cols) */}
         <div className="lg:col-span-8 space-y-6">
           {/* Step 1: User / Identity */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs">
+          <div className="bg-white p-6 rounded-3xl border border-[#EBE5DF] shadow-sm">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-base font-bold text-gray-900 flex items-center gap-2">
-                <span className="w-6 h-6 rounded-full bg-[#0066ff] text-white flex items-center justify-center text-xs font-bold">
+              <h2 className="text-base font-bold text-[#2B231F] flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[#C85A32] text-white flex items-center justify-center text-xs font-bold">
                   1
                 </span>
                 Datos del Comprador
@@ -155,7 +149,7 @@ export default function CheckoutPage() {
                 <button
                   type="button"
                   onClick={() => signIn('google')}
-                  className="text-xs text-[#0066ff] hover:underline font-semibold flex items-center gap-1 cursor-pointer"
+                  className="text-xs text-[#C85A32] hover:underline font-bold flex items-center gap-1 cursor-pointer"
                 >
                   <svg className="w-3.5 h-3.5" viewBox="0 0 24 24">
                     <path
@@ -182,54 +176,54 @@ export default function CheckoutPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div>
-                <label className="block text-gray-700 font-bold mb-1.5">Nombre Completo *</label>
+                <label className="block text-[#2B231F] font-bold mb-1.5">Nombre Completo *</label>
                 <input
                   type="text"
                   value={nombre}
                   onChange={(e) => setNombre(e.target.value)}
                   placeholder="Ej: Víctor Manzanilla"
-                  className="w-full border border-gray-300 rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#0066ff]/20 font-medium"
+                  className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
                   required
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-bold mb-1.5">WhatsApp / Celular *</label>
+                <label className="block text-[#2B231F] font-bold mb-1.5">WhatsApp / Celular *</label>
                 <input
                   type="text"
                   value={telefono}
                   onChange={(e) => setTelefono(e.target.value)}
                   placeholder="Ej: 987654321"
-                  className="w-full border border-gray-300 rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#0066ff]/20 font-medium"
+                  className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
                   required
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-bold mb-1.5">Correo Electrónico</label>
+                <label className="block text-[#2B231F] font-bold mb-1.5">Correo Electrónico</label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="correo@ejemplo.com"
-                  className="w-full border border-gray-300 rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#0066ff]/20 font-medium"
+                  className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
                 />
               </div>
               <div>
-                <label className="block text-gray-700 font-bold mb-1.5">DNI / RUC</label>
+                <label className="block text-[#2B231F] font-bold mb-1.5">DNI / RUC</label>
                 <input
                   type="text"
                   value={dni}
                   onChange={(e) => setDni(e.target.value)}
                   placeholder="Ej: 72819283"
-                  className="w-full border border-gray-300 rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#0066ff]/20 font-medium"
+                  className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
                 />
               </div>
             </div>
           </div>
 
           {/* Step 2: Delivery Address */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs">
-            <h2 className="text-base font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <span className="w-6 h-6 rounded-full bg-[#0066ff] text-white flex items-center justify-center text-xs font-bold">
+          <div className="bg-white p-6 rounded-3xl border border-[#EBE5DF] shadow-sm">
+            <h2 className="text-base font-bold text-[#2B231F] flex items-center gap-2 mb-4">
+              <span className="w-6 h-6 rounded-full bg-[#C85A32] text-white flex items-center justify-center text-xs font-bold">
                 2
               </span>
               Dirección de Entrega
@@ -237,35 +231,35 @@ export default function CheckoutPage() {
 
             <div className="space-y-4 text-xs">
               <div>
-                <label className="block text-gray-700 font-bold mb-1.5">Dirección Exacta (Calle, Número, Depto) *</label>
+                <label className="block text-[#2B231F] font-bold mb-1.5">Dirección Exacta (Calle, Número, Depto) *</label>
                 <input
                   type="text"
                   value={direccion}
                   onChange={(e) => setDireccion(e.target.value)}
                   placeholder="Ej: Av. Benavides 1230, Dpto 402"
-                  className="w-full border border-gray-300 rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#0066ff]/20 font-medium"
+                  className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
                   required
                 />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-gray-700 font-bold mb-1.5">Distrito / Ciudad *</label>
+                  <label className="block text-[#2B231F] font-bold mb-1.5">Distrito / Ciudad *</label>
                   <input
                     type="text"
                     value={distrito}
                     onChange={(e) => setDistrito(e.target.value)}
                     placeholder="Ej: Miraflores, Lima"
-                    className="w-full border border-gray-300 rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#0066ff]/20 font-medium"
+                    className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
                   />
                 </div>
                 <div>
-                  <label className="block text-gray-700 font-bold mb-1.5">Referencia o Instrucción</label>
+                  <label className="block text-[#2B231F] font-bold mb-1.5">Referencia o Instrucción</label>
                   <input
                     type="text"
                     value={notas}
                     onChange={(e) => setNotas(e.target.value)}
                     placeholder="Ej: Dejar en conserjería"
-                    className="w-full border border-gray-300 rounded-lg p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#0066ff]/20 font-medium"
+                    className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
                   />
                 </div>
               </div>
@@ -273,9 +267,9 @@ export default function CheckoutPage() {
           </div>
 
           {/* Step 3: Payment Method */}
-          <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs">
-            <h2 className="text-base font-bold text-gray-900 flex items-center gap-2 mb-4">
-              <span className="w-6 h-6 rounded-full bg-[#0066ff] text-white flex items-center justify-center text-xs font-bold">
+          <div className="bg-white p-6 rounded-3xl border border-[#EBE5DF] shadow-sm">
+            <h2 className="text-base font-bold text-[#2B231F] flex items-center gap-2 mb-4">
+              <span className="w-6 h-6 rounded-full bg-[#C85A32] text-white flex items-center justify-center text-xs font-bold">
                 3
               </span>
               Forma de Pago
@@ -283,10 +277,10 @@ export default function CheckoutPage() {
 
             <div className="space-y-3 text-xs">
               <label
-                className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
                   metodoPago === 'YAPE'
-                    ? 'border-[#0066ff] bg-blue-50/40 ring-1 ring-[#0066ff]'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-[#C85A32] bg-[#FDF4EE] ring-1 ring-[#C85A32]'
+                    : 'border-[#EBE5DF] bg-[#FDFBF7] hover:border-[#C85A32]/40'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -296,23 +290,23 @@ export default function CheckoutPage() {
                     value="YAPE"
                     checked={metodoPago === 'YAPE'}
                     onChange={() => setMetodoPago('YAPE')}
-                    className="accent-[#0066ff]"
+                    className="accent-[#C85A32]"
                   />
                   <div>
-                    <span className="font-bold text-gray-900 text-sm">Yape / Plin</span>
-                    <p className="text-[11px] text-gray-500">Transferencia instantánea por código QR o número</p>
+                    <span className="font-bold text-[#2B231F] text-sm">Yape / Plin</span>
+                    <p className="text-[11px] text-[#6E655F]">Transferencia instantánea por código QR o número</p>
                   </div>
                 </div>
-                <span className="text-purple-600 font-black text-xs px-2.5 py-1 bg-purple-50 rounded-lg">
+                <span className="text-purple-700 font-black text-xs px-2.5 py-1 bg-purple-50 rounded-lg border border-purple-200">
                   YAPE / PLIN
                 </span>
               </label>
 
               <label
-                className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
                   metodoPago === 'TARJETA'
-                    ? 'border-[#0066ff] bg-blue-50/40 ring-1 ring-[#0066ff]'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-[#C85A32] bg-[#FDF4EE] ring-1 ring-[#C85A32]'
+                    : 'border-[#EBE5DF] bg-[#FDFBF7] hover:border-[#C85A32]/40'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -322,23 +316,23 @@ export default function CheckoutPage() {
                     value="TARJETA"
                     checked={metodoPago === 'TARJETA'}
                     onChange={() => setMetodoPago('TARJETA')}
-                    className="accent-[#0066ff]"
+                    className="accent-[#C85A32]"
                   />
                   <div>
-                    <span className="font-bold text-gray-900 text-sm">Tarjeta de Débito o Crédito</span>
-                    <p className="text-[11px] text-gray-500">Hasta 12 cuotas sin interés</p>
+                    <span className="font-bold text-[#2B231F] text-sm">Tarjeta de Débito o Crédito</span>
+                    <p className="text-[11px] text-[#6E655F]">Hasta 12 cuotas sin interés</p>
                   </div>
                 </div>
-                <span className="text-[#0066ff] font-bold text-xs px-2.5 py-1 bg-blue-50 rounded-lg">
+                <span className="text-[#C85A32] font-bold text-xs px-2.5 py-1 bg-[#FDF4EE] border border-[#C85A32]/30 rounded-lg">
                   VISA / MASTERCARD
                 </span>
               </label>
 
               <label
-                className={`flex items-center justify-between p-4 rounded-xl border cursor-pointer transition-all ${
+                className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
                   metodoPago === 'TRANSFERENCIA'
-                    ? 'border-[#0066ff] bg-blue-50/40 ring-1 ring-[#0066ff]'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-[#C85A32] bg-[#FDF4EE] ring-1 ring-[#C85A32]'
+                    : 'border-[#EBE5DF] bg-[#FDFBF7] hover:border-[#C85A32]/40'
                 }`}
               >
                 <div className="flex items-center gap-3">
@@ -348,14 +342,14 @@ export default function CheckoutPage() {
                     value="TRANSFERENCIA"
                     checked={metodoPago === 'TRANSFERENCIA'}
                     onChange={() => setMetodoPago('TRANSFERENCIA')}
-                    className="accent-[#0066ff]"
+                    className="accent-[#C85A32]"
                   />
                   <div>
-                    <span className="font-bold text-gray-900 text-sm">Transferencia BCP / Interbank</span>
-                    <p className="text-[11px] text-gray-500">Depósito bancario directo</p>
+                    <span className="font-bold text-[#2B231F] text-sm">Transferencia BCP / Interbank</span>
+                    <p className="text-[11px] text-[#6E655F]">Depósito bancario directo</p>
                   </div>
                 </div>
-                <span className="text-gray-700 font-bold text-xs px-2.5 py-1 bg-gray-100 rounded-lg">
+                <span className="text-[#2B231F] font-bold text-xs px-2.5 py-1 bg-white border border-[#EBE5DF] rounded-lg">
                   BANCO DIRECTO
                 </span>
               </label>
@@ -365,25 +359,25 @@ export default function CheckoutPage() {
 
         {/* Right: Order Summary Box (4 cols) */}
         <div className="lg:col-span-4">
-          <div className="bg-white p-6 rounded-2xl border border-gray-200/80 shadow-xs space-y-4 sticky top-20 text-xs">
-            <h3 className="font-bold text-base text-gray-900 pb-3 border-b border-gray-100">
+          <div className="bg-white p-6 rounded-3xl border border-[#EBE5DF] shadow-sm space-y-4 sticky top-20 text-xs">
+            <h3 className="font-black text-base text-[#2B231F] pb-3 border-b border-[#EBE5DF]">
               Detalle del Pedido
             </h3>
 
-            <div className="space-y-2 text-gray-600">
+            <div className="space-y-2 text-[#6E655F]">
               <div className="flex justify-between">
                 <span>Productos ({totalCount}):</span>
-                <span className="text-gray-900 font-semibold">{formattedSubtotal}</span>
+                <span className="text-[#2B231F] font-bold">{formattedSubtotal}</span>
               </div>
-              <div className="flex justify-between text-gray-700 font-medium">
+              <div className="flex justify-between text-[#6E655F] font-medium">
                 <span>Costo de Envío:</span>
-                <span className="text-[#0066ff] font-semibold">A coordinar por WhatsApp</span>
+                <span className="text-[#C85A32] font-bold">A coordinar por WhatsApp</span>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-gray-100 flex justify-between items-baseline">
-              <span className="text-base font-bold text-gray-900">Total a Pagar:</span>
-              <span className="text-2xl font-black text-gray-900">{formattedSubtotal}</span>
+            <div className="pt-3 border-t border-[#EBE5DF] flex justify-between items-baseline">
+              <span className="text-base font-bold text-[#2B231F]">Total a Pagar:</span>
+              <span className="text-2xl font-black text-[#2B231F]">{formattedSubtotal}</span>
             </div>
 
             <button
@@ -394,12 +388,12 @@ export default function CheckoutPage() {
               {isSubmitting ? 'Procesando pedido...' : 'Confirmar Compra'}
             </button>
 
-            <p className="text-[11px] text-gray-400 text-center leading-tight">
-              Al confirmar aceptas los términos de garantía y entrega de NOVA BG.
+            <p className="text-[11px] text-[#6E655F] text-center leading-tight">
+              Al confirmar aceptas los términos de garantía y entrega de NOVA.
             </p>
 
-            <div className="border-t border-gray-100 pt-4 text-[11px] text-gray-500 flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-[#0066ff] shrink-0" />
+            <div className="border-t border-[#EBE5DF] pt-4 text-[11px] text-[#6E655F] flex items-center gap-2">
+              <ShieldCheck className="w-5 h-5 text-[#C85A32] shrink-0" />
               <span>Compra Protegida: Recibe el producto o te devolvemos el dinero.</span>
             </div>
           </div>

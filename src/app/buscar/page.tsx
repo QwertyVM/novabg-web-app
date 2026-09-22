@@ -1,7 +1,7 @@
 import React from 'react'
 import Link from 'next/link'
 import prisma from '@/core/database/prisma'
-import { ProductCard, ProductItem, getNovaBgProductsWhere, getNovaBgCategories, NovaCategory } from '@/features/catalog'
+import { ProductCard, ProductItem, getNovaBgCategories } from '@/features/catalog'
 import { getProductImage } from '@/shared/utils'
 import { Search } from 'lucide-react'
 
@@ -79,16 +79,16 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   return (
     <div className="py-6 px-4 max-w-[1400px] mx-auto">
       {/* Search Header Banner */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-xs mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-gray-700">
+      <div className="bg-white p-4 rounded-2xl border border-[#EBE5DF] shadow-sm mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#2B231F]">
         <div>
-          <span className="text-gray-500">
+          <span className="text-[#6E655F]">
             {formattedProducts.length} resultados para{' '}
           </span>
-          <strong className="text-gray-900 font-bold">&quot;{query || 'Todos los artículos'}&quot;</strong>
+          <strong className="text-[#2B231F] font-black">&quot;{query || 'Todos los artículos'}&quot;</strong>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-gray-500">Ordenar:</span>
-          <select className="border border-gray-300 rounded-lg bg-gray-50 px-3 py-1.5 text-xs outline-none cursor-pointer font-medium">
+          <span className="text-[#6E655F] font-medium">Ordenar:</span>
+          <select className="border border-[#EBE5DF] rounded-xl bg-[#FDFBF7] px-3 py-1.5 text-xs outline-none cursor-pointer font-semibold text-[#2B231F]">
             <option>Más relevantes</option>
             <option>Precio: Menor a Mayor</option>
             <option>Precio: Mayor a Menor</option>
@@ -98,14 +98,14 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
       </div>
 
       {formattedProducts.length === 0 ? (
-        <div className="bg-white p-12 rounded-xl border border-gray-200 text-center max-w-lg mx-auto my-12 shadow-xs">
-          <div className="w-12 h-12 rounded-full bg-blue-50 text-[#0066ff] flex items-center justify-center mx-auto mb-3">
-            <Search className="w-6 h-6" />
+        <div className="bg-white p-12 rounded-3xl border border-[#EBE5DF] text-center max-w-lg mx-auto my-12 shadow-sm">
+          <div className="w-14 h-14 rounded-2xl bg-[#FDF4EE] text-[#C85A32] border border-[#C85A32]/20 flex items-center justify-center mx-auto mb-3 shadow-xs">
+            <Search className="w-7 h-7" />
           </div>
-          <h2 className="text-lg font-bold text-gray-900 mb-2">
+          <h2 className="text-lg font-bold text-[#2B231F] mb-2">
             No encontramos publicaciones para &quot;{query}&quot;
           </h2>
-          <p className="text-xs text-gray-500 mb-6">
+          <p className="text-xs text-[#6E655F] mb-6">
             Revisa la ortografía o intenta buscar con términos como &quot;organizador&quot;, &quot;torre&quot;, &quot;dados&quot; o &quot;tablero&quot;.
           </p>
           <Link href="/categoria/todos" className="btn-nova-primary text-xs">

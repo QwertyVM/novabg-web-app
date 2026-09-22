@@ -11,7 +11,24 @@ export default function SignInPage() {
   const [loading, setLoading] = useState(false)
 
   const handleGoogleSignIn = () => {
-    signIn('google', { callbackUrl: '/' })
+    const width = 450
+    const height = 600
+    const left = window.screenX + (window.outerWidth - width) / 2
+    const top = window.screenY + (window.outerHeight - height) / 2
+    
+    window.open(
+      '/auth/google-redirect',
+      'GoogleLoginPopup',
+      `width=${width},height=${height},left=${left},top=${top}`
+    )
+
+    const handleMessage = (e: MessageEvent) => {
+      if (e.data === 'popup-login-success') {
+        window.removeEventListener('message', handleMessage)
+        window.location.href = '/' // or window.location.reload()
+      }
+    }
+    window.addEventListener('message', handleMessage)
   }
 
   const handleDemoSignIn = async (e: React.FormEvent) => {

@@ -2,7 +2,7 @@ import React from 'react'
 import Link from 'next/link'
 import { Star, Zap, ChevronRight } from 'lucide-react'
 import prisma from '@/core/database/prisma'
-import { ProductCard, ProductItem, getNovaBgProductsWhere, getNovaBgCategories } from '@/features/catalog'
+import { ProductCard, ProductItem, getNovaStoreCategories } from '@/features/catalog'
 import { getProductImage } from '@/shared/utils'
 
 export const dynamic = 'force-dynamic'
@@ -15,29 +15,31 @@ interface CategoryPageProps {
 export default async function CategoryPage({ params, searchParams }: CategoryPageProps) {
   const { slug } = await params
   const sParams = await searchParams
+  
+  const targetNegocio = sParams.sec === '3D' ? '3D' : 'BG'
 
-  // Fetch dynamic categories from NOVA BG
-  const categories = await getNovaBgCategories()
+  // Fetch dynamic categories based on active section
+  const categories = await getNovaStoreCategories(targetNegocio)
   const matchedCat = categories.find((c) => c.slug === slug)
 
   const categoryName =
     slug === 'todos'
-      ? 'Todos los Artículos de NOVA BG'
+      ? 'Todos los Artículos de NOVA'
       : slug === 'ofertas'
       ? 'Ofertas y Descuentos'
       : matchedCat
       ? matchedCat.nombre
-      : 'Catálogo de NOVA BG'
+      : 'Catálogo de NOVA'
 
-  // Fetch active products
+  // Fetch active products filtered by negocio
   let productsDb: any[] = []
   try {
     productsDb = await prisma.producto.findMany({
-      where: { activo: true },
+      where: { activo: true, negocio: targetNegocio },
       orderBy: [{ enOferta: 'desc' }, { nombreModelo: 'asc' }],
     })
   } catch (e) {
-    console.error('Error cargando categoría:', e)
+    console.error(`Error cargando categoría (${targetNegocio}):`, e)
   }
 
   // Filter based on category slug or ofertas
@@ -76,23 +78,23 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
   return (
     <div className="py-6 px-4 max-w-[1400px] mx-auto">
       {/* Breadcrumb Header */}
-      <div className="flex items-center gap-2 text-xs text-gray-500 mb-4">
-        <Link href="/" className="hover:text-[#0066ff]">
+      <div className="flex items-center gap-2 text-xs text-[#6E655F] mb-4">
+        <Link href="/" className="hover:text-[#C85A32] font-semibold transition-colors">
           Inicio
         </Link>
-        <span>/</span>
-        <span className="text-gray-900 font-semibold">{categoryName}</span>
+        <span className="text-[#EBE5DF]">/</span>
+        <span className="text-[#2B231F] font-bold">{categoryName}</span>
       </div>
 
       {/* Top Banner with result count & sort */}
-      <div className="bg-white p-4 rounded-xl border border-gray-200/80 shadow-xs mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-gray-700">
+      <div className="bg-white p-4 rounded-2xl border border-[#EBE5DF] shadow-sm mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#2B231F]">
         <div>
-          <span className="text-gray-500">{formattedProducts.length} productos en </span>
-          <strong className="text-gray-900 font-bold">&quot;{categoryName}&quot;</strong>
+          <span className="text-[#6E655F]">{formattedProducts.length} productos en </span>
+          <strong className="text-[#2B231F] font-bold">&quot;{categoryName}&quot;</strong>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-gray-500">Más relevantes:</span>
-          <select className="border border-gray-300 rounded-lg bg-gray-50 px-3 py-1.5 text-xs outline-none cursor-pointer font-medium">
+          <span className="text-[#6E655F] font-medium">Ordenar:</span>
+          <select className="border border-[#EBE5DF] rounded-xl bg-[#FDFBF7] px-3 py-1.5 text-xs outline-none cursor-pointer font-semibold text-[#2B231F]">
             <option>Más relevantes</option>
             <option>Menor precio</option>
             <option>Mayor precio</option>
@@ -103,20 +105,22 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
         {/* Left Filters Sidebar */}
-        <div className="md:col-span-3 bg-white p-5 rounded-xl border border-gray-200/80 space-y-6 text-xs text-[#191919] h-fit shadow-xs">
+        <div className="md:col-span-3 bg-white p-5 rounded-2xl border border-[#EBE5DF] space-y-6 text-xs text-[#2B231F] h-fit shadow-sm">
           {/* Categorías Dinámicas */}
           <div>
-            <h3 className="font-bold text-sm mb-3 text-gray-900">Categorías NOVA BG</h3>
+            <h3 className="font-black text-sm mb-3 text-[#2B231F]">
+              Categorías NOVA {targetNegocio}
+            </h3>
             {categories.length === 0 ? (
-              <p className="text-gray-400 text-xs">Sin categorías registradas en BG</p>
+              <p className="text-[#6E655F] text-xs">Sin categorías registradas en {targetNegocio}</p>
             ) : (
-              <ul className="space-y-2 text-gray-600">
+              <ul className="space-y-2 text-[#6E655F]">
                 {categories.map((cat) => (
                   <li key={cat.id}>
                     <Link
                       href={`/categoria/${cat.slug}`}
-                      className={`flex items-center justify-between hover:text-[#0066ff] ${
-                        slug === cat.slug ? 'font-bold text-[#0066ff]' : ''
+                      className={`flex items-center justify-between hover:text-[#C85A32] font-semibold ${
+                        slug === cat.slug ? 'text-[#C85A32] font-bold' : ''
                       }`}
                     >
                       <span>{cat.nombre}</span>
@@ -127,8 +131,8 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
                 <li>
                   <Link
                     href="/categoria/todos"
-                    className={`flex items-center justify-between hover:text-[#0066ff] ${
-                      slug === 'todos' ? 'font-bold text-[#0066ff]' : ''
+                    className={`flex items-center justify-between hover:text-[#C85A32] font-semibold ${
+                      slug === 'todos' ? 'text-[#C85A32] font-bold' : ''
                     }`}
                   >
                     <span>Ver Todos</span>
@@ -139,55 +143,55 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
             )}
           </div>
 
-          <hr className="border-gray-100" />
+          <hr className="border-[#EBE5DF]" />
 
           {/* Envíos FULL toggle */}
           <div>
-            <h3 className="font-bold text-sm mb-3 text-gray-900">Envíos</h3>
-            <div className="flex items-center justify-between p-2.5 bg-blue-50/70 border border-blue-100 rounded-lg">
-              <div className="flex items-center gap-1.5 text-xs font-bold text-[#0066ff]">
-                <Zap className="w-4 h-4 fill-[#0066ff]" />
+            <h3 className="font-bold text-sm mb-3 text-[#2B231F]">Envíos</h3>
+            <div className="flex items-center justify-between p-3 bg-[#FDFBF7] border border-[#EBE5DF] rounded-xl">
+              <div className="flex items-center gap-1.5 text-xs font-black text-[#C85A32]">
+                <Zap className="w-4 h-4 fill-[#C85A32]" />
                 <span>FULL</span>
               </div>
-              <span className="text-[11px] text-[#0066ff] font-semibold">Lima y Provincias</span>
+              <span className="text-[11px] text-[#10B981] font-bold">Lima y Provincias</span>
             </div>
           </div>
 
-          <hr className="border-gray-100" />
+          <hr className="border-[#EBE5DF]" />
 
           {/* Price Filters */}
           <div>
-            <h3 className="font-bold text-sm mb-3 text-gray-900">Precio</h3>
-            <ul className="space-y-2 text-gray-600">
+            <h3 className="font-bold text-sm mb-3 text-[#2B231F]">Precio</h3>
+            <ul className="space-y-2 text-[#6E655F]">
               <li>
-                <span className="hover:text-[#0066ff] cursor-pointer">Hasta S/ 35</span>
+                <span className="hover:text-[#C85A32] font-medium cursor-pointer">Hasta S/ 35</span>
               </li>
               <li>
-                <span className="hover:text-[#0066ff] cursor-pointer">S/ 35 a S/ 70</span>
+                <span className="hover:text-[#C85A32] font-medium cursor-pointer">S/ 35 a S/ 70</span>
               </li>
               <li>
-                <span className="hover:text-[#0066ff] cursor-pointer">S/ 70 a S/ 120</span>
+                <span className="hover:text-[#C85A32] font-medium cursor-pointer">S/ 70 a S/ 120</span>
               </li>
               <li>
-                <span className="hover:text-[#0066ff] cursor-pointer">Más de S/ 120</span>
+                <span className="hover:text-[#C85A32] font-medium cursor-pointer">Más de S/ 120</span>
               </li>
             </ul>
           </div>
 
-          <hr className="border-gray-100" />
+          <hr className="border-[#EBE5DF]" />
 
           {/* Customer Reviews */}
           <div>
-            <h3 className="font-bold text-sm mb-3 text-gray-900">Calificación</h3>
+            <h3 className="font-bold text-sm mb-3 text-[#2B231F]">Calificación</h3>
             <div className="space-y-2">
-              <div className="flex items-center gap-1.5 cursor-pointer hover:text-[#0066ff]">
-                <div className="flex text-[#ff9900]">
+              <div className="flex items-center gap-1.5 cursor-pointer hover:text-[#C85A32]">
+                <div className="flex text-[#F59E0B]">
                   {[1, 2, 3, 4].map((i) => (
                     <Star key={i} className="w-3.5 h-3.5 fill-current" />
                   ))}
-                  <Star className="w-3.5 h-3.5 text-gray-300" />
+                  <Star className="w-3.5 h-3.5 text-[#EBE5DF]" />
                 </div>
-                <span className="text-gray-600 font-medium">(4 estrellas o más)</span>
+                <span className="text-[#6E655F] font-semibold">(4 estrellas o más)</span>
               </div>
             </div>
           </div>
@@ -196,10 +200,10 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
         {/* Product Grid */}
         <div className="md:col-span-9">
           {formattedProducts.length === 0 ? (
-            <div className="bg-white p-12 rounded-xl border border-gray-200 text-center shadow-xs space-y-3">
-              <p className="text-gray-700 font-bold text-base">No hay productos en esta categoría</p>
-              <p className="text-gray-500 text-xs max-w-md mx-auto">
-                Los productos registrados bajo NOVA BG aparecerán automáticamente aquí al ser ingresados en el sistema financiero.
+            <div className="bg-white p-12 rounded-3xl border border-[#EBE5DF] text-center shadow-sm space-y-3">
+              <p className="text-[#2B231F] font-bold text-base">No hay productos en esta categoría</p>
+              <p className="text-[#6E655F] text-xs max-w-md mx-auto">
+                Los productos registrados bajo NOVA aparecerán automáticamente aquí.
               </p>
               <Link href="/" className="btn-nova-primary text-xs inline-block mt-2">
                 Volver a la portada

@@ -15,16 +15,14 @@ import {
   Sparkles,
   Zap,
   Layers,
-  Dice5,
-  Phone,
   MessageCircle,
   X,
-  Printer,
 } from 'lucide-react'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { useCart } from '@/features/cart/context/CartContext'
 import { NovaCategory } from '@/features/catalog/types/catalog.types'
 import { StorePublicConfig } from '@/features/catalog/services/store-config.service'
+import { NovaLogo } from '@/shared/components/branding'
 
 interface StoreHeaderProps {
   onOpenDrawer: () => void
@@ -70,27 +68,29 @@ export function StoreHeader({
     router.push(`/buscar?${params.toString()}`)
   }
 
-  // Clean WhatsApp URL
+  // WhatsApp Contact URL
   const phone = storeConfig?.telefonoContacto || '+51 924 812 345'
   const cleanPhone = phone.replace(/[^\d]/g, '')
-  const whatsappMsg = storeConfig?.whatsappMensaje || '¡Hola! Quisiera información sobre los productos.'
+  const whatsappMsg = storeConfig?.whatsappMensaje || '¡Hola! Quisiera consultar por los juegos y organizadores de NOVA.'
   const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMsg)}`
 
-  const is3D = activeSection === '3D'
+  const is3DEnabled = storeConfig?.habilitarSeccion3d !== false
+  const isBgEnabled = storeConfig?.habilitarSeccionBg !== false
+  const is3D = is3DEnabled && activeSection === '3D'
 
   return (
-    <header className="text-white select-none sticky top-0 z-40 shadow-sm transition-colors" style={{ backgroundColor: is3D ? '#b45309' : '#0066ff' }}>
-      {/* 1. TOP ANNOUNCEMENT BANNER (Configured in ERP) */}
+    <header className="bg-[#FDFBF7] text-[#2B231F] select-none sticky top-0 z-40 border-b border-[#EBE5DF] shadow-xs">
+      {/* 1. TOP ANNOUNCEMENT BANNER */}
       {storeConfig?.anuncioTopActivo && !topBannerDismissed && (
-        <div className="bg-[#0f172a] text-white text-xs py-1.5 px-4 border-b border-white/10 flex items-center justify-between">
+        <div className="bg-[#F8F2EB] text-[#2B231F] text-xs py-1.5 px-4 border-b border-[#EBE5DF] flex items-center justify-between">
           <div className="max-w-[1400px] mx-auto flex-1 flex items-center justify-center text-center gap-2">
-            <span className="text-xs font-medium tracking-wide">
+            <span className="text-xs font-semibold tracking-wide text-[#2B231F]">
               {storeConfig.anuncioTopTexto}
             </span>
             {storeConfig.anuncioTopLink && (
               <Link
                 href={storeConfig.anuncioTopLink}
-                className="text-[#00d2ff] hover:underline font-bold text-[11px] shrink-0"
+                className="text-[#C85A32] hover:text-[#A64724] hover:underline font-bold text-[11px] shrink-0"
               >
                 Ver más →
               </Link>
@@ -99,7 +99,7 @@ export function StoreHeader({
           <button
             type="button"
             onClick={() => setTopBannerDismissed(true)}
-            className="text-white/60 hover:text-white p-0.5 rounded cursor-pointer"
+            className="text-[#6E655F] hover:text-[#2B231F] p-0.5 rounded cursor-pointer"
             title="Cerrar aviso"
           >
             <X className="w-3.5 h-3.5" />
@@ -107,12 +107,12 @@ export function StoreHeader({
         </div>
       )}
 
-      {/* 2. Top Main Bar */}
-      <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4 px-4 py-2.5">
+      {/* 2. Top Main Bar (Light Marfil #FDFBF7) */}
+      <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-3 sm:gap-4 px-4 py-3">
         {/* Mobile menu trigger */}
         <button
           onClick={onOpenDrawer}
-          className="md:hidden p-1.5 rounded-lg hover:bg-white/15 text-white cursor-pointer"
+          className="md:hidden p-1.5 rounded-xl hover:bg-[#F8F2EB] text-[#2B231F] cursor-pointer"
           aria-label="Abrir menú"
         >
           <Menu className="w-6 h-6" />
@@ -121,69 +121,53 @@ export function StoreHeader({
         {/* Brand Logo: NOVA (BG / 3D) */}
         <Link
           href={is3D ? '/?sec=3D' : '/'}
-          className="flex items-center gap-2 py-0.5 px-1 rounded-lg hover:opacity-95 transition-opacity shrink-0 group"
+          className="flex items-center gap-2 py-0.5 px-1 rounded-xl hover:opacity-90 transition-opacity shrink-0 group"
+          title="NOVA Board Games"
         >
-          <div className="w-8 h-8 rounded-lg bg-white/15 backdrop-blur-xs flex items-center justify-center border border-white/25 shadow-xs group-hover:scale-105 transition-transform">
-            {is3D ? <Printer className="w-5 h-5 text-amber-300" /> : <Dice5 className="w-5 h-5 text-[#00d2ff]" />}
-          </div>
-          <div className="flex flex-col leading-none">
-            <div className="flex items-center gap-1">
-              <span className="text-xl font-black tracking-tight text-white drop-shadow-xs">
-                NOVA
-              </span>
-              <span
-                className={`text-xs font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shadow-2xs ${
-                  is3D ? 'bg-amber-300 text-[#0f172a]' : 'bg-[#00d2ff] text-[#0f172a]'
-                }`}
-              >
-                {is3D ? '3D' : 'BG'}
-              </span>
-            </div>
-            <span className="text-[10px] text-white/80 font-medium tracking-wide">
-              {is3D ? '3D Printing & Design' : 'Board Games'}
-            </span>
-          </div>
+          <NovaLogo size="md" section={is3D ? '3D' : 'BG'} showBadge={true} />
         </Link>
 
-        {/* Section Switcher (BG / 3D) */}
-        <div className="hidden sm:flex items-center bg-black/20 p-0.5 rounded-lg border border-white/20 text-xs shrink-0">
-          <Link
-            href="/"
-            className={`px-2.5 py-1 rounded-md font-bold transition-all ${
-              !is3D ? 'bg-white text-[#0066ff] shadow-xs' : 'text-white/80 hover:text-white'
-            }`}
-          >
-            Juegos BG
-          </Link>
-          <Link
-            href="/?sec=3D"
-            className={`px-2.5 py-1 rounded-md font-bold transition-all ${
-              is3D ? 'bg-white text-amber-800 shadow-xs' : 'text-white/80 hover:text-white'
-            }`}
-          >
-            Impresión 3D
-          </Link>
-        </div>
+        {/* Section Switcher (Only visible if 3D section is enabled in ERP) */}
+        {is3DEnabled && isBgEnabled && (
+          <div className="hidden sm:flex items-center bg-[#F4EDE5] p-1 rounded-xl border border-[#EBE5DF] text-xs shrink-0">
+            <Link
+              href="/"
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                !is3D ? 'bg-white text-[#C85A32] shadow-xs' : 'text-[#6E655F] hover:text-[#2B231F]'
+              }`}
+            >
+              Juegos BG
+            </Link>
+            <Link
+              href="/?sec=3D"
+              className={`px-3 py-1.5 rounded-lg font-bold transition-all ${
+                is3D ? 'bg-white text-amber-800 shadow-xs' : 'text-[#6E655F] hover:text-[#2B231F]'
+              }`}
+            >
+              Impresión 3D
+            </Link>
+          </div>
+        )}
 
-        {/* Mercado Libre Style Minimalist Search Bar */}
+        {/* Clean White Search Bar */}
         <form
           onSubmit={handleSearch}
-          className="flex-1 max-w-2xl flex items-center h-10 rounded-md overflow-hidden bg-white shadow-xs focus-within:ring-2 focus-within:ring-[#00d2ff] transition-all"
+          className="flex-1 max-w-2xl flex items-center h-10.5 rounded-xl overflow-hidden bg-white shadow-xs border border-[#EBE5DF] focus-within:border-[#C85A32] focus-within:ring-2 focus-within:ring-[#C85A32]/20 transition-all"
         >
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder="Buscar juegos de mesa, organizadores, cartas, accesorios..."
-            className="flex-1 px-4 text-sm text-[#191919] outline-none h-full placeholder:text-gray-400 bg-transparent font-normal"
+            className="flex-1 px-4 text-sm text-[#2B231F] outline-none h-full placeholder:text-[#6E655F] bg-transparent font-medium"
           />
 
           {/* Department Filter (Desktop) with Dynamic Categories */}
-          <div className="hidden sm:flex items-center border-l border-gray-200 h-6 px-2 text-xs text-gray-500 bg-gray-50/80">
+          <div className="hidden sm:flex items-center border-l border-[#EBE5DF] h-6 px-2 text-xs text-[#6E655F] bg-[#FDFBF7]">
             <select
               value={department}
               onChange={(e) => setDepartment(e.target.value)}
-              className="bg-transparent text-xs text-gray-700 outline-none cursor-pointer pr-1 font-medium"
+              className="bg-transparent text-xs text-[#2B231F] outline-none cursor-pointer pr-1 font-semibold"
             >
               <option value="todos">Todo</option>
               {categories.map((c) => (
@@ -194,18 +178,18 @@ export function StoreHeader({
             </select>
           </div>
 
-          {/* Search Button */}
+          {/* Search Button in Primary #C85A32 */}
           <button
             type="submit"
-            className="h-full px-4 text-gray-500 hover:text-[#0066ff] hover:bg-blue-50 transition-colors flex items-center justify-center cursor-pointer border-l border-gray-100"
+            className="h-full px-5 bg-[#C85A32] hover:bg-[#A64724] text-white transition-colors flex items-center justify-center cursor-pointer"
             title="Buscar"
           >
-            <Search className="w-4 h-4 text-gray-600" />
+            <Search className="w-4 h-4 text-white" />
           </button>
         </form>
 
         {/* Right Action Icons & User Menu */}
-        <div className="flex items-center gap-1 sm:gap-3 text-xs">
+        <div className="flex items-center gap-1 sm:gap-2.5 text-xs text-[#2B231F]">
           {/* User Account / Login */}
           <div
             className="relative"
@@ -217,233 +201,241 @@ export function StoreHeader({
                 if (!session) signIn('google')
                 else router.push('/pedidos')
               }}
-              className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-md hover:bg-white/15 text-white transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl hover:bg-[#F4EDE5] text-[#2B231F] transition-colors cursor-pointer"
             >
               {session?.user?.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
                   src={session.user.image}
                   alt={session.user.name || 'User'}
-                  className="w-6 h-6 rounded-full border border-white/40"
+                  className="w-6 h-6 rounded-full border border-[#D9B89C]"
                 />
               ) : (
-                <UserIcon className="w-5 h-5 text-white/90" />
+                <UserIcon className="w-5 h-5 text-[#6E655F]" />
               )}
               <div className="hidden lg:flex flex-col items-start leading-tight">
-                <span className="text-[11px] text-white/80 font-normal">
+                <span className="text-[11px] text-[#6E655F] font-medium">
                   {session?.user?.name ? `Hola, ${session.user.name.split(' ')[0]}` : 'Ingresa'}
                 </span>
-                <span className="text-xs font-bold text-white flex items-center gap-0.5">
-                  Mi Cuenta <ChevronDown className="w-3 h-3 text-white/70" />
+                <span className="text-xs font-bold text-[#2B231F] flex items-center gap-0.5">
+                  Mi Cuenta <ChevronDown className="w-3 h-3 text-[#6E655F]" />
                 </span>
               </div>
             </button>
 
             {/* Account Popover */}
             {showAccountMenu && (
-              <div className="absolute right-0 top-full mt-1 w-64 bg-white text-[#191919] rounded-lg shadow-xl border border-gray-100 py-3 px-4 z-50 animate-in fade-in duration-150">
-                <div className="text-center pb-3 border-b border-gray-100">
-                  {session ? (
-                    <div className="flex flex-col items-center">
-                      <div className="w-10 h-10 rounded-full bg-blue-100 text-[#0066ff] font-bold flex items-center justify-center text-sm mb-1.5">
-                        {session.user?.name?.charAt(0) || 'U'}
+              <div className="absolute right-0 top-full pt-2 w-64 z-50">
+                <div className="bg-white text-[#2B231F] rounded-2xl shadow-xl border border-[#EBE5DF] py-3 px-4 animate-in fade-in duration-150">
+                  <div className="text-center pb-3 border-b border-[#EBE5DF]">
+                    {session ? (
+                      <div className="flex flex-col items-center">
+                        <div className="w-10 h-10 rounded-full bg-[#FDF4EE] text-[#C85A32] font-black flex items-center justify-center text-sm mb-1.5 border border-[#C85A32]/25">
+                          {session.user?.name?.charAt(0) || 'U'}
+                        </div>
+                        <p className="font-bold text-xs text-[#2B231F]">{session.user?.name}</p>
+                        <p className="text-[11px] text-[#6E655F] truncate max-w-full">
+                          {session.user?.email}
+                        </p>
                       </div>
-                      <p className="font-bold text-xs text-gray-900">{session.user?.name}</p>
-                      <p className="text-[11px] text-gray-500 truncate max-w-full">
-                        {session.user?.email}
-                      </p>
-                    </div>
-                  ) : (
-                    <div>
-                      <p className="text-xs text-gray-600 mb-2 font-medium">
-                        Ingresa a tu cuenta de NOVA BG
-                      </p>
-                      <button
-                        onClick={() => signIn('google')}
-                        className="w-full btn-nova-primary text-xs py-2 shadow-xs mb-1.5 flex items-center justify-center gap-2"
-                      >
-                        <svg className="w-4 h-4 bg-white rounded-full p-0.5" viewBox="0 0 24 24">
-                          <path
-                            fill="#4285F4"
-                            d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                          />
-                          <path
-                            fill="#34A853"
-                            d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                          />
-                          <path
-                            fill="#FBBC05"
-                            d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-                          />
-                          <path
-                            fill="#EA4335"
-                            d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-                          />
-                        </svg>
-                        Continuar con Google
-                      </button>
-                    </div>
-                  )}
-                </div>
+                    ) : (
+                      <div>
+                        <p className="text-xs text-[#6E655F] mb-2 font-medium">
+                          Ingresa a tu cuenta oficial de NOVA
+                        </p>
+                        <button
+                          onClick={() => signIn('google')}
+                          className="w-full btn-nova-primary text-xs py-2 shadow-xs mb-1.5 flex items-center justify-center gap-2"
+                        >
+                          <svg className="w-4 h-4 bg-white rounded-full p-0.5" viewBox="0 0 24 24">
+                            <path
+                              fill="#4285F4"
+                              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+                            />
+                            <path
+                              fill="#34A853"
+                              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+                            />
+                            <path
+                              fill="#FBBC05"
+                              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
+                            />
+                            <path
+                              fill="#EA4335"
+                              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
+                            />
+                          </svg>
+                          Continuar con Google
+                        </button>
+                      </div>
+                    )}
+                  </div>
 
-                <div className="pt-2 text-xs space-y-1">
-                  <Link
-                    href="/pedidos"
-                    className="flex items-center gap-2.5 p-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#0066ff] transition-colors"
-                  >
-                    <Package className="w-4 h-4 text-gray-400" />
-                    <span>Mis Compras</span>
-                  </Link>
-                  <Link
-                    href="/carrito"
-                    className="flex items-center gap-2.5 p-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#0066ff] transition-colors"
-                  >
-                    <ShoppingCart className="w-4 h-4 text-gray-400" />
-                    <span>Mi Carrito</span>
-                  </Link>
-                  <Link
-                    href="/categoria/ofertas"
-                    className="flex items-center gap-2.5 p-2 rounded-md text-gray-700 hover:bg-gray-50 hover:text-[#0066ff] transition-colors"
-                  >
-                    <Sparkles className="w-4 h-4 text-[#0066ff]" />
-                    <span>Ofertas Especiales</span>
-                  </Link>
+                  <div className="pt-2 text-xs space-y-1">
+                    {session && (
+                      <>
+                        <Link
+                          href="/perfil"
+                          className="flex items-center gap-2.5 p-2 rounded-xl text-[#2B231F] hover:bg-[#FDFBF7] hover:text-[#C85A32] transition-colors"
+                        >
+                          <UserIcon className="w-4 h-4 text-[#6E655F]" />
+                          <span className="font-semibold">Mi Perfil</span>
+                        </Link>
+                        <Link
+                          href="/pedidos"
+                          className="flex items-center gap-2.5 p-2 rounded-xl text-[#2B231F] hover:bg-[#FDFBF7] hover:text-[#C85A32] transition-colors"
+                        >
+                          <Package className="w-4 h-4 text-[#6E655F]" />
+                          <span className="font-semibold">Mis Compras</span>
+                        </Link>
+                      </>
+                    )}
+                    <Link
+                      href="/carrito"
+                      className="flex items-center gap-2.5 p-2 rounded-xl text-[#2B231F] hover:bg-[#FDFBF7] hover:text-[#C85A32] transition-colors"
+                    >
+                      <ShoppingCart className="w-4 h-4 text-[#6E655F]" />
+                      <span className="font-semibold">Mi Carrito</span>
+                    </Link>
 
-                  {session && (
-                    <div className="pt-2 border-t border-gray-100 mt-1">
-                      <button
-                        onClick={() => signOut()}
-                        className="flex items-center gap-2.5 p-2 rounded-md text-red-600 hover:bg-red-50 w-full text-left transition-colors cursor-pointer"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Cerrar sesión</span>
-                      </button>
-                    </div>
-                  )}
+
+                    {session && (
+                      <div className="pt-2 border-t border-[#EBE5DF] mt-1">
+                        <button
+                          onClick={() => signOut()}
+                          className="flex items-center gap-2.5 p-2 rounded-xl text-red-600 hover:bg-red-50 w-full text-left transition-colors cursor-pointer font-semibold"
+                        >
+                          <LogOut className="w-4 h-4" />
+                          <span>Cerrar sesión</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             )}
           </div>
 
-          {/* WhatsApp Direct Contact Button */}
+          {/* WhatsApp Button (Success #10B981) */}
           <a
             href={whatsappUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-md bg-emerald-500/90 hover:bg-emerald-500 text-white font-bold transition-colors shadow-2xs shrink-0"
+            className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-bold transition-all shadow-2xs shrink-0"
             title="Atención por WhatsApp"
           >
-            <MessageCircle className="w-4 h-4 fill-white text-emerald-600" />
+            <MessageCircle className="w-4 h-4 fill-white text-[#10B981]" />
             <span className="hidden xl:inline">WhatsApp</span>
           </a>
 
           {/* Mis Compras Link */}
-          <Link
-            href="/pedidos"
-            className="hidden sm:flex items-center gap-1.5 py-1.5 px-2.5 rounded-md hover:bg-white/15 text-white transition-colors"
-          >
-            <Package className="w-4 h-4 text-white/90" />
-            <span className="font-medium hidden md:inline">Mis compras</span>
-          </Link>
+          {session && (
+            <Link
+              href="/pedidos"
+              className="hidden sm:flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl hover:bg-[#F4EDE5] text-[#2B231F] transition-colors font-bold"
+            >
+              <Package className="w-4 h-4 text-[#6E655F]" />
+              <span className="hidden md:inline">Mis compras</span>
+            </Link>
+          )}
 
-          {/* Cart with Badge */}
+          {/* Cart with Badge in Primary #C85A32 */}
           <Link
             href="/carrito"
-            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-md hover:bg-white/15 text-white transition-colors relative"
+            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl hover:bg-[#F4EDE5] text-[#2B231F] transition-colors relative"
           >
             <div className="relative">
-              <ShoppingCart className="w-5 h-5 text-white" />
+              <ShoppingCart className="w-5 h-5 text-[#2B231F]" />
               {totalCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-[#00d2ff] text-[#0f172a] font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
+                <span className="absolute -top-2 -right-2 bg-[#C85A32] text-white font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
                   {totalCount}
                 </span>
               )}
             </div>
-            <span className="font-semibold hidden lg:inline">Carrito</span>
+            <span className="font-bold hidden lg:inline text-[#2B231F]">Carrito</span>
           </Link>
         </div>
       </div>
 
       {/* Second Row: Navigation & Location */}
-      <div className="border-t border-white/15 bg-[#0055d4] text-xs px-4 py-1.5 hidden md:block">
+      <div className="border-t border-[#EBE5DF] bg-[#FAF6F0] text-xs px-4 py-1.5 hidden md:block">
         <div className="max-w-[1400px] mx-auto flex items-center justify-between">
           {/* Location deliver-to */}
-          <div className="flex items-center gap-1.5 text-white/90 hover:text-white cursor-pointer py-1 px-2 rounded hover:bg-white/10 transition-colors">
-            <MapPin className="w-4 h-4 text-[#00d2ff]" />
+          <div className="flex items-center gap-1.5 text-[#2B231F] hover:text-[#C85A32] cursor-pointer py-1 px-2 rounded-lg hover:bg-white transition-colors">
+            <MapPin className="w-4 h-4 text-[#C85A32]" />
             <div className="flex items-center gap-1">
-              <span className="text-white/70">Enviar a</span>
-              <span className="font-bold text-white">Lima, Perú</span>
+              <span className="text-[#6E655F] font-medium">Enviar a</span>
+              <span className="font-bold text-[#2B231F]">Lima, Perú</span>
             </div>
           </div>
 
-          {/* Categories & Main Navigation */}
-          <nav className="flex items-center gap-1 text-white">
+          {/* Categories & Main Navigation in text-main */}
+          <nav className="flex items-center gap-1">
             {/* Categorías Dropdown */}
             <div
               className="relative"
               onMouseEnter={() => setShowCategoriesMenu(true)}
               onMouseLeave={() => setShowCategoriesMenu(false)}
             >
-              <button className="nova-nav-link flex items-center gap-1 cursor-pointer font-semibold">
+              <button className="nova-nav-link flex items-center gap-1 cursor-pointer font-bold text-[#2B231F]">
                 <span>Categorías</span>
-                <ChevronDown className="w-3.5 h-3.5 text-white/70" />
+                <ChevronDown className="w-3.5 h-3.5 text-[#6E655F]" />
               </button>
 
               {showCategoriesMenu && (
-                <div className="absolute left-0 top-full mt-1 w-60 bg-white text-[#191919] rounded-lg shadow-xl border border-gray-100 py-2 z-50 animate-in fade-in duration-100">
-                  {categories.length === 0 ? (
-                    <div className="px-4 py-3 text-xs text-gray-500">
-                      <p className="font-medium text-gray-700 mb-1">Sin categorías registradas</p>
-                      <p className="text-[11px] text-gray-400">
-                        Registra categorías en NOVA BG para verlas aquí.
-                      </p>
-                    </div>
-                  ) : (
-                    categories.map((cat) => (
-                      <Link
-                        key={cat.id}
-                        href={`/categoria/${cat.slug}`}
-                        className="flex items-center gap-2 px-4 py-2 hover:bg-blue-50 hover:text-[#0066ff] transition-colors"
-                      >
-                        <Layers className="w-4 h-4 text-[#0066ff]" />
-                        <span>{cat.nombre}</span>
-                      </Link>
-                    ))
-                  )}
-                  <div className="border-t border-gray-100 my-1"></div>
-                  <Link
-                    href="/categoria/todos"
-                    className="flex items-center justify-between px-4 py-2 text-xs font-semibold text-[#0066ff] hover:bg-blue-50"
-                  >
-                    <span>Ver catálogo completo</span>
-                    <span>&rarr;</span>
-                  </Link>
+                <div className="absolute left-0 top-full pt-2 w-64 z-50">
+                  <div className="bg-white text-[#2B231F] rounded-2xl shadow-xl border border-[#EBE5DF] py-2 animate-in fade-in duration-100">
+                    {categories.length === 0 ? (
+                      <div className="px-4 py-3 text-xs text-[#6E655F]">
+                        <p className="font-bold text-[#2B231F] mb-1">Sin categorías registradas</p>
+                        <p className="text-[11px] text-[#6E655F]">
+                          Registra categorías en NOVA BG para verlas aquí.
+                        </p>
+                      </div>
+                    ) : (
+                      categories.map((cat) => (
+                        <Link
+                          key={cat.id}
+                          href={`/categoria/${cat.slug}`}
+                          className="flex items-center gap-2.5 px-4 py-2 hover:bg-[#FDFBF7] hover:text-[#C85A32] font-semibold transition-colors"
+                        >
+                          <Layers className="w-4 h-4 text-[#C85A32]" />
+                          <span>{cat.nombre}</span>
+                        </Link>
+                      ))
+                    )}
+                    <div className="border-t border-[#EBE5DF] my-1"></div>
+                    <Link
+                      href="/categoria/todos"
+                      className="flex items-center justify-between px-4 py-2 text-xs font-bold text-[#C85A32] hover:bg-[#FDFBF7]"
+                    >
+                      <span>Ver catálogo completo</span>
+                      <span>&rarr;</span>
+                    </Link>
+                  </div>
                 </div>
               )}
             </div>
 
             {/* Dynamic Navbar Links for registered NOVA BG categories */}
             {categories.slice(0, 4).map((cat) => (
-              <Link key={cat.id} href={`/categoria/${cat.slug}`} className="nova-nav-link">
+              <Link key={cat.id} href={`/categoria/${cat.slug}`} className="nova-nav-link font-semibold text-[#2B231F]">
                 {cat.nombre}
               </Link>
             ))}
 
-            <Link href="/categoria/ofertas" className="nova-nav-link">
-              Ofertas
-            </Link>
-            <Link href="/pedidos" className="nova-nav-link">
-              Mis Compras
-            </Link>
-            <Link href="/servicio-al-cliente" className="nova-nav-link hidden lg:inline-flex">
-              Ayuda
-            </Link>
+
+            {session && (
+              <Link href="/pedidos" className="nova-nav-link font-semibold text-[#2B231F]">
+                Mis Compras
+              </Link>
+            )}
           </nav>
 
-          {/* NOVA FULL Badge */}
-          <div className="flex items-center gap-1 text-[#00d2ff] font-bold text-xs">
-            <Zap className="w-3.5 h-3.5 fill-[#00d2ff]" />
-            <span>NOVA FULL • Envíos a todo el Perú</span>
+          {/* NOVA Despacho Seguro Badge */}
+          <div className="flex items-center gap-1.5 text-[#10B981] font-bold text-xs bg-[#ECFDF5] border border-[#10B981]/20 px-2.5 py-0.5 rounded-full">
+            <Zap className="w-3.5 h-3.5 fill-[#10B981]" />
+            <span>Despacho Seguro a todo el Perú</span>
           </div>
         </div>
       </div>

@@ -12,40 +12,34 @@ interface StoreSubNavProps {
 
 export function StoreSubNav({ onOpenDrawer, categories = [] }: StoreSubNavProps) {
   return (
-    <div className="bg-[#0f172a] text-white text-xs px-4 py-2 flex items-center justify-between overflow-x-auto no-scrollbar md:hidden">
-      <div className="flex items-center gap-2">
+    <div className="bg-[#FAF6F0] text-[#2B231F] text-xs px-4 py-2.5 flex items-center justify-between overflow-x-auto no-scrollbar md:hidden border-b border-[#EBE5DF]">
+      <div className="flex items-center gap-3">
         <button
           onClick={onOpenDrawer}
-          className="flex items-center gap-1 font-semibold text-white/90 hover:text-white shrink-0 cursor-pointer"
+          className="flex items-center gap-1 font-bold text-[#2B231F] hover:text-[#C85A32] shrink-0 cursor-pointer"
         >
           <Menu className="w-4 h-4" />
           <span>Menú</span>
         </button>
 
-        <div className="h-4 w-px bg-white/20 shrink-0"></div>
+        <div className="h-4 w-px bg-[#EBE5DF] shrink-0"></div>
 
         {categories.slice(0, 3).map((cat) => (
           <Link
             key={cat.id}
             href={`/categoria/${cat.slug}`}
-            className="text-white/80 hover:text-white shrink-0"
+            className="text-[#6E655F] hover:text-[#2B231F] font-semibold shrink-0"
           >
             {cat.nombre}
           </Link>
         ))}
 
-        <Link
-          href="/categoria/ofertas"
-          className="flex items-center gap-1 text-[#00d2ff] font-semibold shrink-0"
-        >
-          <Flame className="w-3.5 h-3.5" />
-          <span>Ofertas</span>
-        </Link>
+
       </div>
 
-      <div className="flex items-center gap-1 text-[11px] text-[#00d2ff] font-bold shrink-0 ml-2">
-        <Zap className="w-3 h-3 fill-[#00d2ff]" />
-        <span>FULL Express</span>
+      <div className="flex items-center gap-1 text-[11px] text-[#10B981] font-bold shrink-0 ml-2 bg-[#ECFDF5] border border-[#10B981]/20 px-2 py-0.5 rounded-full">
+        <Zap className="w-3 h-3 fill-[#10B981]" />
+        <span>Despacho Seguro</span>
       </div>
     </div>
   )

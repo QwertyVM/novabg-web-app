@@ -15,6 +15,8 @@ export interface StorePublicConfig {
   anuncioTopLink: string
   fraseHero: string
   subtituloHero: string
+  habilitarSeccion3d: boolean
+  habilitarSeccionBg: boolean
   instagramUrl: string
   tiktokUrl: string
   facebookUrl: string
@@ -68,6 +70,8 @@ export async function getStorePublicConfig(negocio: string = 'BG'): Promise<Stor
         subtituloHero:
           config.subtituloHero ||
           'Descubre juegos de mesa, organizadores a medida y accesorios exclusivos diseñados para optimizar cada noche de juego.',
+        habilitarSeccion3d: config.habilitarSeccion3d ?? true,
+        habilitarSeccionBg: config.habilitarSeccionBg ?? true,
         instagramUrl: config.instagramUrl || 'https://instagram.com/novabg.pe',
         tiktokUrl: config.tiktokUrl || 'https://tiktok.com/@novabg.pe',
         facebookUrl: config.facebookUrl || '',
@@ -108,6 +112,8 @@ export async function getStorePublicConfig(negocio: string = 'BG'): Promise<Stor
     subtituloHero: is3D
       ? 'Fabricamos accesorios modulares, miniaturas y piezas técnicas de la más alta calidad.'
       : 'Descubre juegos de mesa, organizadores a medida y accesorios exclusivos.',
+    habilitarSeccion3d: true,
+    habilitarSeccionBg: true,
     instagramUrl: is3D ? 'https://instagram.com/nova3d.pe' : 'https://instagram.com/novabg.pe',
     tiktokUrl: is3D ? 'https://tiktok.com/@nova3d.pe' : 'https://tiktok.com/@novabg.pe',
     facebookUrl: '',

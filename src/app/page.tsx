@@ -8,7 +8,8 @@ import {
   getStoreActiveBanners,
 } from '@/features/catalog/services/store-config.service'
 import { getProductImage } from '@/shared/utils'
-import { Dice5, Sparkles, Printer, Flame } from 'lucide-react'
+import { Sparkles } from 'lucide-react'
+import { NovaLogo } from '@/shared/components/branding'
 
 export const dynamic = 'force-dynamic'
 
@@ -18,12 +19,19 @@ interface HomePageProps {
 
 export default async function HomePage({ searchParams }: HomePageProps) {
   const resolvedParams = searchParams ? await searchParams : {}
-  const targetNegocio = resolvedParams.sec === '3D' ? '3D' : 'BG'
+  const rawNegocio = resolvedParams.sec === '3D' ? '3D' : 'BG'
+
+  // Fetch store config first
+  const bgConfig = await getStorePublicConfig('BG')
+  const is3DEnabled = bgConfig.habilitarSeccion3d !== false
+
+  // If 3D is disabled, enforce BG
+  const targetNegocio = is3DEnabled && rawNegocio === '3D' ? '3D' : 'BG'
   const is3D = targetNegocio === '3D'
 
-  // Fetch store config, banners, and categories in parallel
+  // Fetch store config, banners, and categories in parallel for target section
   const [storeConfig, dbBanners, categories] = await Promise.all([
-    getStorePublicConfig(targetNegocio),
+    targetNegocio === 'BG' ? Promise.resolve(bgConfig) : getStorePublicConfig('3D'),
     getStoreActiveBanners(targetNegocio),
     getNovaStoreCategories(targetNegocio),
   ])
@@ -77,7 +85,7 @@ export default async function HomePage({ searchParams }: HomePageProps) {
 
   return (
     <div className="pb-16 space-y-6">
-      {/* 1. Hero Banner Carousel (Dynamically loaded from ERP) */}
+      {/* 1. Hero Banner Carousel in Light Warm Scheme */}
       <HeroBanner dbBanners={dbBanners} section={targetNegocio as 'BG' | '3D'} />
 
       {/* 2. Benefits Strip & Category Fast Access */}
@@ -90,20 +98,20 @@ export default async function HomePage({ searchParams }: HomePageProps) {
       {/* 3. Products Area */}
       <div className="px-4">
         {formattedProducts.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-gray-200/80 p-10 sm:p-14 text-center max-w-2xl mx-auto shadow-xs space-y-4 my-4">
-            <div className="w-16 h-16 rounded-full bg-blue-50 text-[#0066ff] flex items-center justify-center mx-auto">
-              {is3D ? <Printer className="w-8 h-8 text-amber-600" /> : <Dice5 className="w-8 h-8" />}
+          <div className="bg-white rounded-3xl border border-[#EBE5DF] p-10 sm:p-14 text-center max-w-2xl mx-auto shadow-sm space-y-5 my-6">
+            <div className="flex justify-center">
+              <NovaLogo size="lg" variant="icon" section={is3D ? '3D' : 'BG'} />
             </div>
-            <h2 className="text-xl font-bold text-gray-900">
+            <h2 className="text-xl sm:text-2xl font-black text-[#2B231F]">
               Catálogo Oficial {storeConfig.nombreTienda} en Preparación
             </h2>
-            <p className="text-xs text-gray-500 leading-relaxed max-w-md mx-auto">
+            <p className="text-xs text-[#6E655F] leading-relaxed max-w-md mx-auto">
               Actualmente no hay productos registrados bajo la sección <strong>{targetNegocio}</strong>.
               En cuanto los registres o actives en el módulo de gestión web del ERP, aparecerán automáticamente en esta tienda.
             </p>
-            <div className="pt-2 flex items-center justify-center gap-2 text-xs text-emerald-700 font-semibold bg-emerald-50 py-2 px-4 rounded-xl w-fit mx-auto border border-emerald-100">
-              <Sparkles className="w-4 h-4 text-emerald-600" />
-              <span>Conexión directa y en tiempo real con la base de datos de NOVA ({targetNegocio})</span>
+            <div className="pt-2 flex items-center justify-center gap-2 text-xs text-[#10B981] font-bold bg-[#ECFDF5] py-2.5 px-4 rounded-xl w-fit mx-auto border border-[#10B981]/20">
+              <Sparkles className="w-4 h-4 text-[#10B981]" />
+              <span>Conexión en tiempo real con la base de datos de NOVA ({targetNegocio})</span>
             </div>
           </div>
         ) : (
@@ -150,4 +158,3 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     </div>
   )
 }
-
