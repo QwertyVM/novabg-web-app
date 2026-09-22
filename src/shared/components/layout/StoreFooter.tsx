@@ -49,7 +49,7 @@ export function StoreFooter({ categories = [], storeConfig }: StoreFooterProps) 
 
       {/* Trust Grid in Clean Surface */}
       <div className="bg-[#FAF6F0] border-b border-[#EBE5DF] py-10 px-4">
-        <div className="max-w-[1200px] mx-auto grid grid-cols-1 md:grid-cols-4 gap-6 text-center md:text-left">
+        <div className="max-w-[1200px] mx-auto grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-6 text-center md:text-left">
           <div className="flex flex-col items-center gap-3 justify-center text-center">
             <div className="w-12 h-12 rounded-2xl bg-[#FDF4EE] text-[#C85A32] flex items-center justify-center shrink-0 border border-[#C85A32]/20 shadow-2xs">
               <CreditCard className="w-5 h-5 stroke-[2.2]" />

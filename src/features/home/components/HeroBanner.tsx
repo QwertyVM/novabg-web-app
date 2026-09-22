@@ -248,7 +248,7 @@ export function HeroBanner({ dbBanners = [], section = 'BG' }: HeroBannerProps) 
 
             {/* Main Headline in text-main */}
             <div className="space-y-2">
-              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-[44px] font-black tracking-tight leading-[1.14] text-[#2B231F]">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-[44px] font-black tracking-tight leading-[1.14] text-[#2B231F]">
                 {activeSlide.title}{' '}
                 <span className="block sm:inline text-[#C85A32]">
                   {activeSlide.highlightText}
@@ -263,11 +263,11 @@ export function HeroBanner({ dbBanners = [], section = 'BG' }: HeroBannerProps) 
 
 
             {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4">
               {/* Primary Button: solid primary #C85A32 with white text */}
               <Link
                 href={activeSlide.ctaPrimaryLink}
-                className="btn-nova-primary text-xs sm:text-sm font-bold px-6 sm:px-7 py-3.5 rounded-xl cursor-pointer"
+                className="btn-nova-primary w-full sm:w-auto text-center justify-center text-xs sm:text-sm font-bold px-6 sm:px-7 py-3.5 rounded-xl flex items-center gap-2 cursor-pointer"
               >
                 <span>{activeSlide.ctaPrimaryText}</span>
                 <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
@@ -276,7 +276,7 @@ export function HeroBanner({ dbBanners = [], section = 'BG' }: HeroBannerProps) 
               {/* Secondary Button: outline with primary/text-main border */}
               <Link
                 href={activeSlide.ctaSecondaryLink}
-                className="bg-white hover:bg-[#F8F2EB] text-[#2B231F] hover:text-[#C85A32] text-xs sm:text-sm font-bold px-5 sm:px-6 py-3.5 rounded-xl border border-[#EBE5DF] hover:border-[#D9B89C] transition-all shadow-2xs cursor-pointer"
+                className="bg-white hover:bg-[#F8F2EB] w-full sm:w-auto text-center justify-center text-[#2B231F] hover:text-[#C85A32] text-xs sm:text-sm font-bold px-5 sm:px-6 py-3.5 flex items-center rounded-xl border border-[#EBE5DF] hover:border-[#D9B89C] transition-all shadow-2xs cursor-pointer"
               >
                 {activeSlide.ctaSecondaryText}
               </Link>

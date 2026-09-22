@@ -112,7 +112,7 @@ export function StoreHeader({
         {/* Mobile menu trigger */}
         <button
           onClick={onOpenDrawer}
-          className="md:hidden p-1.5 rounded-xl hover:bg-[#F8F2EB] text-[#2B231F] cursor-pointer"
+          className="md:hidden w-11 h-11 flex items-center justify-center rounded-xl hover:bg-[#F8F2EB] text-[#2B231F] cursor-pointer"
           aria-label="Abrir menú"
         >
           <Menu className="w-6 h-6" />
@@ -342,7 +342,7 @@ export function StoreHeader({
           {/* Cart with Badge in Primary #C85A32 */}
           <Link
             href="/carrito"
-            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl hover:bg-[#F4EDE5] text-[#2B231F] transition-colors relative"
+            className="flex items-center justify-center sm:justify-start gap-1.5 w-11 h-11 sm:w-auto sm:h-auto sm:py-1.5 sm:px-2.5 rounded-xl hover:bg-[#F4EDE5] text-[#2B231F] transition-colors relative"
           >
             <div className="relative">
               <ShoppingCart className="w-5 h-5 text-[#2B231F]" />

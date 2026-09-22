@@ -64,7 +64,7 @@ export function SideDrawer({ isOpen, onClose, categories = [] }: SideDrawerProps
         </div>
 
         {/* Content in Clean Surface */}
-        <div className="flex-1 overflow-y-auto py-4 text-sm text-[#2B231F] bg-[#FDFBF7]">
+        <div className="flex-1 overflow-y-auto py-4 text-sm text-[#2B231F] bg-white">
           <div className="px-5 mb-3">
             <NovaLogo size="sm" />
           </div>
