@@ -44,7 +44,7 @@ export function DashboardCards({ categories = [] }: DashboardCardsProps) {
               <p className="text-xs sm:text-sm font-bold text-gray-900 leading-snug">
                 Envío Gratis FULL
               </p>
-              <p className="text-[11px] text-[#00a650] font-semibold">Despacho en 24h</p>
+              <p className="text-[11px] text-[#00a650] font-semibold">Despacho rápido y seguro</p>
             </div>
           </div>
 

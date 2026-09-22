@@ -45,7 +45,7 @@ export function StoreSubNav({ onOpenDrawer, categories = [] }: StoreSubNavProps)
 
       <div className="flex items-center gap-1 text-[11px] text-[#00d2ff] font-bold shrink-0 ml-2">
         <Zap className="w-3 h-3 fill-[#00d2ff]" />
-        <span>FULL 24h</span>
+        <span>FULL Express</span>
       </div>
     </div>
   )

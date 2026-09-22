@@ -53,7 +53,7 @@ export function getProductImage(name: string, category: string = ''): string {
 
 export function getEstimatedDeliveryDate(): string {
   const date = new Date()
-  date.setDate(date.getDate() + 1)
+  date.setDate(date.getDate() + 3)
   const days = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado']
   const months = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
   return `${days[date.getDay()]}, ${date.getDate()} de ${months[date.getMonth()]}`

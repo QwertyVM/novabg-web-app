@@ -21,7 +21,7 @@ const BANNERS = [
     id: 2,
     title: 'Torres de Dados & Rol Épico',
     subtitle: 'Diseños temáticos para tus campañas de D&D, dados poliédricos y accesorios.',
-    tag: 'FULL 24H DELIVERY',
+    tag: 'ENVÍO RÁPIDO FULL',
     highlight: 'ENVÍO GRATIS FULL',
     cta: 'Explorar Colección',
     link: '/categoria/rol',

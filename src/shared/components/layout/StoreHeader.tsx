@@ -356,7 +356,7 @@ export function StoreHeader({ onOpenDrawer, categories = [] }: StoreHeaderProps)
           {/* NOVA FULL Badge */}
           <div className="flex items-center gap-1 text-[#00d2ff] font-bold text-xs">
             <Zap className="w-3.5 h-3.5 fill-[#00d2ff]" />
-            <span>NOVA FULL • Envíos 24h</span>
+            <span>NOVA FULL • Envíos a todo el Perú</span>
           </div>
         </div>
       </div>
