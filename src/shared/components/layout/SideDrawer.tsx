@@ -42,7 +42,15 @@ export function SideDrawer({ isOpen, onClose, categories = [] }: SideDrawerProps
                 <button
                   onClick={() => {
                     onClose()
-                    signIn('google')
+                    const width = 500
+                    const height = 600
+                    const left = window.screen.width / 2 - width / 2
+                    const top = window.screen.height / 2 - height / 2
+                    window.open(
+                      '/auth/google-redirect',
+                      'GoogleSignIn',
+                      `width=${width},height=${height},top=${top},left=${left},toolbar=no,menubar=no,scrollbars=yes,resizable=no`
+                    )
                   }}
                   className="text-xs text-[#C85A32] hover:underline font-bold cursor-pointer"
                 >

@@ -47,6 +47,29 @@ export function StoreHeader({
   const [showAccountMenu, setShowAccountMenu] = useState(false)
   const [showCategoriesMenu, setShowCategoriesMenu] = useState(false)
 
+  // Auth Popup Logic
+  React.useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data === 'popup-signin-success') {
+        window.location.reload()
+      }
+    }
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [])
+
+  const handleSignIn = () => {
+    const width = 500
+    const height = 600
+    const left = window.screen.width / 2 - width / 2
+    const top = window.screen.height / 2 - height / 2
+    window.open(
+      '/auth/google-redirect',
+      'GoogleSignIn',
+      `width=${width},height=${height},top=${top},left=${left},toolbar=no,menubar=no,scrollbars=yes,resizable=no`
+    )
+  }
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (!searchTerm.trim()) {
@@ -198,7 +221,7 @@ export function StoreHeader({
           >
             <button
               onClick={() => {
-                if (!session) signIn('google')
+                if (!session) handleSignIn()
                 else router.push('/pedidos')
               }}
               className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl hover:bg-[#F4EDE5] text-[#2B231F] transition-colors cursor-pointer"
@@ -244,8 +267,8 @@ export function StoreHeader({
                           Ingresa a tu cuenta oficial de NOVA
                         </p>
                         <button
-                          onClick={() => signIn('google')}
-                          className="w-full btn-nova-primary text-xs py-2 shadow-xs mb-1.5 flex items-center justify-center gap-2"
+                          onClick={handleSignIn}
+                          className="w-full btn-nova-primary text-xs py-2 shadow-xs mb-1.5 flex items-center justify-center gap-2 cursor-pointer"
                         >
                           <svg className="w-4 h-4 bg-white rounded-full p-0.5" viewBox="0 0 24 24">
                             <path
