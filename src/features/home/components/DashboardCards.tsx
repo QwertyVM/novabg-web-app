@@ -6,17 +6,27 @@ import {
   CreditCard,
   ShieldCheck,
   ChevronRight,
-  Zap,
+  Truck,
   Dice5,
   Layers,
 } from 'lucide-react'
 import { NovaCategory } from '@/features/catalog/types/catalog.types'
+import { StorePublicConfig } from '@/features/catalog/services/store-config.service'
 
 interface DashboardCardsProps {
   categories?: NovaCategory[]
+  storeConfig?: StorePublicConfig
+  section?: 'BG' | '3D'
 }
 
-export function DashboardCards({ categories = [] }: DashboardCardsProps) {
+export function DashboardCards({
+  categories = [],
+  storeConfig,
+  section = 'BG',
+}: DashboardCardsProps) {
+  const storeName = storeConfig?.nombreTienda || (section === '3D' ? 'NOVA 3D' : 'NOVA BG')
+  const warrantyDays = storeConfig?.diasGarantia || 30
+
   return (
     <div className="px-4 max-w-[1400px] mx-auto -mt-6 sm:-mt-10 relative z-20 space-y-6 mb-8">
       {/* 1. Benefits Bar Strip */}
@@ -38,11 +48,11 @@ export function DashboardCards({ categories = [] }: DashboardCardsProps) {
           {/* Benefit 2 */}
           <div className="flex items-center gap-3.5 pt-2 sm:pt-0 sm:pl-6">
             <div className="w-10 h-10 rounded-full bg-blue-50 text-[#0066ff] flex items-center justify-center shrink-0 border border-blue-100">
-              <Zap className="w-5 h-5 fill-[#0066ff]" />
+              <Truck className="w-5 h-5 text-[#0066ff]" />
             </div>
             <div>
               <p className="text-xs sm:text-sm font-bold text-gray-900 leading-snug">
-                Envíos a Todo el Perú
+                Envíos a todo el Perú
               </p>
               <p className="text-[11px] text-gray-500 font-medium">Lima y Provincias (Olva / Shalom)</p>
             </div>
@@ -55,9 +65,9 @@ export function DashboardCards({ categories = [] }: DashboardCardsProps) {
             </div>
             <div>
               <p className="text-xs sm:text-sm font-bold text-gray-900 leading-snug">
-                Compra Protegida
+                {warrantyDays} días de garantía
               </p>
-              <p className="text-[11px] text-gray-500">Garantía oficial NOVA BG</p>
+              <p className="text-[11px] text-gray-500">Garantía oficial {storeName}</p>
             </div>
           </div>
 
@@ -68,20 +78,20 @@ export function DashboardCards({ categories = [] }: DashboardCardsProps) {
             </div>
             <div>
               <p className="text-xs sm:text-sm font-bold text-gray-900 leading-snug">
-                Juegos Oficiales
+                Catálogo Certificado
               </p>
-              <p className="text-[11px] text-gray-500">Catálogo certificado NOVA BG</p>
+              <p className="text-[11px] text-gray-500">Calidad garantizada {storeName}</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* 2. Category Quick-Access (Rendered Dynamically from NOVA BG) */}
+      {/* 2. Category Quick-Access (Rendered Dynamically) */}
       {categories.length > 0 && (
         <div className="bg-white rounded-xl shadow-xs border border-gray-200/80 p-5">
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-bold text-gray-900 uppercase tracking-wider text-xs">
-              Categorías de NOVA BG
+              Categorías de {storeName}
             </h2>
             <Link
               href="/categoria/todos"
@@ -102,10 +112,17 @@ export function DashboardCards({ categories = [] }: DashboardCardsProps) {
                 <div className="w-10 h-10 rounded-lg bg-blue-50 text-[#0066ff] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform">
                   <Layers className="w-5 h-5" />
                 </div>
-                <div>
-                  <p className="text-xs font-bold text-gray-900 group-hover:text-[#0066ff] leading-tight">
-                    {cat.nombre}
-                  </p>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-1">
+                    <p className="text-xs font-bold text-gray-900 group-hover:text-[#0066ff] leading-tight truncate">
+                      {cat.nombre}
+                    </p>
+                    {cat.badgeWeb && (
+                      <span className="text-[9px] font-black bg-amber-100 text-amber-800 px-1 rounded">
+                        {cat.badgeWeb}
+                      </span>
+                    )}
+                  </div>
                   <p className="text-[10px] text-gray-500">Ver artículos</p>
                 </div>
               </Link>
@@ -116,3 +133,4 @@ export function DashboardCards({ categories = [] }: DashboardCardsProps) {
     </div>
   )
 }
+

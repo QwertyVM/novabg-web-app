@@ -29,20 +29,22 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
       ? matchedCat.nombre
       : 'Catálogo de NOVA BG'
 
-  // Fetch active products strictly for NOVA BG
+  // Fetch active products
   let productsDb: any[] = []
   try {
     productsDb = await prisma.producto.findMany({
-      where: getNovaBgProductsWhere(),
-      orderBy: { nombreModelo: 'asc' },
+      where: { activo: true },
+      orderBy: [{ enOferta: 'desc' }, { nombreModelo: 'asc' }],
     })
   } catch (e) {
     console.error('Error cargando categoría:', e)
   }
 
-  // Filter based on category slug if matched
+  // Filter based on category slug or ofertas
   let filtered = productsDb
-  if (matchedCat) {
+  if (slug === 'ofertas') {
+    filtered = productsDb.filter((p) => p.enOferta)
+  } else if (matchedCat) {
     filtered = productsDb.filter(
       (p) =>
         p.lineaCategoria.toLowerCase().includes(matchedCat.nombre.toLowerCase()) ||
@@ -52,10 +54,19 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
 
   const formattedProducts: ProductItem[] = filtered.map((p, idx) => ({
     id: p.id,
+    negocio: p.negocio,
     nombreModelo: p.nombreModelo,
     lineaCategoria: p.lineaCategoria,
     precioMercado: Number(p.precioMercado),
-    imagen: getProductImage(p.nombreModelo, p.lineaCategoria),
+    stock: p.stock ?? 0,
+    controlarStock: p.controlarStock ?? false,
+    enOferta: p.enOferta ?? false,
+    precioOferta: p.precioOferta ? Number(p.precioOferta) : null,
+    porcentajeDescuento: p.porcentajeDescuento ?? 0,
+    badgePromocion: p.badgePromocion || (p.enOferta ? `${p.porcentajeDescuento || 15}% OFF` : undefined),
+    destacadoWeb: p.destacadoWeb ?? false,
+    descripcionWeb: p.descripcionWeb || undefined,
+    imagen: p.imagenUrl || getProductImage(p.nombreModelo, p.lineaCategoria),
     rating: 4.8 + (idx % 3) * 0.1,
     reviewsCount: 20 + idx * 12,
     isBestSeller: idx === 0,

@@ -26,18 +26,33 @@ export function BuyBox({ product }: BuyBoxProps) {
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
 
-  const { integer, cents } = formatPriceParts(product.precioMercado)
-  const isFreeShipping = product.precioMercado >= 35
+  // Calculate effective price with discounts
+  const isEnOferta = product.enOferta && (product.precioOferta != null || (product.porcentajeDescuento ?? 0) > 0)
+  const finalPrice = isEnOferta
+    ? (product.precioOferta != null && product.precioOferta > 0
+        ? product.precioOferta
+        : Number((product.precioMercado * (1 - (product.porcentajeDescuento || 15) / 100)).toFixed(2)))
+    : product.precioMercado
+
+  const { integer, cents } = formatPriceParts(finalPrice)
+  const { integer: origInt, cents: origCents } = formatPriceParts(product.precioMercado)
+  const isFreeShipping = finalPrice >= 35
   const estimatedDate = getEstimatedDeliveryDate()
-  const installmentValue = (product.precioMercado / 3).toFixed(2)
+  const installmentValue = (finalPrice / 3).toFixed(2)
+
+  // Stock status
+  const isControlledStock = product.controlarStock === true
+  const maxStock = isControlledStock ? (product.stock ?? 0) : 99
+  const isOutOfStock = isControlledStock && maxStock <= 0
 
   const handleAddToCart = () => {
+    if (isOutOfStock) return
     addItem(
       {
         id: product.id,
         nombreModelo: product.nombreModelo,
         lineaCategoria: product.lineaCategoria,
-        precioMercado: product.precioMercado,
+        precioMercado: finalPrice,
         imagen: product.imagen,
       },
       quantity
@@ -47,12 +62,13 @@ export function BuyBox({ product }: BuyBoxProps) {
   }
 
   const handleBuyNow = () => {
+    if (isOutOfStock) return
     addItem(
       {
         id: product.id,
         nombreModelo: product.nombreModelo,
         lineaCategoria: product.lineaCategoria,
-        precioMercado: product.precioMercado,
+        precioMercado: finalPrice,
         imagen: product.imagen,
       },
       quantity
@@ -64,12 +80,30 @@ export function BuyBox({ product }: BuyBoxProps) {
     <div className="bg-white rounded-2xl border border-gray-200/80 p-5 sm:p-6 shadow-xs space-y-4 text-[#191919] select-none">
       {/* Price Header */}
       <div>
+        {isEnOferta && (
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-xs text-gray-400 line-through">
+              S/ {origInt}.{origCents}
+            </span>
+            <span className="text-[10px] font-black bg-amber-50 text-amber-700 border border-amber-200 px-1.5 py-0.5 rounded">
+              {product.badgePromocion || `${product.porcentajeDescuento || 15}% OFF`}
+            </span>
+          </div>
+        )}
         <div className="flex items-baseline gap-1">
           <span className="text-sm font-medium text-gray-800">S/</span>
-          <span className="text-3xl font-extrabold text-gray-900 tracking-tight leading-none">
+          <span
+            className={`text-3xl font-extrabold tracking-tight leading-none ${
+              isEnOferta ? 'text-amber-600' : 'text-gray-900'
+            }`}
+          >
             {integer}
           </span>
-          <span className="text-xs font-bold text-gray-900 self-start leading-none -ml-0.5">
+          <span
+            className={`text-xs font-bold self-start leading-none -ml-0.5 ${
+              isEnOferta ? 'text-amber-600' : 'text-gray-900'
+            }`}
+          >
             {cents}
           </span>
         </div>
@@ -93,16 +127,27 @@ export function BuyBox({ product }: BuyBoxProps) {
         </div>
       </div>
 
-      {/* Stock Availability */}
-      <div>
-        <p className="text-xs font-bold text-emerald-700 flex items-center gap-1">
-          <Check className="w-4 h-4 text-emerald-600" />
-          <span>Stock disponible</span>
-        </p>
-        <p className="text-[11px] text-gray-500 mt-0.5">
-          Garantía y despacho directo desde el almacén oficial de NOVA BG
-        </p>
-      </div>
+        {/* Stock Availability */}
+        <div>
+          {isOutOfStock ? (
+            <p className="text-xs font-bold text-red-600 flex items-center gap-1">
+              <span>Agotado temporalmente</span>
+            </p>
+          ) : isControlledStock ? (
+            <p className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+              <Check className="w-4 h-4 text-emerald-600" />
+              <span>Stock disponible ({maxStock} unidades)</span>
+            </p>
+          ) : (
+            <p className="text-xs font-bold text-emerald-700 flex items-center gap-1">
+              <Check className="w-4 h-4 text-emerald-600" />
+              <span>Stock disponible</span>
+            </p>
+          )}
+          <p className="text-[11px] text-gray-500 mt-0.5">
+            Garantía y despacho directo desde el almacén oficial de NOVA
+          </p>
+        </div>
 
       {/* Quantity Selector */}
       <div className="flex items-center gap-3 pt-1">

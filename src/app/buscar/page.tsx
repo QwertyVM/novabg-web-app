@@ -16,12 +16,17 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
   const query = typeof sParams.q === 'string' ? sParams.q.trim() : ''
   const dept = typeof sParams.dept === 'string' ? sParams.dept : 'todos'
 
-  // Fetch active products strictly for NOVA BG
+  const targetNegocio = typeof sParams.sec === 'string' && sParams.sec === '3D' ? '3D' : (typeof sParams.sec === 'string' && sParams.sec === 'BG' ? 'BG' : undefined)
+
+  // Fetch active products
   let productsDb: any[] = []
   try {
     productsDb = await prisma.producto.findMany({
-      where: getNovaBgProductsWhere(),
-      orderBy: { nombreModelo: 'asc' },
+      where: {
+        activo: true,
+        ...(targetNegocio ? { negocio: targetNegocio } : {}),
+      },
+      orderBy: [{ enOferta: 'desc' }, { nombreModelo: 'asc' }],
     })
   } catch (e) {
     console.error('Error en búsqueda:', e)
@@ -52,10 +57,19 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
 
   const formattedProducts: ProductItem[] = filtered.map((p, idx) => ({
     id: p.id,
+    negocio: p.negocio,
     nombreModelo: p.nombreModelo,
     lineaCategoria: p.lineaCategoria,
     precioMercado: Number(p.precioMercado),
-    imagen: getProductImage(p.nombreModelo, p.lineaCategoria),
+    stock: p.stock ?? 0,
+    controlarStock: p.controlarStock ?? false,
+    enOferta: p.enOferta ?? false,
+    precioOferta: p.precioOferta ? Number(p.precioOferta) : null,
+    porcentajeDescuento: p.porcentajeDescuento ?? 0,
+    badgePromocion: p.badgePromocion || (p.enOferta ? `${p.porcentajeDescuento || 15}% OFF` : undefined),
+    destacadoWeb: p.destacadoWeb ?? false,
+    descripcionWeb: p.descripcionWeb || undefined,
+    imagen: p.imagenUrl || getProductImage(p.nombreModelo, p.lineaCategoria),
     rating: 4.8 + (idx % 3) * 0.1,
     reviewsCount: 15 + idx * 8,
     isBestSeller: idx === 0,

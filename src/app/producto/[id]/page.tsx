@@ -16,11 +16,11 @@ interface ProductPageProps {
 export default async function ProductDetailPage({ params }: ProductPageProps) {
   const { id } = await params
 
-  // Find product strictly belonging to NOVA BG
+  // Find product (active in either BG or 3D)
   const product = await prisma.producto.findFirst({
     where: {
       id,
-      ...getNovaBgProductsWhere(),
+      activo: true,
     },
   })
 
@@ -28,27 +28,63 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     notFound()
   }
 
-  // Related products strictly from NOVA BG
+  // Related products from the same business
   const relatedDb = await prisma.producto.findMany({
     where: {
-      ...getNovaBgProductsWhere(),
+      negocio: product.negocio,
+      activo: true,
       id: { not: id },
     },
     take: 6,
   })
 
-  const imageSrc = getProductImage(product.nombreModelo, product.lineaCategoria)
-  const priceParts = formatPriceParts(Number(product.precioMercado))
+  const isEnOferta = product.enOferta && (product.precioOferta != null || (product.porcentajeDescuento ?? 0) > 0)
+  const finalPrice = isEnOferta
+    ? (product.precioOferta != null && Number(product.precioOferta) > 0
+        ? Number(product.precioOferta)
+        : Number((Number(product.precioMercado) * (1 - (product.porcentajeDescuento || 15) / 100)).toFixed(2)))
+    : Number(product.precioMercado)
+
+  const imageSrc = product.imagenUrl || getProductImage(product.nombreModelo, product.lineaCategoria)
+  const priceParts = formatPriceParts(finalPrice)
+  const origPriceParts = formatPriceParts(Number(product.precioMercado))
   const deliveryDate = getEstimatedDeliveryDate()
-  const originalPrice = (Number(product.precioMercado) * 1.2).toFixed(2)
-  const installment12x = (Number(product.precioMercado) / 12).toFixed(2)
+  const installment12x = (finalPrice / 12).toFixed(2)
+
+  const currentProductItem: ProductItem = {
+    id: product.id,
+    negocio: product.negocio,
+    nombreModelo: product.nombreModelo,
+    lineaCategoria: product.lineaCategoria,
+    precioMercado: Number(product.precioMercado),
+    precioAmigos: product.precioAmigos ? Number(product.precioAmigos) : undefined,
+    costoBase: product.costoBase ? Number(product.costoBase) : undefined,
+    pesoGramos: product.pesoGramos ? Number(product.pesoGramos) : 0,
+    stock: product.stock ?? 0,
+    controlarStock: product.controlarStock ?? false,
+    enOferta: product.enOferta ?? false,
+    precioOferta: product.precioOferta ? Number(product.precioOferta) : null,
+    porcentajeDescuento: product.porcentajeDescuento ?? 0,
+    badgePromocion: product.badgePromocion || (product.enOferta ? `${product.porcentajeDescuento || 15}% OFF` : undefined),
+    destacadoWeb: product.destacadoWeb ?? false,
+    descripcionWeb: product.descripcionWeb || undefined,
+    activo: product.activo ?? true,
+    imagen: imageSrc,
+  }
 
   const formattedRelated: ProductItem[] = relatedDb.map((p, idx) => ({
     id: p.id,
+    negocio: p.negocio,
     nombreModelo: p.nombreModelo,
     lineaCategoria: p.lineaCategoria,
     precioMercado: Number(p.precioMercado),
-    imagen: getProductImage(p.nombreModelo, p.lineaCategoria),
+    stock: p.stock ?? 0,
+    controlarStock: p.controlarStock ?? false,
+    enOferta: p.enOferta ?? false,
+    precioOferta: p.precioOferta ? Number(p.precioOferta) : null,
+    porcentajeDescuento: p.porcentajeDescuento ?? 0,
+    badgePromocion: p.badgePromocion || undefined,
+    imagen: p.imagenUrl || getProductImage(p.nombreModelo, p.lineaCategoria),
     rating: 4.8 + (idx % 2) * 0.1,
     reviewsCount: 32 + idx * 14,
   }))
@@ -101,14 +137,16 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
             {/* Price Section */}
             <div className="py-3 border-y border-gray-100 space-y-1">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400 line-through">
-                  S/ {originalPrice}
-                </span>
-                <span className="text-xs font-bold text-[#00a650] bg-emerald-50 px-2 py-0.5 rounded">
-                  20% OFF
-                </span>
-              </div>
+              {isEnOferta && (
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-400 line-through">
+                    S/ {origPriceParts.integer},{origPriceParts.cents}
+                  </span>
+                  <span className="text-xs font-bold text-[#00a650] bg-emerald-50 px-2 py-0.5 rounded">
+                    {product.badgePromocion || `${product.porcentajeDescuento || Math.round((1 - finalPrice / Number(product.precioMercado)) * 100)}% OFF`}
+                  </span>
+                </div>
+              )}
 
               <div className="flex items-baseline gap-1">
                 <span className="text-base font-bold text-gray-900">S/</span>
@@ -193,15 +231,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
           {/* Right Column: Buy Box (3 cols) */}
           <div className="lg:col-span-3">
-            <BuyBox
-              product={{
-                id: product.id,
-                nombreModelo: product.nombreModelo,
-                precioMercado: Number(product.precioMercado),
-                lineaCategoria: product.lineaCategoria,
-                imagen: imageSrc,
-              }}
-            />
+            <BuyBox product={currentProductItem} />
           </div>
         </div>
 

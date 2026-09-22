@@ -16,21 +16,34 @@ import {
   Zap,
   Layers,
   Dice5,
+  Phone,
+  MessageCircle,
+  X,
+  Printer,
 } from 'lucide-react'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { useCart } from '@/features/cart/context/CartContext'
 import { NovaCategory } from '@/features/catalog/types/catalog.types'
+import { StorePublicConfig } from '@/features/catalog/services/store-config.service'
 
 interface StoreHeaderProps {
   onOpenDrawer: () => void
   categories?: NovaCategory[]
+  storeConfig?: StorePublicConfig
+  activeSection?: 'BG' | '3D'
 }
 
-export function StoreHeader({ onOpenDrawer, categories = [] }: StoreHeaderProps) {
+export function StoreHeader({
+  onOpenDrawer,
+  categories = [],
+  storeConfig,
+  activeSection = 'BG',
+}: StoreHeaderProps) {
   const router = useRouter()
   const { data: session } = useSession()
   const { totalCount } = useCart()
 
+  const [topBannerDismissed, setTopBannerDismissed] = useState(false)
   const [department, setDepartment] = useState('todos')
   const [searchTerm, setSearchTerm] = useState('')
   const [showAccountMenu, setShowAccountMenu] = useState(false)
@@ -51,12 +64,50 @@ export function StoreHeader({ onOpenDrawer, categories = [] }: StoreHeaderProps)
     if (department !== 'todos') {
       params.set('dept', department)
     }
+    if (activeSection) {
+      params.set('sec', activeSection)
+    }
     router.push(`/buscar?${params.toString()}`)
   }
 
+  // Clean WhatsApp URL
+  const phone = storeConfig?.telefonoContacto || '+51 924 812 345'
+  const cleanPhone = phone.replace(/[^\d]/g, '')
+  const whatsappMsg = storeConfig?.whatsappMensaje || '¡Hola! Quisiera información sobre los productos.'
+  const whatsappUrl = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(whatsappMsg)}`
+
+  const is3D = activeSection === '3D'
+
   return (
-    <header className="bg-[#0066ff] text-white select-none sticky top-0 z-40 shadow-sm">
-      {/* Top Main Bar */}
+    <header className="text-white select-none sticky top-0 z-40 shadow-sm transition-colors" style={{ backgroundColor: is3D ? '#b45309' : '#0066ff' }}>
+      {/* 1. TOP ANNOUNCEMENT BANNER (Configured in ERP) */}
+      {storeConfig?.anuncioTopActivo && !topBannerDismissed && (
+        <div className="bg-[#0f172a] text-white text-xs py-1.5 px-4 border-b border-white/10 flex items-center justify-between">
+          <div className="max-w-[1400px] mx-auto flex-1 flex items-center justify-center text-center gap-2">
+            <span className="text-xs font-medium tracking-wide">
+              {storeConfig.anuncioTopTexto}
+            </span>
+            {storeConfig.anuncioTopLink && (
+              <Link
+                href={storeConfig.anuncioTopLink}
+                className="text-[#00d2ff] hover:underline font-bold text-[11px] shrink-0"
+              >
+                Ver más →
+              </Link>
+            )}
+          </div>
+          <button
+            type="button"
+            onClick={() => setTopBannerDismissed(true)}
+            className="text-white/60 hover:text-white p-0.5 rounded cursor-pointer"
+            title="Cerrar aviso"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {/* 2. Top Main Bar */}
       <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4 px-4 py-2.5">
         {/* Mobile menu trigger */}
         <button
@@ -67,28 +118,52 @@ export function StoreHeader({ onOpenDrawer, categories = [] }: StoreHeaderProps)
           <Menu className="w-6 h-6" />
         </button>
 
-        {/* Brand Logo: NOVA BG */}
+        {/* Brand Logo: NOVA (BG / 3D) */}
         <Link
-          href="/"
+          href={is3D ? '/?sec=3D' : '/'}
           className="flex items-center gap-2 py-0.5 px-1 rounded-lg hover:opacity-95 transition-opacity shrink-0 group"
         >
           <div className="w-8 h-8 rounded-lg bg-white/15 backdrop-blur-xs flex items-center justify-center border border-white/25 shadow-xs group-hover:scale-105 transition-transform">
-            <Dice5 className="w-5 h-5 text-[#00d2ff]" />
+            {is3D ? <Printer className="w-5 h-5 text-amber-300" /> : <Dice5 className="w-5 h-5 text-[#00d2ff]" />}
           </div>
           <div className="flex flex-col leading-none">
             <div className="flex items-center gap-1">
               <span className="text-xl font-black tracking-tight text-white drop-shadow-xs">
                 NOVA
               </span>
-              <span className="text-xs font-black px-1.5 py-0.5 rounded-sm bg-[#00d2ff] text-[#0f172a] tracking-wider uppercase shadow-2xs">
-                BG
+              <span
+                className={`text-xs font-black px-1.5 py-0.5 rounded-sm tracking-wider uppercase shadow-2xs ${
+                  is3D ? 'bg-amber-300 text-[#0f172a]' : 'bg-[#00d2ff] text-[#0f172a]'
+                }`}
+              >
+                {is3D ? '3D' : 'BG'}
               </span>
             </div>
             <span className="text-[10px] text-white/80 font-medium tracking-wide">
-              Board Games
+              {is3D ? '3D Printing & Design' : 'Board Games'}
             </span>
           </div>
         </Link>
+
+        {/* Section Switcher (BG / 3D) */}
+        <div className="hidden sm:flex items-center bg-black/20 p-0.5 rounded-lg border border-white/20 text-xs shrink-0">
+          <Link
+            href="/"
+            className={`px-2.5 py-1 rounded-md font-bold transition-all ${
+              !is3D ? 'bg-white text-[#0066ff] shadow-xs' : 'text-white/80 hover:text-white'
+            }`}
+          >
+            Juegos BG
+          </Link>
+          <Link
+            href="/?sec=3D"
+            className={`px-2.5 py-1 rounded-md font-bold transition-all ${
+              is3D ? 'bg-white text-amber-800 shadow-xs' : 'text-white/80 hover:text-white'
+            }`}
+          >
+            Impresión 3D
+          </Link>
+        </div>
 
         {/* Mercado Libre Style Minimalist Search Bar */}
         <form
@@ -249,6 +324,18 @@ export function StoreHeader({ onOpenDrawer, categories = [] }: StoreHeaderProps)
               </div>
             )}
           </div>
+
+          {/* WhatsApp Direct Contact Button */}
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-md bg-emerald-500/90 hover:bg-emerald-500 text-white font-bold transition-colors shadow-2xs shrink-0"
+            title="Atención por WhatsApp"
+          >
+            <MessageCircle className="w-4 h-4 fill-white text-emerald-600" />
+            <span className="hidden xl:inline">WhatsApp</span>
+          </a>
 
           {/* Mis Compras Link */}
           <Link
