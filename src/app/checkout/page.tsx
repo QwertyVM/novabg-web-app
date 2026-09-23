@@ -82,21 +82,26 @@ export default function CheckoutPage() {
           .join('\n')
 
         const mensaje = [
-          `🛒 *NUEVO PEDIDO — NOVA BG*`,
-          `Código: *${res.pedido.codigo}*`,
+          `🎉 *¡NUEVO PEDIDO DESDE LA WEB!* 🎉`,
+          `Hola equipo de Nova BG, acabo de realizar un pedido. Aquí están los detalles:`,
           ``,
-          `👤 *Comprador:* ${nombre}${dni ? ` (DNI: ${dni})` : ''}`,
-          `📱 *WhatsApp:* ${telefono}`,
-          `📦 *Entrega:* ${direccion}, ${distrito}`,
-          `💳 *Pago preferido:* ${metodoPago}`,
-          notas ? `📝 *Nota:* ${notas}` : '',
+          `🏷️ *Código de Orden:* ${res.pedido.codigo}`,
           ``,
-          `📦 *Productos:*`,
+          `👤 *Mis Datos:*`,
+          `• *Nombre:* ${nombre}${dni ? ` (DNI: ${dni})` : ''}`,
+          `• *Celular:* ${telefono}`,
+          ``,
+          `📍 *Detalles de Entrega:*`,
+          `• *Dirección:* ${direccion}, ${distrito}`,
+          `• *Pago preferido:* ${metodoPago}`,
+          notas ? `📝 *Nota adicional:* ${notas}` : '',
+          ``,
+          `🛍️ *Mi Pedido:*`,
           lineasProductos,
           ``,
-          `💰 *Total: S/ ${subtotal.toFixed(2)}*`,
+          `💳 *TOTAL A PAGAR: S/ ${subtotal.toFixed(2)}*`,
           ``,
-          `— Enviado desde la tienda web novabg.pe`,
+          `¡Quedo atento(a) para coordinar la entrega! 🚀`,
         ]
           .filter((l) => l !== '')
           .join('\n')
