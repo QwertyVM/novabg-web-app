@@ -38,12 +38,24 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     take: 6,
   })
 
-  const isEnOferta = product.enOferta && (product.precioOferta != null || (product.porcentajeDescuento ?? 0) > 0)
-  const finalPrice = isEnOferta
-    ? (product.precioOferta != null && Number(product.precioOferta) > 0
-        ? Number(product.precioOferta)
-        : Number((Number(product.precioMercado) * (1 - (product.porcentajeDescuento || 15) / 100)).toFixed(2)))
-    : Number(product.precioMercado)
+  let tempPrice = Number(product.precioMercado)
+  let calculatedDiscount = product.porcentajeDescuento
+
+  if (product.enOferta) {
+    if (product.precioOferta != null && Number(product.precioOferta) > 0) {
+      tempPrice = Number(product.precioOferta)
+      if (!calculatedDiscount && tempPrice < Number(product.precioMercado)) {
+        calculatedDiscount = Math.round((1 - tempPrice / Number(product.precioMercado)) * 100)
+      }
+    } else {
+      calculatedDiscount = calculatedDiscount || 15
+      tempPrice = Number((Number(product.precioMercado) * (1 - calculatedDiscount / 100)).toFixed(2))
+    }
+  }
+
+  const isEnOferta = product.enOferta && tempPrice < Number(product.precioMercado)
+  const finalPrice = isEnOferta ? tempPrice : Number(product.precioMercado)
+  const displayDiscount = product.badgePromocion || `${calculatedDiscount || 15}% OFF`
 
   const imageSrc = product.imagenUrl || getProductImage(product.nombreModelo, product.lineaCategoria)
   const priceParts = formatPriceParts(finalPrice)
@@ -143,7 +155,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                     S/ {origPriceParts.integer},{origPriceParts.cents}
                   </span>
                   <span className="text-xs font-black text-[#C85A32] bg-[#FDF4EE] border border-[#C85A32]/30 px-2 py-0.5 rounded-md">
-                    {product.badgePromocion || `${product.porcentajeDescuento || Math.round((1 - finalPrice / Number(product.precioMercado)) * 100)}% OFF`}
+                    {displayDiscount}
                   </span>
                 </div>
               )}

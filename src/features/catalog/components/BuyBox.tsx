@@ -25,13 +25,25 @@ export function BuyBox({ product }: BuyBoxProps) {
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
 
-  // Calculate effective price with discounts
-  const isEnOferta = product.enOferta && (product.precioOferta != null || (product.porcentajeDescuento ?? 0) > 0)
-  const finalPrice = isEnOferta
-    ? (product.precioOferta != null && product.precioOferta > 0
-        ? product.precioOferta
-        : Number((product.precioMercado * (1 - (product.porcentajeDescuento || 15) / 100)).toFixed(2)))
-    : product.precioMercado
+  // Calculate effective price
+  let tempPrice = product.precioMercado
+  let calculatedDiscount = product.porcentajeDescuento
+
+  if (product.enOferta) {
+    if (product.precioOferta != null && product.precioOferta > 0) {
+      tempPrice = product.precioOferta
+      if (!calculatedDiscount && tempPrice < product.precioMercado) {
+        calculatedDiscount = Math.round((1 - tempPrice / product.precioMercado) * 100)
+      }
+    } else {
+      calculatedDiscount = calculatedDiscount || 15
+      tempPrice = Number((product.precioMercado * (1 - calculatedDiscount / 100)).toFixed(2))
+    }
+  }
+
+  const isEnOferta = product.enOferta && tempPrice < product.precioMercado
+  const finalPrice = isEnOferta ? tempPrice : product.precioMercado
+  const displayDiscount = product.badgePromocion || `${calculatedDiscount || 15}% OFF`
 
   const { integer, cents } = formatPriceParts(finalPrice)
   const { integer: origInt, cents: origCents } = formatPriceParts(product.precioMercado)
@@ -84,7 +96,7 @@ export function BuyBox({ product }: BuyBoxProps) {
               S/ {origInt}.{origCents}
             </span>
             <span className="text-[10px] font-black bg-[#FDF4EE] text-[#C85A32] border border-[#C85A32]/30 px-2 py-0.5 rounded-md">
-              {product.badgePromocion || `${product.porcentajeDescuento || 15}% OFF`}
+              {displayDiscount}
             </span>
           </div>
         )}

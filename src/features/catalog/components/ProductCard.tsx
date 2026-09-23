@@ -18,12 +18,24 @@ export function ProductCard({ product }: ProductCardProps) {
   const [isFavorite, setIsFavorite] = useState(false)
 
   // Calculate effective price
-  const isEnOferta = product.enOferta && (product.precioOferta != null || (product.porcentajeDescuento ?? 0) > 0)
-  const finalPrice = isEnOferta
-    ? (product.precioOferta != null && product.precioOferta > 0
-        ? product.precioOferta
-        : Number((product.precioMercado * (1 - (product.porcentajeDescuento || 15) / 100)).toFixed(2)))
-    : product.precioMercado
+  let tempPrice = product.precioMercado
+  let calculatedDiscount = product.porcentajeDescuento
+
+  if (product.enOferta) {
+    if (product.precioOferta != null && product.precioOferta > 0) {
+      tempPrice = product.precioOferta
+      if (!calculatedDiscount && tempPrice < product.precioMercado) {
+        calculatedDiscount = Math.round((1 - tempPrice / product.precioMercado) * 100)
+      }
+    } else {
+      calculatedDiscount = calculatedDiscount || 15
+      tempPrice = Number((product.precioMercado * (1 - calculatedDiscount / 100)).toFixed(2))
+    }
+  }
+
+  const isEnOferta = product.enOferta && tempPrice < product.precioMercado
+  const finalPrice = isEnOferta ? tempPrice : product.precioMercado
+  const displayDiscount = product.badgePromocion || `${calculatedDiscount || 15}% OFF`
 
   const { integer, cents } = formatPriceParts(finalPrice)
   const { integer: origInt, cents: origCents } = formatPriceParts(product.precioMercado)
@@ -41,7 +53,7 @@ export function ProductCard({ product }: ProductCardProps) {
         {isEnOferta && (
           <span className="bg-[#C85A32] text-white font-black text-[10px] px-2.5 py-0.5 rounded-lg shadow-xs flex items-center gap-1 uppercase tracking-wider">
             <Flame className="w-3 h-3 fill-white" />
-            <span>{product.badgePromocion || `${product.porcentajeDescuento || 15}% OFF`}</span>
+            <span>{displayDiscount}</span>
           </span>
         )}
         {product.isBestSeller && !isEnOferta && (
