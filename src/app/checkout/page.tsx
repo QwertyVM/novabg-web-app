@@ -14,7 +14,11 @@ import {
   Briefcase,
   Building2,
   Plus,
-  Check
+  Check,
+  Copy,
+  Clock,
+  Smartphone,
+  Landmark,
 } from 'lucide-react'
 import { useSession, signIn } from 'next-auth/react'
 import { useCart } from '@/features/cart'
@@ -30,6 +34,13 @@ interface DireccionOption {
   distrito: string
   referencia?: string | null
   esPrincipal: boolean
+}
+
+interface PendingOrderInfo {
+  id: string
+  codigo: string
+  total: number
+  whatsappUrl: string
 }
 
 export default function CheckoutPage() {
@@ -52,8 +63,17 @@ export default function CheckoutPage() {
 
   const [metodoPago, setMetodoPago] = useState('YAPE')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [orderComplete, setOrderComplete] = useState<{ codigo: string; whatsappUrl: string } | null>(null)
-  const [storeWhatsapp, setStoreWhatsapp] = useState('51999999999')
+  const [pendingOrder, setPendingOrder] = useState<PendingOrderInfo | null>(null)
+  const [depositConfirmed, setDepositConfirmed] = useState(false)
+  const [copiedField, setCopiedField] = useState<string | null>(null)
+  const [storeWhatsapp, setStoreWhatsapp] = useState('51945398747')
+  const [paymentConfig, setPaymentConfig] = useState({
+    yapeNumero: '945398747',
+    yapeTitular: 'Víctor Monzon Anglas',
+    bcpNumeroCuenta: '',
+    bcpCci: '',
+    bcpTitular: 'Víctor Monzon Anglas',
+  })
   const [hasAutofilled, setHasAutofilled] = useState(false)
 
   // Autocompletar datos del comprador y direcciones desde el perfil del usuario autenticado
@@ -106,9 +126,24 @@ export default function CheckoutPage() {
           const cleanNumber = data.telefonoContacto.replace(/\D/g, '')
           setStoreWhatsapp(cleanNumber)
         }
+        setPaymentConfig({
+          yapeNumero: data.yapeNumero || '945398747',
+          yapeTitular: data.yapeTitular || 'Víctor Monzon Anglas',
+          bcpNumeroCuenta: data.bcpNumeroCuenta || '',
+          bcpCci: data.bcpCci || '',
+          bcpTitular: data.bcpTitular || 'Víctor Monzon Anglas',
+        })
       })
       .catch((err) => console.error('Error fetching store config:', err))
   }, [])
+
+  const handleCopy = (text: string, label: string) => {
+    if (!text) return
+    navigator.clipboard.writeText(text)
+    setCopiedField(label)
+    toast.success(`${label} copiado`)
+    setTimeout(() => setCopiedField(null), 2500)
+  }
 
   const getApodoIcon = (apodo: string) => {
     const lower = apodo.toLowerCase()
@@ -161,37 +196,16 @@ export default function CheckoutPage() {
       })
 
       if (res.success && res.pedido) {
-        // Build WhatsApp message with all order details
-        const lineasProductos = items
-          .map((i) => `  • ${i.nombreModelo} x${i.cantidad} — S/ ${(i.precioMercado * i.cantidad).toFixed(2)}`)
-          .join('\n')
+        // Mensaje exacto requerido para confirmar compra por WhatsApp
+        const mensajeExacto = [
+          `🎲 ¡Hola, Nova BG! Acabo de realizar un pedido en la web.`,
+          ``,
+          `Código de pedido: ${res.pedido.codigo}`,
+          ``,
+          `Quiero continuar con la coordinación para finalizar mi compra.`
+        ].join('\n')
 
-        const mensaje = [
-          `🎉 *¡NUEVO PEDIDO DESDE LA WEB!* 🎉`,
-          `Hola equipo de Nova BG, acabo de realizar un pedido. Aquí están los detalles:`,
-          ``,
-          `🏷️ *Código de Orden:* ${res.pedido.codigo}`,
-          ``,
-          `👤 *Mis Datos:*`,
-          `• *Nombre:* ${nombre}${dni ? ` (DNI: ${dni})` : ''}`,
-          `• *Celular:* ${telefono}`,
-          ``,
-          `📍 *Detalles de Entrega:*`,
-          `• *Dirección:* ${direccion}, ${distrito}`,
-          notas ? `• *Referencia:* ${notas}` : '',
-          `• *Pago preferido:* ${metodoPago}`,
-          ``,
-          `🛍️ *Mi Pedido:*`,
-          lineasProductos,
-          ``,
-          `💳 *TOTAL A PAGAR: S/ ${subtotal.toFixed(2)}*`,
-          ``,
-          `¡Quedo atento(a) para coordinar la entrega! 🚀`,
-        ]
-          .filter((l) => l !== '')
-          .join('\n')
-
-        const whatsappUrl = `https://wa.me/${storeWhatsapp}?text=${encodeURIComponent(mensaje)}`
+        const whatsappUrl = `https://wa.me/${storeWhatsapp}?text=${encodeURIComponent(mensajeExacto)}`
 
         // Si el usuario registró una dirección nueva y desea guardarla en su lista
         if (session?.user?.email && (selectedAddressId === 'new' || savedAddresses.length === 0) && saveNewAddress) {
@@ -222,10 +236,13 @@ export default function CheckoutPage() {
         }
 
         clearCart()
-        setOrderComplete({ codigo: res.pedido.codigo, whatsappUrl })
-        // Auto-redirect to WhatsApp
-        window.open(whatsappUrl, '_blank')
-        toast.success('¡Pedido confirmado! Abriendo WhatsApp...')
+        setPendingOrder({
+          id: res.pedido.id,
+          codigo: res.pedido.codigo,
+          total: subtotal,
+          whatsappUrl,
+        })
+        toast.success('¡Pedido guardado en pendiente! Revisa las cuentas para tu abono.')
       } else {
         toast.error(res.error || 'Error al procesar el pedido')
       }
@@ -236,37 +253,199 @@ export default function CheckoutPage() {
     }
   }
 
-  if (orderComplete) {
+  if (pendingOrder) {
     return (
-      <div className="py-16 px-4 max-w-[700px] mx-auto">
-        <div className="bg-white p-8 sm:p-10 rounded-3xl border border-[#EBE5DF] shadow-sm text-center space-y-5">
-          <div className="w-16 h-16 bg-[#EBF7F0] text-[#10B981] border border-[#10B981]/30 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
-            <CheckCircle2 className="w-10 h-10" />
+      <div className="py-12 px-4 max-w-[680px] mx-auto animate-in fade-in duration-300">
+        <div className="bg-white p-6 sm:p-10 rounded-3xl border border-[#EBE5DF] shadow-md space-y-6">
+          {/* Header de Estado */}
+          <div className="text-center space-y-2">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#FEF9C3] border border-[#FDE047] text-[#854D0E] text-xs font-bold shadow-2xs">
+              <Clock className="w-3.5 h-3.5" />
+              <span>Pedido guardado — Estado: PENDIENTE</span>
+            </div>
+            <h1 className="text-2xl sm:text-3xl font-black text-[#2B231F] tracking-tight">
+              ¡Tu pedido está registrado!
+            </h1>
+            <p className="text-xs text-[#6E655F] max-w-md mx-auto">
+              Realiza el abono correspondiente por <strong>Yape</strong> o <strong>Transferencia BCP</strong> y confirma el depósito para continuar con la coordinación.
+            </p>
           </div>
-          <h1 className="text-2xl font-black text-[#2B231F]">¡Pedido registrado en NOVA!</h1>
-          <div className="bg-[#FDFBF7] border border-[#EBE5DF] rounded-2xl p-5 max-w-md mx-auto text-xs text-[#6E655F] space-y-1">
-            <p className="text-[#6E655F]">Código de confirmación:</p>
-            <p className="text-2xl font-black text-[#C85A32] tracking-wider py-1">{orderComplete.codigo}</p>
+
+          {/* Resumen del Código y Monto */}
+          <div className="bg-[#FDFBF7] border border-[#EBE5DF] rounded-2xl p-5 grid grid-cols-2 gap-4 text-center divide-x divide-[#EBE5DF]">
+            <div>
+              <span className="block text-[11px] font-bold text-[#6E655F] uppercase tracking-wider">Código de Pedido</span>
+              <div className="flex items-center justify-center gap-1.5 mt-1">
+                <span className="font-mono text-xl sm:text-2xl font-black text-[#C85A32]">{pendingOrder.codigo}</span>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(pendingOrder.codigo, 'Código de pedido')}
+                  className="p-1 rounded-lg hover:bg-[#F2ECE4] text-[#6E655F] transition-colors cursor-pointer"
+                  title="Copiar código"
+                >
+                  {copiedField === 'Código de pedido' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <span className="block text-[11px] font-bold text-[#6E655F] uppercase tracking-wider">Total a Pagar</span>
+              <span className="font-mono text-xl sm:text-2xl font-black text-[#2B231F] mt-1 block">
+                {formatPrice(pendingOrder.total)}
+              </span>
+            </div>
           </div>
-          <p className="text-xs text-[#6E655F] max-w-md mx-auto leading-relaxed">
-            Tu pedido fue registrado. Si no se abrió WhatsApp automáticamente, haz clic en el botón de abajo para enviarnos los detalles.
-          </p>
-          <div className="pt-2 flex flex-col items-center gap-3">
-            <a
-              href={orderComplete.whatsappUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe5a] text-white font-bold text-sm px-6 py-3 rounded-2xl shadow-sm transition-colors"
+
+          {/* Opciones de Pago (Yape y BCP) */}
+          <div className="space-y-4">
+            <h3 className="text-xs font-black uppercase text-[#6E655F] tracking-wider text-center">
+              Elige cómo pagar tu pedido:
+            </h3>
+
+            {/* Tarjeta 1: YAPE */}
+            <div className="p-4 sm:p-5 rounded-2xl border-2 border-[#732282]/20 bg-gradient-to-br from-[#FAF5FC] to-white space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-1 rounded-lg bg-[#732282] text-white text-xs font-black tracking-wide uppercase shadow-2xs">
+                    Yape
+                  </span>
+                  <span className="font-bold text-xs text-[#2B231F]">Pagar desde tu app de Yape</span>
+                </div>
+                <Smartphone className="w-4 h-4 text-[#732282]" />
+              </div>
+
+              <div className="bg-white p-3.5 rounded-xl border border-[#732282]/20 flex items-center justify-between gap-3">
+                <div>
+                  <span className="text-[10px] text-[#6E655F] block font-semibold">Número de celular / Yape</span>
+                  <span className="font-mono text-base font-black text-[#732282] tracking-wider">
+                    {paymentConfig.yapeNumero}
+                  </span>
+                  <span className="text-[11px] text-[#6E655F] block">
+                    Titular: <strong>{paymentConfig.yapeTitular}</strong>
+                  </span>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => handleCopy(paymentConfig.yapeNumero, 'Número de Yape')}
+                  className="px-3 py-1.5 rounded-xl bg-[#732282] hover:bg-[#5e1b6b] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer"
+                >
+                  {copiedField === 'Número de Yape' ? (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      <span>Copiado</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3.5 h-3.5" />
+                      <span>Copiar</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+
+            {/* Tarjeta 2: Transferencia BCP */}
+            <div className="p-4 sm:p-5 rounded-2xl border-2 border-[#002A8F]/20 bg-gradient-to-br from-[#F4F7FC] to-white space-y-3">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <span className="px-2.5 py-1 rounded-lg bg-[#002A8F] text-[#FF7800] text-xs font-black tracking-wide uppercase shadow-2xs">
+                    BCP
+                  </span>
+                  <span className="font-bold text-xs text-[#2B231F]">Transferencia Bancaria BCP</span>
+                </div>
+                <Landmark className="w-4 h-4 text-[#002A8F]" />
+              </div>
+
+              <div className="space-y-2">
+                {/* Número de cuenta */}
+                <div className="bg-white p-3 rounded-xl border border-[#002A8F]/20 flex items-center justify-between gap-3">
+                  <div>
+                    <span className="text-[10px] text-[#6E655F] block font-semibold">Número de Cuenta BCP</span>
+                    <span className="font-mono text-xs sm:text-sm font-bold text-[#002A8F]">
+                      {paymentConfig.bcpNumeroCuenta || 'Consultar número por WhatsApp'}
+                    </span>
+                    <span className="text-[11px] text-[#6E655F] block">
+                      Titular: <strong>{paymentConfig.bcpTitular}</strong>
+                    </span>
+                  </div>
+                  {paymentConfig.bcpNumeroCuenta && (
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(paymentConfig.bcpNumeroCuenta, 'Cuenta BCP')}
+                      className="px-3 py-1.5 rounded-xl bg-[#002A8F] hover:bg-[#002070] text-white text-xs font-bold flex items-center gap-1.5 transition-all shadow-2xs cursor-pointer shrink-0"
+                    >
+                      {copiedField === 'Cuenta BCP' ? <Check className="w-3.5 h-3.5 text-[#FF7800]" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedField === 'Cuenta BCP' ? 'Copiado' : 'Copiar'}</span>
+                    </button>
+                  )}
+                </div>
+
+                {/* CCI */}
+                {paymentConfig.bcpCci && (
+                  <div className="bg-white p-3 rounded-xl border border-[#002A8F]/20 flex items-center justify-between gap-3">
+                    <div>
+                      <span className="text-[10px] text-[#6E655F] block font-semibold">Código Interbancario (CCI)</span>
+                      <span className="font-mono text-xs sm:text-sm font-bold text-[#2B231F]">
+                        {paymentConfig.bcpCci}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleCopy(paymentConfig.bcpCci, 'CCI BCP')}
+                      className="px-3 py-1.5 rounded-xl border border-[#EBE5DF] hover:bg-[#FAF8F5] text-[#2B231F] text-xs font-bold flex items-center gap-1.5 transition-all cursor-pointer shrink-0"
+                    >
+                      {copiedField === 'CCI BCP' ? <Check className="w-3.5 h-3.5 text-emerald-600" /> : <Copy className="w-3.5 h-3.5" />}
+                      <span>{copiedField === 'CCI BCP' ? 'Copiado' : 'Copiar'}</span>
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Estado de Confirmación */}
+          {depositConfirmed && (
+            <div className="p-4 rounded-2xl bg-[#ECFDF5] border border-[#A7F3D0] text-[#065F46] text-xs space-y-1 text-center animate-in fade-in">
+              <div className="flex items-center justify-center gap-1.5 font-bold text-sm">
+                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                <span>¡Mensaje generado en WhatsApp!</span>
+              </div>
+              <p className="text-[11px] text-[#047857]">
+                Nuestro equipo verificará tu depósito y cambiará el estado a <strong>Pago Validado</strong> para coordinar la entrega.
+              </p>
+            </div>
+          )}
+
+          {/* Botón Principal: Confirmar depósito */}
+          <div className="space-y-3 pt-2 text-center">
+            <button
+              type="button"
+              onClick={() => {
+                window.open(pendingOrder.whatsappUrl, '_blank')
+                setDepositConfirmed(true)
+                toast.success('Abriendo WhatsApp con los datos de tu pedido...')
+              }}
+              className="w-full bg-[#25D366] hover:bg-[#1ebe5a] text-white font-extrabold text-sm sm:text-base px-6 py-4 rounded-2xl shadow-md transition-all flex items-center justify-center gap-2.5 cursor-pointer active:scale-[0.99]"
             >
-              <MessageCircle className="w-5 h-5" />
-              Enviar pedido por WhatsApp
-            </a>
-            <Link
-              href="/"
-              className="text-xs font-bold text-[#6E655F] hover:text-[#2B231F] transition-colors mt-2"
-            >
-              Volver a la tienda
-            </Link>
+              <MessageCircle className="w-5 h-5 fill-white stroke-none" />
+              <span>{depositConfirmed ? 'Reabrir WhatsApp' : 'Confirmar depósito'}</span>
+            </button>
+
+            <div className="flex items-center justify-center gap-4 text-xs font-bold pt-1">
+              <Link
+                href="/pedidos"
+                className="text-[#6E655F] hover:text-[#2B231F] transition-colors"
+              >
+                Ver mis pedidos
+              </Link>
+              <span className="text-[#EBE5DF]">•</span>
+              <Link
+                href="/"
+                className="text-[#C85A32] hover:underline transition-colors"
+              >
+                Volver a la tienda
+              </Link>
+            </div>
           </div>
         </div>
       </div>

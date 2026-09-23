@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { CheckCircle2, ShoppingBag } from 'lucide-react'
+import { CheckCircle2, ShoppingBag, Clock, X } from 'lucide-react'
 import prisma from '@/core/database/prisma'
 import { formatPrice, getProductImage } from '@/shared/utils'
 
@@ -106,10 +106,34 @@ export default async function OrdersPage() {
                 {/* Body Content */}
                 <div className="p-5 sm:p-6 space-y-4">
                   {/* Status Banner */}
-                  <div className="flex items-center gap-2 text-sm font-bold text-[#10B981]">
-                    <CheckCircle2 className="w-5 h-5 text-[#10B981]" />
+                  <div className={`flex items-center gap-2 text-sm font-bold ${
+                    pedido.estado === 'PENDIENTE'
+                      ? 'text-[#854D0E]'
+                      : pedido.estado === 'PAGO_VALIDADO'
+                      ? 'text-[#065F46]'
+                      : pedido.estado === 'ENTREGADO'
+                      ? 'text-[#10B981]'
+                      : pedido.estado === 'CANCELADO'
+                      ? 'text-red-600'
+                      : 'text-[#2B6CB0]'
+                  }`}>
+                    {pedido.estado === 'PENDIENTE' ? (
+                      <Clock className="w-5 h-5 text-[#854D0E]" />
+                    ) : pedido.estado === 'CANCELADO' ? (
+                      <X className="w-5 h-5 text-red-600" />
+                    ) : (
+                      <CheckCircle2 className="w-5 h-5 text-current" />
+                    )}
                     <span>
-                      {pedido.estado === 'ENTREGADO' ? 'Entregado con éxito' : 'En preparación y despacho FULL'}
+                      {pedido.estado === 'PENDIENTE'
+                        ? 'Pendiente de pago / validación'
+                        : pedido.estado === 'PAGO_VALIDADO'
+                        ? 'Pago validado — Preparando despacho'
+                        : pedido.estado === 'ENTREGADO'
+                        ? 'Entregado con éxito'
+                        : pedido.estado === 'CANCELADO'
+                        ? 'Pedido cancelado'
+                        : 'En preparación y despacho FULL'}
                     </span>
                   </div>
 

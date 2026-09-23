@@ -16,6 +16,11 @@ export async function GET(request: Request) {
         whatsappMensaje: true,
         ruc: true,
         horarioAtencion: true,
+        yapeNumero: true,
+        yapeTitular: true,
+        bcpNumeroCuenta: true,
+        bcpCci: true,
+        bcpTitular: true,
       },
     })
 
