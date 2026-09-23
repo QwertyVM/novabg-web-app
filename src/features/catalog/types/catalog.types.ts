@@ -33,5 +33,13 @@ export interface ProductItem {
   reviewsCount?: number
   isBestSeller?: boolean
   isAmazonChoice?: boolean
+  
+  // Integración BGG
+  bggId?: number;
+  bggRating?: number;
+  bggWeight?: number;
+  bggMinPlayers?: number;
+  bggMaxPlayers?: number;
+  bggPlaytime?: number;
 }
 
