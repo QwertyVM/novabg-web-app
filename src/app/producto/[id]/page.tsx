@@ -1,9 +1,8 @@
 import React from 'react'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
-import { Star, Zap, MessageSquare } from 'lucide-react'
 import prisma from '@/core/database/prisma'
-import { ProductGallery, BuyBox, ProductItem, ExpandableDescription } from '@/features/catalog'
+import { ProductGallery, BuyBox, ProductItem, ExpandableDescription, ProductReviewsSection } from '@/features/catalog'
 import { ProductRow } from '@/features/home'
 import { formatPriceParts, getProductImage, getEstimatedDeliveryDate } from '@/shared/utils'
 import { searchBggGame, fetchBggRating, needsBggRefresh } from '@/shared/utils/bgg'
@@ -268,81 +267,18 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
         </div>
 
-        {/* Reñas / Comentarios de Compradores */}
-        <div className="mt-12 pt-8 border-t border-[#EBE5DF]">
-          <h3 className="font-bold text-base text-[#2B231F] mb-4 flex items-center gap-2">
-            <MessageSquare className="w-5 h-5 text-[#C85A32]" />
-            <span>Reseñas de compradores</span>
-            {comentariosDb.length > 0 && (
-              <span className="text-xs font-normal text-[#6E655F]">({comentariosDb.length})</span>
-            )}
-          </h3>
-
-          {comentariosDb.length === 0 ? (
-            <div className="p-6 bg-[#FDFBF7] rounded-2xl border border-[#EBE5DF] text-center text-xs text-[#6E655F]">
-              <MessageSquare className="w-8 h-8 mx-auto text-[#EBE5DF] mb-2" />
-              <p className="font-medium">Aún no hay reseñas para este producto.</p>
-              <p className="mt-1">Sé el primero en compartir tu experiencia.</p>
-            </div>
-          ) : (
-            <div className="space-y-4">
-              {/* Promedio de calificación */}
-              {comentariosDb.length > 0 && (() => {
-                const avg = comentariosDb.reduce((s, c) => s + c.calificacion, 0) / comentariosDb.length
-                return (
-                  <div className="flex items-center gap-3 p-4 bg-[#FDFBF7] rounded-2xl border border-[#EBE5DF]">
-                    <div className="text-center">
-                      <div className="text-3xl font-black text-[#2B231F]">{avg.toFixed(1)}</div>
-                      <div className="flex text-[#F59E0B] justify-center mt-1">
-                        {[1,2,3,4,5].map(i => (
-                          <Star key={i} className={`w-4 h-4 ${i <= Math.round(avg) ? 'fill-current' : 'text-[#EBE5DF]'}`} />
-                        ))}
-                      </div>
-                      <div className="text-[10px] text-[#6E655F] mt-0.5">{comentariosDb.length} reseña{comentariosDb.length !== 1 ? 's' : ''}</div>
-                    </div>
-                    <div className="flex-1 space-y-1">
-                      {[5,4,3,2,1].map(star => {
-                        const count = comentariosDb.filter(c => c.calificacion === star).length
-                        const pct = comentariosDb.length > 0 ? (count / comentariosDb.length) * 100 : 0
-                        return (
-                          <div key={star} className="flex items-center gap-2 text-[10px]">
-                            <span className="w-3 text-right text-[#6E655F]">{star}</span>
-                            <Star className="w-3 h-3 fill-[#F59E0B] text-[#F59E0B]" />
-                            <div className="flex-1 bg-[#EBE5DF] rounded-full h-2">
-                              <div className="bg-[#F59E0B] h-2 rounded-full" style={{ width: `${pct}%` }} />
-                            </div>
-                            <span className="w-4 text-[#6E655F]">{count}</span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                )
-              })()}
-
-              {/* Lista de comentarios */}
-              {comentariosDb.map((c) => (
-                <div key={c.id} className="p-4 bg-[#FDFBF7] rounded-2xl border border-[#EBE5DF] space-y-2">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-7 h-7 rounded-full bg-[#C85A32]/10 text-[#C85A32] flex items-center justify-center font-black text-xs">
-                        {c.autor.charAt(0).toUpperCase()}
-                      </div>
-                      <span className="font-bold text-xs text-[#2B231F]">{c.autor}</span>
-                    </div>
-                    <div className="flex text-[#F59E0B]">
-                      {[1,2,3,4,5].map(i => (
-                        <Star key={i} className={`w-3 h-3 ${i <= c.calificacion ? 'fill-current' : 'text-[#EBE5DF]'}`} />
-                      ))}
-                    </div>
-                  </div>
-                  <p className="text-xs text-[#6E655F] leading-relaxed">{c.texto}</p>
-                  <p className="text-[10px] text-[#9E8F87]">{new Date(c.createdAt).toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
-                </div>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Reseñas y Calificaciones de Compradores */}
+        <ProductReviewsSection
+          productoId={id}
+          productTitle={product.nombreModelo}
+          initialComentarios={comentariosDb.map((c) => ({
+            id: c.id,
+            autor: c.autor,
+            texto: c.texto,
+            calificacion: c.calificacion,
+            createdAt: c.createdAt.toISOString(),
+          }))}
+        />
       </div>
 
       {/* Related Products Carousel */}
