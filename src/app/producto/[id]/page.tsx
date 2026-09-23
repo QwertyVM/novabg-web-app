@@ -7,8 +7,7 @@ import { ProductGallery, BuyBox, ProductItem } from '@/features/catalog'
 import { ProductRow } from '@/features/home'
 import { formatPriceParts, getProductImage, getEstimatedDeliveryDate } from '@/shared/utils'
 import { searchBggGame, fetchBggRating, needsBggRefresh } from '@/shared/utils/bgg'
-import { BggStatsBadge } from '@/features/catalog/components/BggStatsBadge'
-import { getBGGGameInfo } from '@/features/catalog/services/bgg.service'
+import { BggStatsClient } from '@/features/catalog/components/BggStatsClient'
 
 export const dynamic = 'force-dynamic'
 
@@ -104,12 +103,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const origPriceParts = formatPriceParts(Number(product.precioMercado))
   const deliveryDate = getEstimatedDeliveryDate()
 
-  // BGG Full Data para el nuevo Badge
-  let bggFullData = null;
-  if (product.bggId) {
-    bggFullData = await getBGGGameInfo(Number(product.bggId));
-  }
-
   const currentProductItem: ProductItem = {
     id: product.id,
     negocio: product.negocio,
@@ -178,18 +171,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               {product.nombreModelo}
             </h1>
 
-            {/* Ratings y Estadísticas BGG - Nuevo Badge */}
-            {bggFullData ? (
-              <BggStatsBadge 
-                bggId={bggFullData.bggId}
-                rating={bggFullData.bggRating} 
-                weight={bggFullData.bggWeight} 
-                minPlayers={bggFullData.bggMinPlayers}
-                maxPlayers={bggFullData.bggMaxPlayers}
-                playtime={bggFullData.bggPlaytime}
-              />
+            {/* Ratings y Estadísticas BGG - Desde el Cliente para evadir Vercel */}
+            {product.bggId ? (
+              <BggStatsClient bggId={Number(product.bggId)} />
             ) : bggRating !== null ? (
-              <div className="flex items-center gap-2 text-xs">
+              <div className="flex items-center gap-2 text-xs mt-2 mb-4">
                 <div className="flex items-center text-[#F59E0B]">
                   {[1, 2, 3, 4, 5].map((i) => {
                     const filled = i <= Math.floor((bggRating! / 10) * 5)
