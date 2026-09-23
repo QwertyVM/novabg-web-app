@@ -207,18 +207,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </div>
             </div>
 
-            {/* Descripción Web */}
-            {product.descripcionWeb && (
-              <div className="pt-4 text-sm text-[#4E443E] leading-relaxed whitespace-pre-wrap">
-                {product.descripcionWeb}
-              </div>
-            )}
-          </div>
-
-          {/* Right Column: Buy Box (3 cols) */}
-          <div className="lg:col-span-3 space-y-6">
-            <BuyBox product={currentProductItem} />
-
             {/* Technical Specifications — BG specs from DB, fallback for 3D */}
             {[product.editorialMarca, product.numJugadores, product.edadMinima, product.duracionMinutos, product.idioma, product.mecanicas].some(Boolean) && (
               <div className="pt-4 border-t border-[#EBE5DF]">
@@ -267,6 +255,18 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </div>
               </div>
             )}
+
+            {/* Descripción Web */}
+            {product.descripcionWeb && (
+              <div className="pt-4 text-sm text-[#4E443E] leading-relaxed whitespace-pre-wrap">
+                {product.descripcionWeb}
+              </div>
+            )}
+          </div>
+
+          {/* Right Column: Buy Box (3 cols) */}
+          <div className="lg:col-span-3 space-y-6">
+            <BuyBox product={currentProductItem} />
           </div>
         </div>
 
