@@ -66,6 +66,30 @@ export const authOptions: NextAuthOptions = {
               },
             })
           }
+
+          // Auto-crear en la tabla Cliente para que aparezca en el gestor administrativo
+          for (const neg of ['BG', '3D']) {
+            const existingClient = await prisma.cliente.findFirst({
+              where: { email: user.email, negocio: neg }
+            })
+            
+            if (!existingClient) {
+              let newName = user.name || 'Cliente Web'
+              let count = 1
+              while(await prisma.cliente.findUnique({ where: { nombre_negocio: { nombre: newName, negocio: neg} } })) {
+                newName = `${user.name} (${count})`
+                count++
+              }
+              await prisma.cliente.create({
+                data: {
+                  nombre: newName,
+                  email: user.email,
+                  negocio: neg,
+                  canalOrigen: 'Web Store (Google)'
+                }
+              })
+            }
+          }
         } catch (e) {
           console.error('Error sincronizando usuario Google:', e)
         }
