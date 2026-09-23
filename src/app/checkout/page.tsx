@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Lock, CheckCircle2, ShieldCheck, ShoppingBag, MessageCircle } from 'lucide-react'
 import { useSession, signIn } from 'next-auth/react'
@@ -24,9 +24,20 @@ export default function CheckoutPage() {
   const [notas, setNotas] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderComplete, setOrderComplete] = useState<{ codigo: string; whatsappUrl: string } | null>(null)
+  const [storeWhatsapp, setStoreWhatsapp] = useState('51999999999')
 
-  // WhatsApp number (replace with real number)
-  const WHATSAPP_NUMBER = '51999999999' // TODO: load from ConfiguracionTienda
+  useEffect(() => {
+    fetch('/api/config?negocio=BG')
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.telefonoContacto) {
+          // Clean the number from spaces or dashes if any
+          const cleanNumber = data.telefonoContacto.replace(/\D/g, '')
+          setStoreWhatsapp(cleanNumber)
+        }
+      })
+      .catch((err) => console.error('Error fetching store config:', err))
+  }, [])
 
   const formattedSubtotal = formatPrice(subtotal)
 
@@ -90,7 +101,7 @@ export default function CheckoutPage() {
           .filter((l) => l !== '')
           .join('\n')
 
-        const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`
+        const whatsappUrl = `https://wa.me/${storeWhatsapp}?text=${encodeURIComponent(mensaje)}`
 
         clearCart()
         setOrderComplete({ codigo: res.pedido.codigo, whatsappUrl })
