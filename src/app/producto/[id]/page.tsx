@@ -213,17 +213,10 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               <p className="font-bold text-[#C85A32]">Enviamos a todo el país</p>
             </div>
 
-            {/* Highlights bullet points - from DB */}
-            {[product.bulletPoint1, product.bulletPoint2, product.bulletPoint3, product.bulletPoint4].some(Boolean) && (
-              <div className="space-y-2 pt-2">
-                <h3 className="font-bold text-sm text-[#2B231F]">Lo que tienes que saber de este producto</h3>
-                <ul className="text-xs text-[#6E655F] space-y-2 list-disc pl-4">
-                  {[product.bulletPoint1, product.bulletPoint2, product.bulletPoint3, product.bulletPoint4]
-                    .filter(Boolean)
-                    .map((bp, i) => (
-                      <li key={i}><span className="text-[#2B231F]">{bp}</span></li>
-                    ))}
-                </ul>
+            {/* Descripción Web */}
+            {product.descripcionWeb && (
+              <div className="pt-4 text-sm text-[#4E443E] leading-relaxed whitespace-pre-wrap">
+                {product.descripcionWeb}
               </div>
             )}
 
