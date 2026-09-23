@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Lock, CheckCircle2, ShieldCheck, ShoppingBag, MessageCircle } from 'lucide-react'
+import { Lock, CheckCircle2, ShieldCheck, ShoppingBag, MessageCircle, Sparkles } from 'lucide-react'
 import { useSession, signIn } from 'next-auth/react'
 import { useCart } from '@/features/cart'
 import { createOrder } from '@/features/orders'
@@ -25,6 +25,38 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderComplete, setOrderComplete] = useState<{ codigo: string; whatsappUrl: string } | null>(null)
   const [storeWhatsapp, setStoreWhatsapp] = useState('51999999999')
+  const [hasAutofilled, setHasAutofilled] = useState(false)
+
+  // Autocompletar datos del comprador y dirección desde el perfil del usuario autenticado
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.email) {
+      if (session.user.name && !nombre) {
+        setNombre(session.user.name)
+      }
+      if (session.user.email && !email) {
+        setEmail(session.user.email)
+      }
+
+      fetch('/api/perfil')
+        .then((res) => res.json())
+        .then((data) => {
+          if (data.cliente) {
+            const c = data.cliente
+            if (c.nombre) setNombre(c.nombre)
+            if (c.email) setEmail(c.email)
+            if (c.telefono) setTelefono(c.telefono)
+            if (c.dni) setDni(c.dni)
+            if (c.direccion) setDireccion(c.direccion)
+            if (c.distrito) setDistrito(c.distrito)
+            if (c.notas) setNotas(c.notas)
+            setHasAutofilled(true)
+          } else if (session.user?.name || session.user?.email) {
+            setHasAutofilled(true)
+          }
+        })
+        .catch((err) => console.error('Error fetching profile for checkout autofill:', err))
+    }
+  }, [status, session])
 
   useEffect(() => {
     fetch('/api/config?negocio=BG')
@@ -107,6 +139,22 @@ export default function CheckoutPage() {
           .join('\n')
 
         const whatsappUrl = `https://wa.me/${storeWhatsapp}?text=${encodeURIComponent(mensaje)}`
+
+        // Sincronizar datos de comprador y dirección al perfil del usuario
+        if (session?.user?.email) {
+          fetch('/api/perfil', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              nombre,
+              telefono,
+              dni,
+              direccion,
+              distrito,
+              referencia: notas,
+            }),
+          }).catch((err) => console.error('Error syncing profile from checkout:', err))
+        }
 
         clearCart()
         setOrderComplete({ codigo: res.pedido.codigo, whatsappUrl })
@@ -229,6 +277,20 @@ export default function CheckoutPage() {
           <span>Pago 100% Protegido</span>
         </div>
       </div>
+
+      {hasAutofilled && (
+        <div className="bg-[#FDF4EE] border border-[#C85A32]/25 rounded-2xl p-3.5 mb-6 flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs text-[#C85A32]">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#C85A32] shrink-0" />
+            <span>
+              Tus datos de comprador y dirección se autocompletaron desde tu cuenta de <strong>{nombre || session?.user?.name || session?.user?.email}</strong>.
+            </span>
+          </div>
+          <Link href="/perfil" className="font-bold underline hover:text-[#A04320] shrink-0 self-start sm:self-center">
+            Editar en perfil
+          </Link>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left: Form Steps (8 cols) */}
