@@ -17,7 +17,15 @@ export interface BGGGameInfo {
 export async function getBGGGameInfo(bggId: number): Promise<BGGGameInfo | null> {
   try {
     const url = `https://boardgamegeek.com/xmlapi2/thing?id=${bggId}&stats=1`;
-    const response = await fetch(url);
+    // Añadimos headers para simular un navegador real y evitar el bloqueo 401/403 en Vercel
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5',
+      },
+      next: { revalidate: 3600 } // Cachear en Vercel por 1 hora
+    });
     
     if (!response.ok) {
       console.error(`Error fetching BGG data for ID ${bggId}: ${response.statusText}`);
@@ -33,10 +41,15 @@ export async function getBGGGameInfo(bggId: number): Promise<BGGGameInfo | null>
     
     const result = parser.parse(xmlData);
     
-    const item = result.items?.item;
+    let item = result.items?.item;
     
     if (!item) {
         return null;
+    }
+
+    // Si BGG devuelve un array, tomamos el primer elemento
+    if (Array.isArray(item)) {
+      item = item[0];
     }
 
     // El API de BGG puede devolver arrays u objetos dependiendo de la estructura
