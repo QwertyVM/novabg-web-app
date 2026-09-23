@@ -7,7 +7,7 @@ import { ProductGallery, BuyBox, ProductItem } from '@/features/catalog'
 import { ProductRow } from '@/features/home'
 import { formatPriceParts, getProductImage, getEstimatedDeliveryDate } from '@/shared/utils'
 import { searchBggGame, fetchBggRating, needsBggRefresh } from '@/shared/utils/bgg'
-import { BggStatsClient } from '@/features/catalog/components/BggStatsClient'
+import { BggStatsBadge } from '@/features/catalog/components/BggStatsBadge'
 
 export const dynamic = 'force-dynamic'
 
@@ -171,22 +171,16 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               {product.nombreModelo}
             </h1>
 
-            {/* Ratings y Estadísticas BGG - Desde el Cliente para evadir Vercel */}
-            {product.bggId ? (
-              <BggStatsClient bggId={Number(product.bggId)} />
-            ) : bggRating !== null ? (
-              <div className="flex items-center gap-2 text-xs mt-2 mb-4">
-                <div className="flex items-center text-[#F59E0B]">
-                  {[1, 2, 3, 4, 5].map((i) => {
-                    const filled = i <= Math.floor((bggRating! / 10) * 5)
-                    return <Star key={i} className={`w-4 h-4 ${filled ? 'fill-current' : 'text-[#EBE5DF]'}`} />
-                  })}
-                </div>
-                <span className="font-bold text-[#2B231F]">{bggRating.toFixed(1)}/10</span>
-                {bggRatingCount ? (
-                  <span className="text-[#6E655F]">({bggRatingCount.toLocaleString()} votos en BGG)</span>
-                ) : null}
-              </div>
+            {/* Ratings y Estadísticas BGG - Desde Base de Datos local */}
+            {(product.bggRating || product.bggWeight || product.bggPlaytime) ? (
+              <BggStatsBadge 
+                bggId={product.bggId || undefined}
+                rating={product.bggRating ? Number(product.bggRating) : undefined} 
+                weight={product.bggWeight ? Number(product.bggWeight) : undefined} 
+                minPlayers={product.bggMinPlayers || undefined}
+                maxPlayers={product.bggMaxPlayers || undefined}
+                playtime={product.bggPlaytime || undefined}
+              />
             ) : null}
 
             {/* Price Section */}

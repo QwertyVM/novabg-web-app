@@ -142,6 +142,10 @@ model Producto {
   bggId               Int?
   bggRating           Decimal?             @db.Decimal(4, 2)
   bggRatingCount      Int?
+  bggWeight           Decimal?             @db.Decimal(4, 2)
+  bggMinPlayers       Int?
+  bggMaxPlayers       Int?
+  bggPlaytime         Int?
   bggRatingUpdatedAt  DateTime?
   bulletPoint1        String?
   bulletPoint2        String?
