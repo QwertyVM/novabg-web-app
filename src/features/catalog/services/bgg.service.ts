@@ -24,7 +24,7 @@ export async function getBGGGameInfo(bggId: number): Promise<BGGGameInfo | null>
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
         'Accept-Language': 'en-US,en;q=0.5',
       },
-      next: { revalidate: 3600 } // Cachear en Vercel por 1 hora
+      cache: 'no-store' // Forzar a no usar caché temporalmente para ver si funciona
     });
     
     if (!response.ok) {
