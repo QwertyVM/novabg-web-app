@@ -57,6 +57,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const finalPrice = isEnOferta ? tempPrice : Number(product.precioMercado)
   const displayDiscount = product.badgePromocion || `${calculatedDiscount || 15}% OFF`
 
+  const rating = (product as any).rating as number | undefined
+  const reviewsCount = (product as any).reviewsCount as number | undefined
+
   const imageSrc = product.imagenUrl || getProductImage(product.nombreModelo, product.lineaCategoria)
   const priceParts = formatPriceParts(finalPrice)
   const origPriceParts = formatPriceParts(Number(product.precioMercado))
@@ -135,15 +138,15 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             </h1>
 
             {/* Ratings */}
-            {product.rating !== undefined && (
+            {rating !== undefined && (
               <div className="flex items-center gap-2 text-xs">
                 <div className="flex items-center text-[#F59E0B]">
                   {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} className={`w-4 h-4 ${i <= Math.floor(product.rating || 5) ? 'fill-current' : 'text-[#EBE5DF]'}`} />
+                    <Star key={i} className={`w-4 h-4 ${i <= Math.floor(rating || 5) ? 'fill-current' : 'text-[#EBE5DF]'}`} />
                   ))}
                 </div>
-                <span className="font-bold text-[#2B231F]">{product.rating.toFixed(1)}</span>
-                <span className="text-[#6E655F]">({product.reviewsCount || 0} opiniones lúdicas)</span>
+                <span className="font-bold text-[#2B231F]">{rating.toFixed(1)}</span>
+                <span className="text-[#6E655F]">({reviewsCount || 0} opiniones lúdicas)</span>
               </div>
             )}
 
