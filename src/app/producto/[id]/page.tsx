@@ -30,14 +30,20 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   }
 
   // Related products from the same business
-  const relatedDb = await prisma.producto.findMany({
-    where: {
-      negocio: product.negocio,
-      activo: true,
-      id: { not: id },
-    },
-    take: 6,
-  })
+  const [relatedDb, comentariosDb] = await Promise.all([
+    prisma.producto.findMany({
+      where: {
+        negocio: product.negocio,
+        activo: true,
+        id: { not: id },
+      },
+      take: 6,
+    }),
+    prisma.comentarioProducto.findMany({
+      where: { productoId: id, activo: true },
+      orderBy: { createdAt: 'desc' }
+    })
+  ])
 
   let tempPrice = Number(product.precioMercado)
   let calculatedDiscount = product.porcentajeDescuento
@@ -217,26 +223,27 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </div>
             </div>
 
-            {/* Highlights bullet points */}
+            {/* Highlights bullet points - from DB */}
             <div className="space-y-2 pt-2">
               <h3 className="font-bold text-sm text-[#2B231F]">Lo que tienes que saber de este producto</h3>
               <ul className="text-xs text-[#6E655F] space-y-2 list-disc pl-4">
-                <li>
-                  <strong className="text-[#2B231F]">Compatibilidad:</strong> Diseñado a medida para {product.nombreModelo}.
-                </li>
-                <li>
-                  <strong className="text-[#2B231F]">Material de calidad:</strong> Componentes de alta densidad y durabilidad para proteger tus cartas y fichas.
-                </li>
-                <li>
-                  <strong className="text-[#2B231F]">Setup optimizado:</strong> Acomoda las piezas rápidamente sobre la mesa para empezar a jugar de inmediato.
-                </li>
-                <li>
-                  <strong className="text-[#2B231F]">Acabado suave:</strong> Cuida tus cartas y las cajas de tus juegos de mesa.
-                </li>
+                {[product.bulletPoint1, product.bulletPoint2, product.bulletPoint3, product.bulletPoint4]
+                  .filter(Boolean)
+                  .map((bp, i) => (
+                    <li key={i}><span className="text-[#2B231F]">{bp}</span></li>
+                  ))}
+                {![product.bulletPoint1, product.bulletPoint2, product.bulletPoint3, product.bulletPoint4].some(Boolean) && (
+                  <>
+                    <li><strong className="text-[#2B231F]">Compatibilidad:</strong> Diseñado a medida para {product.nombreModelo}.</li>
+                    <li><strong className="text-[#2B231F]">Material de calidad:</strong> Componentes de alta densidad y durabilidad para proteger tus cartas y fichas.</li>
+                    <li><strong className="text-[#2B231F]">Setup optimizado:</strong> Acomoda las piezas rápidamente sobre la mesa para empezar a jugar de inmediato.</li>
+                    <li><strong className="text-[#2B231F]">Acabado suave:</strong> Cuida tus cartas y las cajas de tus juegos de mesa.</li>
+                  </>
+                )}
               </ul>
             </div>
 
-            {/* Technical Specifications (Strictly NO horizontal scroll per rules/tabla.md) */}
+            {/* Technical Specifications — BG specs from DB, fallback for 3D */}
             <div className="pt-4 border-t border-[#EBE5DF]">
               <h3 className="font-bold text-sm text-[#2B231F] mb-3">Características principales</h3>
               <div className="nova-table-container">
@@ -250,12 +257,50 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                       <td className="p-2.5 font-bold text-[#6E655F]">Modelo</td>
                       <td className="p-2.5 text-[#2B231F] font-medium">{product.nombreModelo}</td>
                     </tr>
-                    <tr className="border-b border-[#EBE5DF] bg-[#FDFBF7]">
-                      <td className="p-2.5 font-bold text-[#6E655F]">Peso aproximado</td>
-                      <td className="p-2.5 text-[#2B231F] font-medium">
-                        {product.pesoGramos ? `${Number(product.pesoGramos)} g` : 'Optimizado'}
-                      </td>
-                    </tr>
+                    {product.editorialMarca && (
+                      <tr className="border-b border-[#EBE5DF] bg-[#FDFBF7]">
+                        <td className="p-2.5 font-bold text-[#6E655F]">Editorial</td>
+                        <td className="p-2.5 text-[#2B231F] font-medium">{product.editorialMarca}</td>
+                      </tr>
+                    )}
+                    {product.numJugadores && (
+                      <tr className="border-b border-[#EBE5DF]">
+                        <td className="p-2.5 font-bold text-[#6E655F]">Jugadores</td>
+                        <td className="p-2.5 text-[#2B231F] font-medium">{product.numJugadores}</td>
+                      </tr>
+                    )}
+                    {product.edadMinima && (
+                      <tr className="border-b border-[#EBE5DF] bg-[#FDFBF7]">
+                        <td className="p-2.5 font-bold text-[#6E655F]">Edad mínima</td>
+                        <td className="p-2.5 text-[#2B231F] font-medium">{product.edadMinima}+ años</td>
+                      </tr>
+                    )}
+                    {product.duracionMinutos && (
+                      <tr className="border-b border-[#EBE5DF]">
+                        <td className="p-2.5 font-bold text-[#6E655F]">Duración</td>
+                        <td className="p-2.5 text-[#2B231F] font-medium">{product.duracionMinutos} min aprox.</td>
+                      </tr>
+                    )}
+                    {product.idioma && (
+                      <tr className="border-b border-[#EBE5DF] bg-[#FDFBF7]">
+                        <td className="p-2.5 font-bold text-[#6E655F]">Idioma</td>
+                        <td className="p-2.5 text-[#2B231F] font-medium">{product.idioma}</td>
+                      </tr>
+                    )}
+                    {product.mecanicas && (
+                      <tr className="border-b border-[#EBE5DF]">
+                        <td className="p-2.5 font-bold text-[#6E655F]">Mecánicas</td>
+                        <td className="p-2.5 text-[#2B231F] font-medium">{product.mecanicas}</td>
+                      </tr>
+                    )}
+                    {!product.numJugadores && !product.editorialMarca && (
+                      <tr className="border-b border-[#EBE5DF] bg-[#FDFBF7]">
+                        <td className="p-2.5 font-bold text-[#6E655F]">Peso aproximado</td>
+                        <td className="p-2.5 text-[#2B231F] font-medium">
+                          {product.pesoGramos ? `${Number(product.pesoGramos)} g` : 'Optimizado'}
+                        </td>
+                      </tr>
+                    )}
                     <tr className="border-b border-[#EBE5DF]">
                       <td className="p-2.5 font-bold text-[#6E655F]">Disponibilidad</td>
                       <td className="p-2.5 text-[#10B981] font-bold">En Stock Inmediato</td>
@@ -276,28 +321,80 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
           </div>
         </div>
 
-        {/* Questions and Answers Section */}
+        {/* Reñas / Comentarios de Compradores */}
         <div className="mt-12 pt-8 border-t border-[#EBE5DF]">
           <h3 className="font-bold text-base text-[#2B231F] mb-4 flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-[#C85A32]" />
-            <span>Preguntas y respuestas frecuentes</span>
+            <span>Reseñas de compradores</span>
+            {comentariosDb.length > 0 && (
+              <span className="text-xs font-normal text-[#6E655F]">({comentariosDb.length})</span>
+            )}
           </h3>
 
-          <div className="space-y-4 text-xs">
-            <div className="p-4 bg-[#FDFBF7] rounded-2xl border border-[#EBE5DF] space-y-1">
-              <p className="font-bold text-[#2B231F]">¿Entran las cartas con fundas (sleeves/micas)?</p>
-              <p className="text-[#6E655F]">
-                ¡Hola! Sí, consideramos el grosor extra de cartas enfundadas (Premium y estándar).
-              </p>
+          {comentariosDb.length === 0 ? (
+            <div className="p-6 bg-[#FDFBF7] rounded-2xl border border-[#EBE5DF] text-center text-xs text-[#6E655F]">
+              <MessageSquare className="w-8 h-8 mx-auto text-[#EBE5DF] mb-2" />
+              <p className="font-medium">Aún no hay reseñas para este producto.</p>
+              <p className="mt-1">Sé el primero en compartir tu experiencia.</p>
             </div>
+          ) : (
+            <div className="space-y-4">
+              {/* Promedio de calificación */}
+              {comentariosDb.length > 0 && (() => {
+                const avg = comentariosDb.reduce((s, c) => s + c.calificacion, 0) / comentariosDb.length
+                return (
+                  <div className="flex items-center gap-3 p-4 bg-[#FDFBF7] rounded-2xl border border-[#EBE5DF]">
+                    <div className="text-center">
+                      <div className="text-3xl font-black text-[#2B231F]">{avg.toFixed(1)}</div>
+                      <div className="flex text-[#F59E0B] justify-center mt-1">
+                        {[1,2,3,4,5].map(i => (
+                          <Star key={i} className={`w-4 h-4 ${i <= Math.round(avg) ? 'fill-current' : 'text-[#EBE5DF]'}`} />
+                        ))}
+                      </div>
+                      <div className="text-[10px] text-[#6E655F] mt-0.5">{comentariosDb.length} reseña{comentariosDb.length !== 1 ? 's' : ''}</div>
+                    </div>
+                    <div className="flex-1 space-y-1">
+                      {[5,4,3,2,1].map(star => {
+                        const count = comentariosDb.filter(c => c.calificacion === star).length
+                        const pct = comentariosDb.length > 0 ? (count / comentariosDb.length) * 100 : 0
+                        return (
+                          <div key={star} className="flex items-center gap-2 text-[10px]">
+                            <span className="w-3 text-right text-[#6E655F]">{star}</span>
+                            <Star className="w-3 h-3 fill-[#F59E0B] text-[#F59E0B]" />
+                            <div className="flex-1 bg-[#EBE5DF] rounded-full h-2">
+                              <div className="bg-[#F59E0B] h-2 rounded-full" style={{ width: `${pct}%` }} />
+                            </div>
+                            <span className="w-4 text-[#6E655F]">{count}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })()}
 
-            <div className="p-4 bg-[#FDFBF7] rounded-2xl border border-[#EBE5DF] space-y-1">
-              <p className="font-bold text-[#2B231F]">¿Hacen envíos a provincias de todo el Perú?</p>
-              <p className="text-[#6E655F]">
-                ¡Correcto! Despachamos a nivel nacional mediante Olva Courier y Shalom con código de seguimiento en tiempo real.
-              </p>
+              {/* Lista de comentarios */}
+              {comentariosDb.map((c) => (
+                <div key={c.id} className="p-4 bg-[#FDFBF7] rounded-2xl border border-[#EBE5DF] space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-7 h-7 rounded-full bg-[#C85A32]/10 text-[#C85A32] flex items-center justify-center font-black text-xs">
+                        {c.autor.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="font-bold text-xs text-[#2B231F]">{c.autor}</span>
+                    </div>
+                    <div className="flex text-[#F59E0B]">
+                      {[1,2,3,4,5].map(i => (
+                        <Star key={i} className={`w-3 h-3 ${i <= c.calificacion ? 'fill-current' : 'text-[#EBE5DF]'}`} />
+                      ))}
+                    </div>
+                  </div>
+                  <p className="text-xs text-[#6E655F] leading-relaxed">{c.texto}</p>
+                  <p className="text-[10px] text-[#9E8F87]">{new Date(c.createdAt).toLocaleDateString('es-PE', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                </div>
+              ))}
             </div>
-          </div>
+          )}
         </div>
       </div>
 
