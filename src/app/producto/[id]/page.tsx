@@ -7,6 +7,8 @@ import { ProductGallery, BuyBox, ProductItem } from '@/features/catalog'
 import { ProductRow } from '@/features/home'
 import { formatPriceParts, getProductImage, getEstimatedDeliveryDate } from '@/shared/utils'
 import { searchBggGame, fetchBggRating, needsBggRefresh } from '@/shared/utils/bgg'
+import { BggStatsBadge } from '@/features/catalog/components/BggStatsBadge'
+import { getBGGGameInfo } from '@/features/catalog/services/bgg.service'
 
 export const dynamic = 'force-dynamic'
 
@@ -102,6 +104,12 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const origPriceParts = formatPriceParts(Number(product.precioMercado))
   const deliveryDate = getEstimatedDeliveryDate()
 
+  // BGG Full Data para el nuevo Badge
+  let bggFullData = null;
+  if (product.bggId) {
+    bggFullData = await getBGGGameInfo(Number(product.bggId));
+  }
+
   const currentProductItem: ProductItem = {
     id: product.id,
     negocio: product.negocio,
@@ -170,8 +178,17 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               {product.nombreModelo}
             </h1>
 
-            {/* Ratings - sourced from BoardGameGeek */}
-            {bggRating !== null && (
+            {/* Ratings y Estadísticas BGG - Nuevo Badge */}
+            {bggFullData ? (
+              <BggStatsBadge 
+                bggId={bggFullData.bggId}
+                rating={bggFullData.bggRating} 
+                weight={bggFullData.bggWeight} 
+                minPlayers={bggFullData.bggMinPlayers}
+                maxPlayers={bggFullData.bggMaxPlayers}
+                playtime={bggFullData.bggPlaytime}
+              />
+            ) : bggRating !== null ? (
               <div className="flex items-center gap-2 text-xs">
                 <div className="flex items-center text-[#F59E0B]">
                   {[1, 2, 3, 4, 5].map((i) => {
@@ -184,7 +201,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   <span className="text-[#6E655F]">({bggRatingCount.toLocaleString()} votos en BGG)</span>
                 ) : null}
               </div>
-            )}
+            ) : null}
 
             {/* Price Section */}
             <div className="py-3 border-y border-[#EBE5DF] space-y-1">
