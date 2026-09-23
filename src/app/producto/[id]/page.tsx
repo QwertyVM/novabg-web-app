@@ -207,18 +207,17 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </div>
             </div>
 
-            {/* Delivery Callout */}
-            <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-[#FDFBF7] border border-[#EBE5DF] text-xs">
-              <Zap className="w-5 h-5 fill-[#C85A32] text-[#C85A32] shrink-0 mt-0.5" />
-              <p className="font-bold text-[#C85A32]">Enviamos a todo el país</p>
-            </div>
-
             {/* Descripción Web */}
             {product.descripcionWeb && (
               <div className="pt-4 text-sm text-[#4E443E] leading-relaxed whitespace-pre-wrap">
                 {product.descripcionWeb}
               </div>
             )}
+          </div>
+
+          {/* Right Column: Buy Box (3 cols) */}
+          <div className="lg:col-span-3 space-y-6">
+            <BuyBox product={currentProductItem} />
 
             {/* Technical Specifications — BG specs from DB, fallback for 3D */}
             {[product.editorialMarca, product.numJugadores, product.edadMinima, product.duracionMinutos, product.idioma, product.mecanicas].some(Boolean) && (
@@ -268,11 +267,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                 </div>
               </div>
             )}
-          </div>
-
-          {/* Right Column: Buy Box (3 cols) */}
-          <div className="lg:col-span-3">
-            <BuyBox product={currentProductItem} />
           </div>
         </div>
 
