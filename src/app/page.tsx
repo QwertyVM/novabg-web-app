@@ -74,10 +74,6 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     descripcionWeb: p.descripcionWeb || undefined,
     activo: p.activo ?? true,
     imagen: p.imagenUrl || getProductImage(p.nombreModelo, p.lineaCategoria),
-    rating: 4.8 + (idx % 3) * 0.1,
-    reviewsCount: 24 + ((idx * 17) % 180),
-    isBestSeller: idx === 0 || idx === 2,
-    isAmazonChoice: idx === 1 || idx === 3,
   }))
 
   // Products on offer

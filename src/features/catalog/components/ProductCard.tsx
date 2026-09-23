@@ -178,24 +178,26 @@ export function ProductCard({ product }: ProductCardProps) {
           )}
 
           {/* Rating */}
-          <div className="flex items-center gap-1 mt-2 text-[11px] text-[#6E655F]">
-            <div className="flex text-[#F59E0B]">
-              {[1, 2, 3, 4, 5].map((i) => (
-                <Star
-                  key={i}
-                  className={`w-3 h-3 ${
-                    i <= Math.floor(product.rating || 5)
-                      ? 'fill-current text-[#F59E0B]'
-                      : 'text-[#EBE5DF]'
-                  }`}
-                />
-              ))}
+          {product.rating !== undefined && (
+            <div className="flex items-center gap-1 mt-2 text-[11px] text-[#6E655F]">
+              <div className="flex text-[#F59E0B]">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star
+                    key={i}
+                    className={`w-3 h-3 ${
+                      i <= Math.floor(product.rating || 5)
+                        ? 'fill-current text-[#F59E0B]'
+                        : 'text-[#EBE5DF]'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="text-xs font-bold text-[#2B231F] ml-0.5">
+                {product.rating.toFixed(1)}
+              </span>
+              <span className="text-[#6E655F]">({product.reviewsCount || 0})</span>
             </div>
-            <span className="text-xs font-bold text-[#2B231F] ml-0.5">
-              {product.rating?.toFixed(1) || '4.8'}
-            </span>
-            <span className="text-[#6E655F]">({product.reviewsCount || 24})</span>
-          </div>
+          )}
         </div>
 
         {/* Quick Add To Cart Button */}

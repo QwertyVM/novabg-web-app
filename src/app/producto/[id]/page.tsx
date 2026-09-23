@@ -97,8 +97,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
     porcentajeDescuento: p.porcentajeDescuento ?? 0,
     badgePromocion: p.badgePromocion || undefined,
     imagen: p.imagenUrl || getProductImage(p.nombreModelo, p.lineaCategoria),
-    rating: 4.8 + (idx % 2) * 0.1,
-    reviewsCount: 32 + idx * 14,
   }))
 
   return (
@@ -137,15 +135,17 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             </h1>
 
             {/* Ratings */}
-            <div className="flex items-center gap-2 text-xs">
-              <div className="flex items-center text-[#F59E0B]">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star key={i} className="w-4 h-4 fill-current" />
-                ))}
+            {product.rating !== undefined && (
+              <div className="flex items-center gap-2 text-xs">
+                <div className="flex items-center text-[#F59E0B]">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Star key={i} className={`w-4 h-4 ${i <= Math.floor(product.rating || 5) ? 'fill-current' : 'text-[#EBE5DF]'}`} />
+                  ))}
+                </div>
+                <span className="font-bold text-[#2B231F]">{product.rating.toFixed(1)}</span>
+                <span className="text-[#6E655F]">({product.reviewsCount || 0} opiniones lúdicas)</span>
               </div>
-              <span className="font-bold text-[#2B231F]">4.9</span>
-              <span className="text-[#6E655F]">(86 opiniones lúdicas)</span>
-            </div>
+            )}
 
             {/* Price Section */}
             <div className="py-3 border-y border-[#EBE5DF] space-y-1">
