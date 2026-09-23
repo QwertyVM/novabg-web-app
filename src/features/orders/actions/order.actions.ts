@@ -20,6 +20,7 @@ export async function createOrder(data: CreateOrderInput) {
         canalVenta: data.canalVenta || 'Web Oficial NOVA BG',
         destinoEnvio: data.destinoEnvio?.trim(),
         notas: data.notas?.trim(),
+        metodoPago: data.metodoPago || 'YAPE',
         subtotal,
         costoEnvio,
         total,

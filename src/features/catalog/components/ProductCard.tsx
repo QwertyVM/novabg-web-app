@@ -173,8 +173,8 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          {/* Rating */}
-          {product.rating !== undefined && (
+          {/* Rating (Solo si tiene información real) */}
+          {product.rating !== undefined && product.rating > 0 && (product.reviewsCount ?? 0) > 0 && (
             <div className="flex items-center gap-1 mt-2 text-[11px] text-[#6E655F]">
               <div className="flex text-[#F59E0B]">
                 {[1, 2, 3, 4, 5].map((i) => (
@@ -191,7 +191,7 @@ export function ProductCard({ product }: ProductCardProps) {
               <span className="text-xs font-bold text-[#2B231F] ml-0.5">
                 {product.rating.toFixed(1)}
               </span>
-              <span className="text-[#6E655F]">({product.reviewsCount || 0})</span>
+              <span className="text-[#6E655F]">({product.reviewsCount})</span>
             </div>
           )}
         </div>

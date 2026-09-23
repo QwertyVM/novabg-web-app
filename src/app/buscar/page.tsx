@@ -70,10 +70,10 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     destacadoWeb: p.destacadoWeb ?? false,
     descripcionWeb: p.descripcionWeb || undefined,
     imagen: p.imagenUrl || getProductImage(p.nombreModelo, p.lineaCategoria),
-    rating: 4.8 + (idx % 3) * 0.1,
-    reviewsCount: 15 + idx * 8,
-    isBestSeller: idx === 0,
-    isAmazonChoice: idx === 1,
+    rating: undefined,
+    reviewsCount: 0,
+    isBestSeller: false,
+    isAmazonChoice: false,
   }))
 
   return (
