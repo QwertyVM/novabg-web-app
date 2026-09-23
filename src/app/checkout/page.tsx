@@ -2,13 +2,35 @@
 
 import React, { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { Lock, CheckCircle2, ShieldCheck, ShoppingBag, MessageCircle, Sparkles } from 'lucide-react'
+import { 
+  Lock, 
+  CheckCircle2, 
+  ShieldCheck, 
+  ShoppingBag, 
+  MessageCircle, 
+  Sparkles,
+  MapPin,
+  Home,
+  Briefcase,
+  Building2,
+  Plus,
+  Check
+} from 'lucide-react'
 import { useSession, signIn } from 'next-auth/react'
 import { useCart } from '@/features/cart'
 import { createOrder } from '@/features/orders'
 import { formatPrice } from '@/shared/utils'
 import { NovaLogo } from '@/shared/components/branding'
 import { toast } from 'sonner'
+
+interface DireccionOption {
+  id: string
+  apodo: string
+  direccion: string
+  distrito: string
+  referencia?: string | null
+  esPrincipal: boolean
+}
 
 export default function CheckoutPage() {
   const { data: session, status } = useSession()
@@ -18,16 +40,23 @@ export default function CheckoutPage() {
   const [email, setEmail] = useState(session?.user?.email || '')
   const [telefono, setTelefono] = useState('')
   const [dni, setDni] = useState('')
+  
+  // Direcciones
+  const [savedAddresses, setSavedAddresses] = useState<DireccionOption[]>([])
+  const [selectedAddressId, setSelectedAddressId] = useState<string | 'new'>('new')
+  const [newAddressApodo, setNewAddressApodo] = useState('Casa')
   const [direccion, setDireccion] = useState('')
   const [distrito, setDistrito] = useState('Miraflores, Lima')
-  const [metodoPago, setMetodoPago] = useState('YAPE')
   const [notas, setNotas] = useState('')
+  const [saveNewAddress, setSaveNewAddress] = useState(true)
+
+  const [metodoPago, setMetodoPago] = useState('YAPE')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [orderComplete, setOrderComplete] = useState<{ codigo: string; whatsappUrl: string } | null>(null)
   const [storeWhatsapp, setStoreWhatsapp] = useState('51999999999')
   const [hasAutofilled, setHasAutofilled] = useState(false)
 
-  // Autocompletar datos del comprador y dirección desde el perfil del usuario autenticado
+  // Autocompletar datos del comprador y direcciones desde el perfil del usuario autenticado
   useEffect(() => {
     if (status === 'authenticated' && session?.user?.email) {
       if (session.user.name && !nombre) {
@@ -46,9 +75,20 @@ export default function CheckoutPage() {
             if (c.email) setEmail(c.email)
             if (c.telefono) setTelefono(c.telefono)
             if (c.dni) setDni(c.dni)
-            if (c.direccion) setDireccion(c.direccion)
-            if (c.distrito) setDistrito(c.distrito)
-            if (c.notas) setNotas(c.notas)
+          }
+
+          if (Array.isArray(data.direcciones) && data.direcciones.length > 0) {
+            setSavedAddresses(data.direcciones)
+            const principal = data.direcciones.find((d: DireccionOption) => d.esPrincipal) || data.direcciones[0]
+            setSelectedAddressId(principal.id)
+            setDireccion(principal.direccion)
+            setDistrito(principal.distrito)
+            setNotas(principal.referencia || '')
+            setHasAutofilled(true)
+          } else if (data.cliente?.direccion) {
+            setDireccion(data.cliente.direccion)
+            setDistrito(data.cliente.distrito || 'Miraflores, Lima')
+            setNotas(data.cliente.notas || '')
             setHasAutofilled(true)
           } else if (session.user?.name || session.user?.email) {
             setHasAutofilled(true)
@@ -63,13 +103,26 @@ export default function CheckoutPage() {
       .then((res) => res.json())
       .then((data) => {
         if (data.telefonoContacto) {
-          // Clean the number from spaces or dashes if any
           const cleanNumber = data.telefonoContacto.replace(/\D/g, '')
           setStoreWhatsapp(cleanNumber)
         }
       })
       .catch((err) => console.error('Error fetching store config:', err))
   }, [])
+
+  const getApodoIcon = (apodo: string) => {
+    const lower = apodo.toLowerCase()
+    if (lower.includes('casa') || lower.includes('hogar')) {
+      return <Home className="w-3.5 h-3.5 text-[#C85A32]" />
+    }
+    if (lower.includes('ofi') || lower.includes('trabajo') || lower.includes('chamba')) {
+      return <Briefcase className="w-3.5 h-3.5 text-[#C85A32]" />
+    }
+    if (lower.includes('depa') || lower.includes('departamento') || lower.includes('edificio')) {
+      return <Building2 className="w-3.5 h-3.5 text-[#C85A32]" />
+    }
+    return <MapPin className="w-3.5 h-3.5 text-[#C85A32]" />
+  }
 
   const formattedSubtotal = formatPrice(subtotal)
 
@@ -125,8 +178,8 @@ export default function CheckoutPage() {
           ``,
           `📍 *Detalles de Entrega:*`,
           `• *Dirección:* ${direccion}, ${distrito}`,
+          notas ? `• *Referencia:* ${notas}` : '',
           `• *Pago preferido:* ${metodoPago}`,
-          notas ? `📝 *Nota adicional:* ${notas}` : '',
           ``,
           `🛍️ *Mi Pedido:*`,
           lineasProductos,
@@ -140,7 +193,22 @@ export default function CheckoutPage() {
 
         const whatsappUrl = `https://wa.me/${storeWhatsapp}?text=${encodeURIComponent(mensaje)}`
 
-        // Sincronizar datos de comprador y dirección al perfil del usuario
+        // Si el usuario registró una dirección nueva y desea guardarla en su lista
+        if (session?.user?.email && (selectedAddressId === 'new' || savedAddresses.length === 0) && saveNewAddress) {
+          fetch('/api/direcciones', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              apodo: newAddressApodo || 'Casa',
+              direccion,
+              distrito,
+              referencia: notas,
+              esPrincipal: savedAddresses.length === 0,
+            }),
+          }).catch((err) => console.error('Error auto-saving new address:', err))
+        }
+
+        // Sincronizar datos de comprador al perfil del usuario
         if (session?.user?.email) {
           fetch('/api/perfil', {
             method: 'POST',
@@ -149,9 +217,6 @@ export default function CheckoutPage() {
               nombre,
               telefono,
               dni,
-              direccion,
-              distrito,
-              referencia: notas,
             }),
           }).catch((err) => console.error('Error syncing profile from checkout:', err))
         }
@@ -196,8 +261,11 @@ export default function CheckoutPage() {
               <MessageCircle className="w-5 h-5" />
               Enviar pedido por WhatsApp
             </a>
-            <Link href="/" className="btn-nova-outline text-xs">
-              Seguir Explorando
+            <Link
+              href="/"
+              className="text-xs font-bold text-[#6E655F] hover:text-[#2B231F] transition-colors mt-2"
+            >
+              Volver a la tienda
             </Link>
           </div>
         </div>
@@ -207,11 +275,14 @@ export default function CheckoutPage() {
 
   if (items.length === 0) {
     return (
-      <div className="py-16 px-4 max-w-[600px] mx-auto text-center bg-white p-8 rounded-3xl border border-[#EBE5DF]">
-        <ShoppingBag className="w-12 h-12 text-[#6E655F] mx-auto mb-3" />
-        <h2 className="text-xl font-bold text-[#2B231F] mb-2">No tienes productos en tu carrito</h2>
-        <Link href="/" className="btn-nova-primary text-xs mt-3 inline-block">
-          Explorar Catálogo NOVA
+      <div className="py-24 text-center max-w-md mx-auto px-4">
+        <div className="w-16 h-16 bg-[#FDF4EE] rounded-full flex items-center justify-center mx-auto mb-4 text-[#C85A32]">
+          <ShoppingBag className="w-8 h-8" />
+        </div>
+        <h2 className="text-xl font-bold text-[#2B231F] mb-2">Tu carrito está vacío</h2>
+        <p className="text-[#6E655F] text-xs mb-6">Agrega juegos de mesa o accesorios para completar tu compra.</p>
+        <Link href="/" className="btn-nova-primary inline-flex text-xs font-bold px-6 py-3">
+          Ver Catálogo
         </Link>
       </div>
     )
@@ -283,11 +354,11 @@ export default function CheckoutPage() {
           <div className="flex items-center gap-2">
             <Sparkles className="w-4 h-4 text-[#C85A32] shrink-0" />
             <span>
-              Tus datos de comprador y dirección se autocompletaron desde tu cuenta de <strong>{nombre || session?.user?.name || session?.user?.email}</strong>.
+              Tus datos se autocompletaron desde tu cuenta de <strong>{nombre || session?.user?.name || session?.user?.email}</strong>.
             </span>
           </div>
           <Link href="/perfil" className="font-bold underline hover:text-[#A04320] shrink-0 self-start sm:self-center">
-            Editar en perfil
+            Gestionar direcciones en perfil
           </Link>
         </div>
       )}
@@ -352,50 +423,213 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Step 2: Delivery Address */}
+          {/* Step 2: Delivery Address (Saved selection or new registration) */}
           <div className="bg-white p-6 rounded-3xl border border-[#EBE5DF] shadow-sm">
-            <h2 className="text-base font-bold text-[#2B231F] flex items-center gap-2 mb-4">
-              <span className="w-6 h-6 rounded-full bg-[#C85A32] text-white flex items-center justify-center text-xs font-bold">
-                2
-              </span>
-              Dirección de Entrega
-            </h2>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
+              <h2 className="text-base font-bold text-[#2B231F] flex items-center gap-2">
+                <span className="w-6 h-6 rounded-full bg-[#C85A32] text-white flex items-center justify-center text-xs font-bold">
+                  2
+                </span>
+                Dirección de Entrega
+              </h2>
 
-            <div className="space-y-4 text-xs">
-              <div>
-                <label className="block text-[#2B231F] font-bold mb-1.5">Dirección Exacta (Calle, Número, Depto) *</label>
-                <input
-                  type="text"
-                  value={direccion}
-                  onChange={(e) => setDireccion(e.target.value)}
-                  placeholder="Ej: Av. Benavides 1230, Dpto 402"
-                  className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-[#2B231F] font-bold mb-1.5">Distrito / Ciudad *</label>
-                  <input
-                    type="text"
-                    value={distrito}
-                    onChange={(e) => setDistrito(e.target.value)}
-                    placeholder="Ej: Miraflores, Lima"
-                    className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
-                  />
-                </div>
-                <div>
-                  <label className="block text-[#2B231F] font-bold mb-1.5">Referencia o Instrucción</label>
-                  <input
-                    type="text"
-                    value={notas}
-                    onChange={(e) => setNotas(e.target.value)}
-                    placeholder="Ej: Dejar en conserjería"
-                    className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
-                  />
-                </div>
-              </div>
+              {savedAddresses.length > 0 && selectedAddressId !== 'new' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedAddressId('new')
+                    setDireccion('')
+                    setDistrito('Miraflores, Lima')
+                    setNotas('')
+                    setNewAddressApodo('Casa')
+                  }}
+                  className="text-xs font-bold text-[#C85A32] hover:text-[#A04320] flex items-center gap-1 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Usar otra dirección</span>
+                </button>
+              )}
             </div>
+
+            {/* Selector de Direcciones Guardadas */}
+            {savedAddresses.length > 0 && (
+              <div className="mb-5 space-y-3">
+                <label className="block text-xs font-bold text-[#6E655F]">
+                  Selecciona una de tus direcciones guardadas:
+                </label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {savedAddresses.map((addr) => {
+                    const isSelected = selectedAddressId === addr.id
+                    return (
+                      <div
+                        key={addr.id}
+                        onClick={() => {
+                          setSelectedAddressId(addr.id)
+                          setDireccion(addr.direccion)
+                          setDistrito(addr.distrito)
+                          setNotas(addr.referencia || '')
+                        }}
+                        className={`p-3.5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between gap-2 ${
+                          isSelected
+                            ? 'border-[#C85A32] bg-[#FDF4EE]/70 ring-2 ring-[#C85A32]/20'
+                            : 'border-[#EBE5DF] bg-[#FDFBF7] hover:border-[#C85A32]/40'
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between gap-1 mb-1">
+                            <span className="inline-flex items-center gap-1.5 text-xs font-black text-[#2B231F]">
+                              {getApodoIcon(addr.apodo)}
+                              {addr.apodo}
+                            </span>
+                            {addr.esPrincipal && (
+                              <span className="text-[9px] font-black uppercase tracking-wider text-[#C85A32] bg-white px-2 py-0.5 rounded-full border border-[#C85A32]/20">
+                                Predeterminada
+                              </span>
+                            )}
+                          </div>
+                          <p className="text-xs font-semibold text-[#2B231F] leading-snug">
+                            {addr.direccion}
+                          </p>
+                          <p className="text-[11px] text-[#6E655F]">
+                            {addr.distrito}
+                          </p>
+                          {addr.referencia && (
+                            <p className="text-[10px] text-[#8C827A] italic mt-1 line-clamp-1">
+                              Ref: {addr.referencia}
+                            </p>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-[11px] pt-1">
+                          <span className={`font-bold flex items-center gap-1 ${isSelected ? 'text-[#C85A32]' : 'text-[#A89F91]'}`}>
+                            {isSelected ? (
+                              <>
+                                <Check className="w-3.5 h-3.5" />
+                                <span>Seleccionada para entrega</span>
+                              </>
+                            ) : (
+                              'Click para seleccionar'
+                            )}
+                          </span>
+                        </div>
+                      </div>
+                    )
+                  })}
+
+                  {/* Card para registrar nueva dirección */}
+                  <div
+                    onClick={() => {
+                      setSelectedAddressId('new')
+                      setDireccion('')
+                      setDistrito('Miraflores, Lima')
+                      setNotas('')
+                      setNewAddressApodo('Casa')
+                    }}
+                    className={`p-3.5 rounded-2xl border-2 border-dashed cursor-pointer transition-all flex flex-col items-center justify-center gap-1 text-center min-h-[90px] ${
+                      selectedAddressId === 'new'
+                        ? 'border-[#C85A32] bg-[#FDF4EE]/40 text-[#C85A32]'
+                        : 'border-[#EBE5DF] bg-white hover:border-[#C85A32]/40 text-[#6E655F]'
+                    }`}
+                  >
+                    <Plus className="w-4 h-4 text-[#C85A32]" />
+                    <span className="text-xs font-bold">Registrar nueva dirección</span>
+                    <span className="text-[10px] text-[#A89F91]">Se guardará con apodo en tu cuenta</span>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Formulario de Dirección (cuando se selecciona nueva dirección o el usuario no tiene ninguna) */}
+            {(selectedAddressId === 'new' || savedAddresses.length === 0) && (
+              <div className="space-y-4 pt-2 border-t border-[#EBE5DF]/60 animate-fadeIn text-xs">
+                {savedAddresses.length > 0 && (
+                  <p className="text-xs font-black uppercase tracking-wider text-[#C85A32]">
+                    Nueva Dirección de Entrega
+                  </p>
+                )}
+
+                {/* Apodo para la nueva dirección */}
+                <div>
+                  <label className="block text-[#2B231F] font-bold mb-1.5">
+                    Apodo de esta dirección (Ej: Casa, Oficina, Depa) *
+                  </label>
+                  <div className="flex flex-wrap gap-2 mb-2">
+                    {['Casa', 'Oficina', 'Depa', 'Taller'].map(tag => (
+                      <button
+                        key={tag}
+                        type="button"
+                        onClick={() => setNewAddressApodo(tag)}
+                        className={`text-xs px-3 py-1 rounded-lg font-bold border transition-colors cursor-pointer ${
+                          newAddressApodo === tag
+                            ? 'bg-[#C85A32] text-white border-[#C85A32]'
+                            : 'bg-[#FDFBF7] text-[#6E655F] border-[#EBE5DF]'
+                        }`}
+                      >
+                        {tag}
+                      </button>
+                    ))}
+                  </div>
+                  <input
+                    type="text"
+                    value={newAddressApodo}
+                    onChange={(e) => setNewAddressApodo(e.target.value)}
+                    placeholder="Ej: Casa de mis padres, Oficina..."
+                    className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-[#2B231F] font-bold mb-1.5">Dirección Exacta (Calle, Número, Depto) *</label>
+                  <input
+                    type="text"
+                    value={direccion}
+                    onChange={(e) => setDireccion(e.target.value)}
+                    placeholder="Ej: Av. Benavides 1230, Dpto 402"
+                    className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-[#2B231F] font-bold mb-1.5">Distrito / Ciudad *</label>
+                    <input
+                      type="text"
+                      value={distrito}
+                      onChange={(e) => setDistrito(e.target.value)}
+                      placeholder="Ej: Miraflores, Lima"
+                      className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[#2B231F] font-bold mb-1.5">Referencia o Instrucción</label>
+                    <input
+                      type="text"
+                      value={notas}
+                      onChange={(e) => setNotas(e.target.value)}
+                      placeholder="Ej: Dejar en conserjería"
+                      className="w-full border border-[#EBE5DF] bg-[#FDFBF7] rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-[#C85A32]/20 focus:border-[#C85A32] font-semibold text-[#2B231F]"
+                    />
+                  </div>
+                </div>
+
+                {session?.user && (
+                  <div className="flex items-center gap-2 pt-1">
+                    <input
+                      type="checkbox"
+                      id="saveNewAddressCheck"
+                      checked={saveNewAddress}
+                      onChange={(e) => setSaveNewAddress(e.target.checked)}
+                      className="rounded border-[#EBE5DF] text-[#C85A32] focus:ring-[#C85A32] cursor-pointer"
+                    />
+                    <label htmlFor="saveNewAddressCheck" className="text-xs font-semibold text-[#2B231F] cursor-pointer">
+                      Guardar esta dirección con apodo &quot;{newAddressApodo}&quot; en mi cuenta
+                    </label>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Step 3: Payment Method */}
@@ -412,95 +646,121 @@ export default function CheckoutPage() {
                 className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
                   metodoPago === 'YAPE'
                     ? 'border-[#C85A32] bg-[#FDF4EE] ring-1 ring-[#C85A32]'
-                    : 'border-[#EBE5DF] bg-[#FDFBF7] hover:border-[#C85A32]/40'
+                    : 'border-[#EBE5DF] hover:border-[#D9B89C]'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <input
                     type="radio"
-                    name="pago"
+                    name="metodoPago"
                     value="YAPE"
                     checked={metodoPago === 'YAPE'}
-                    onChange={() => setMetodoPago('YAPE')}
-                    className="accent-[#C85A32]"
+                    onChange={(e) => setMetodoPago(e.target.value)}
+                    className="accent-[#C85A32] w-4 h-4"
                   />
                   <div>
                     <span className="font-bold text-[#2B231F] text-sm">Yape / Plin</span>
-                    <p className="text-[11px] text-[#6E655F]">Transferencia instantánea por código QR o número</p>
+                    <p className="text-[#6E655F] text-[11px]">Paga rápido y sin comisiones desde tu celular</p>
                   </div>
                 </div>
-                <span className="text-purple-700 font-black text-xs px-2.5 py-1 bg-purple-50 rounded-lg border border-purple-200">
-                  YAPE / PLIN
-                </span>
+                <div className="w-8 h-8 rounded-full bg-[#742284] flex items-center justify-center text-white font-bold text-xs">
+                  Y
+                </div>
               </label>
 
               <label
                 className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
                   metodoPago === 'TRANSFERENCIA'
                     ? 'border-[#C85A32] bg-[#FDF4EE] ring-1 ring-[#C85A32]'
-                    : 'border-[#EBE5DF] bg-[#FDFBF7] hover:border-[#C85A32]/40'
+                    : 'border-[#EBE5DF] hover:border-[#D9B89C]'
                 }`}
               >
                 <div className="flex items-center gap-3">
                   <input
                     type="radio"
-                    name="pago"
+                    name="metodoPago"
                     value="TRANSFERENCIA"
                     checked={metodoPago === 'TRANSFERENCIA'}
-                    onChange={() => setMetodoPago('TRANSFERENCIA')}
-                    className="accent-[#C85A32]"
+                    onChange={(e) => setMetodoPago(e.target.value)}
+                    className="accent-[#C85A32] w-4 h-4"
                   />
                   <div>
-                    <span className="font-bold text-[#2B231F] text-sm">Transferencia BCP / Interbank</span>
-                    <p className="text-[11px] text-[#6E655F]">Depósito bancario directo</p>
+                    <span className="font-bold text-[#2B231F] text-sm">Transferencia Bancaria</span>
+                    <p className="text-[#6E655F] text-[11px]">BCP, BBVA, Interbank o Scotiabank</p>
                   </div>
                 </div>
-                <span className="text-[#2B231F] font-bold text-xs px-2.5 py-1 bg-white border border-[#EBE5DF] rounded-lg">
-                  BANCO DIRECTO
-                </span>
+                <div className="w-8 h-8 rounded-full bg-[#002A61] flex items-center justify-center text-white font-bold text-xs">
+                  B
+                </div>
               </label>
             </div>
           </div>
         </div>
 
-        {/* Right: Order Summary Box (4 cols) */}
+        {/* Right: Order Summary (4 cols) */}
         <div className="lg:col-span-4">
-          <div className="bg-white p-6 rounded-3xl border border-[#EBE5DF] shadow-sm space-y-4 sticky top-20 text-xs">
-            <h3 className="font-black text-base text-[#2B231F] pb-3 border-b border-[#EBE5DF]">
+          <div className="bg-white p-6 rounded-3xl border border-[#EBE5DF] shadow-sm sticky top-24 space-y-6">
+            <h3 className="font-black text-base text-[#2B231F] border-b border-[#EBE5DF] pb-3">
               Detalle del Pedido
             </h3>
 
-            <div className="space-y-2 text-[#6E655F]">
-              <div className="flex justify-between">
+            {/* Product List Snippet */}
+            <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+              {items.map((item) => (
+                <div key={item.id} className="flex items-center justify-between text-xs gap-3">
+                  <div className="flex items-center gap-2 truncate">
+                    <span className="w-5 h-5 rounded-full bg-[#F4EDE5] text-[#C85A32] font-bold text-[10px] flex items-center justify-center shrink-0">
+                      {item.cantidad}
+                    </span>
+                    <span className="font-bold text-[#2B231F] truncate">{item.nombreModelo}</span>
+                  </div>
+                  <span className="font-bold text-[#2B231F] shrink-0">
+                    S/ {(item.precioMercado * item.cantidad).toFixed(2)}
+                  </span>
+                </div>
+              ))}
+            </div>
+
+            <div className="border-t border-[#EBE5DF] pt-4 space-y-2 text-xs">
+              <div className="flex justify-between text-[#6E655F]">
                 <span>Productos ({totalCount}):</span>
-                <span className="text-[#2B231F] font-bold">{formattedSubtotal}</span>
+                <span className="font-bold text-[#2B231F]">{formattedSubtotal}</span>
               </div>
-              <div className="flex justify-between text-[#6E655F] font-medium">
+              <div className="flex justify-between text-[#6E655F]">
                 <span>Costo de Envío:</span>
-                <span className="text-[#C85A32] font-bold">A coordinar por WhatsApp</span>
+                <span className="font-bold text-[#C85A32]">A coordinar por WhatsApp</span>
               </div>
             </div>
 
-            <div className="pt-3 border-t border-[#EBE5DF] flex justify-between items-baseline">
-              <span className="text-base font-bold text-[#2B231F]">Total a Pagar:</span>
-              <span className="text-2xl font-black text-[#2B231F]">{formattedSubtotal}</span>
+            <div className="border-t border-[#EBE5DF] pt-4 flex justify-between items-baseline">
+              <span className="text-sm font-bold text-[#2B231F]">Total a Pagar:</span>
+              <span className="text-2xl font-black text-[#2B231F] tracking-tight">{formattedSubtotal}</span>
             </div>
 
             <button
               onClick={handleSubmitOrder}
               disabled={isSubmitting}
-              className="w-full btn-nova-primary py-3.5 text-sm font-bold shadow-sm cursor-pointer disabled:opacity-50 flex items-center justify-center gap-2"
+              className="w-full bg-[#C85A32] hover:bg-[#A04320] text-white font-bold py-3.5 px-4 rounded-2xl shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
             >
-              {isSubmitting ? 'Procesando pedido...' : 'Confirmar Compra'}
+              {isSubmitting ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Procesando pedido...</span>
+                </>
+              ) : (
+                <span>Confirmar Compra</span>
+              )}
             </button>
 
-            <p className="text-[11px] text-[#6E655F] text-center leading-tight">
+            <p className="text-[10px] text-[#A89F91] text-center leading-relaxed">
               Al confirmar aceptas los términos de garantía y entrega de NOVA.
             </p>
 
-            <div className="border-t border-[#EBE5DF] pt-4 text-[11px] text-[#6E655F] flex items-center gap-2">
-              <ShieldCheck className="w-5 h-5 text-[#C85A32] shrink-0" />
-              <span>Compra Protegida: Recibe el producto o te devolvemos el dinero.</span>
+            <div className="p-3 bg-[#FDFBF7] rounded-xl border border-[#EBE5DF] flex items-start gap-2.5 text-[11px] text-[#6E655F]">
+              <ShieldCheck className="w-4 h-4 text-[#C85A32] shrink-0 mt-0.5" />
+              <span>
+                <strong>Compra Protegida:</strong> Recibe el producto que esperabas o te devolvemos tu dinero.
+              </span>
             </div>
           </div>
         </div>

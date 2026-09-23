@@ -58,11 +58,18 @@ export async function GET() {
       
       puntosAcumulados = Math.floor(puntosPedidos + puntosVentas)
     }
+
+    // Obtener direcciones guardadas del usuario
+    const direcciones = await prisma.direccionEntrega.findMany({
+      where: { userEmail: session.user.email },
+      orderBy: [{ esPrincipal: 'desc' }, { createdAt: 'desc' }],
+    })
     
     return NextResponse.json({ 
       cliente,
       puntosAcumulados,
-      totalPedidos
+      totalPedidos,
+      direcciones
     })
   } catch (error) {
     console.error('Error GET perfil:', error)
