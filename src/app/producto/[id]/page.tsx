@@ -6,6 +6,7 @@ import prisma from '@/core/database/prisma'
 import { ProductGallery, BuyBox, ProductItem } from '@/features/catalog'
 import { ProductRow } from '@/features/home'
 import { formatPriceParts, getProductImage, getEstimatedDeliveryDate } from '@/shared/utils'
+import { searchBggGame, fetchBggRating, needsBggRefresh } from '@/shared/utils/bgg'
 
 export const dynamic = 'force-dynamic'
 
@@ -57,14 +58,43 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const finalPrice = isEnOferta ? tempPrice : Number(product.precioMercado)
   const displayDiscount = product.badgePromocion || `${calculatedDiscount || 15}% OFF`
 
-  const rating = (product as any).rating as number | undefined
-  const reviewsCount = (product as any).reviewsCount as number | undefined
+  // BGG Rating - fetch from BGG if not cached or stale
+  let bggRating: number | null = product.bggRating ? Number(product.bggRating) : null
+  let bggRatingCount: number | null = product.bggRatingCount ?? null
+
+  if (needsBggRefresh(product.bggRatingUpdatedAt)) {
+    try {
+      // Find BGG ID if we don't have one yet
+      let bggId = product.bggId ?? null
+      if (!bggId) {
+        bggId = await searchBggGame(product.nombreModelo)
+      }
+      if (bggId) {
+        const bggData = await fetchBggRating(bggId)
+        if (bggData) {
+          bggRating = bggData.rating
+          bggRatingCount = bggData.ratingCount
+          // Cache in DB in background (don't await - let it run asynchronously)
+          prisma.producto.update({
+            where: { id: product.id },
+            data: {
+              bggId: bggData.bggId,
+              bggRating: bggData.rating,
+              bggRatingCount: bggData.ratingCount,
+              bggRatingUpdatedAt: new Date(),
+            },
+          }).catch(() => {}) // silently ignore if fails
+        }
+      }
+    } catch {
+      // BGG unavailable - use cached value if any
+    }
+  }
 
   const imageSrc = product.imagenUrl || getProductImage(product.nombreModelo, product.lineaCategoria)
   const priceParts = formatPriceParts(finalPrice)
   const origPriceParts = formatPriceParts(Number(product.precioMercado))
   const deliveryDate = getEstimatedDeliveryDate()
-  const installment12x = (finalPrice / 12).toFixed(2)
 
   const currentProductItem: ProductItem = {
     id: product.id,
@@ -127,26 +157,26 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
 
           {/* Center Column: Product Details (4 cols) */}
           <div className="lg:col-span-4 space-y-4">
-            {/* Condition & Sales */}
-            <div className="text-xs text-[#6E655F] font-medium">
-              <span>Nuevo</span> • <span>+500 partidas optimizadas</span>
-            </div>
+
 
             {/* Title in text-main */}
             <h1 className="text-xl sm:text-2xl font-black text-[#2B231F] leading-tight">
               {product.nombreModelo}
             </h1>
 
-            {/* Ratings */}
-            {rating !== undefined && (
+            {/* Ratings - sourced from BoardGameGeek */}
+            {bggRating !== null && (
               <div className="flex items-center gap-2 text-xs">
                 <div className="flex items-center text-[#F59E0B]">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <Star key={i} className={`w-4 h-4 ${i <= Math.floor(rating || 5) ? 'fill-current' : 'text-[#EBE5DF]'}`} />
-                  ))}
+                  {[1, 2, 3, 4, 5].map((i) => {
+                    const filled = i <= Math.floor((bggRating! / 10) * 5)
+                    return <Star key={i} className={`w-4 h-4 ${filled ? 'fill-current' : 'text-[#EBE5DF]'}`} />
+                  })}
                 </div>
-                <span className="font-bold text-[#2B231F]">{rating.toFixed(1)}</span>
-                <span className="text-[#6E655F]">({reviewsCount || 0} opiniones lúdicas)</span>
+                <span className="font-bold text-[#2B231F]">{bggRating.toFixed(1)}/10</span>
+                {bggRatingCount ? (
+                  <span className="text-[#6E655F]">({bggRatingCount.toLocaleString()} votos en BGG)</span>
+                ) : null}
               </div>
             )}
 
@@ -172,10 +202,6 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
                   {priceParts.cents}
                 </span>
               </div>
-
-              <p className="text-xs text-[#6E655F]">
-                en <strong className="text-[#10B981]">12x S/ {installment12x} sin interés</strong>
-              </p>
             </div>
 
             {/* Delivery Callout */}

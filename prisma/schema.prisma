@@ -168,6 +168,12 @@ model Producto {
   imagenUrl           String?
   descripcionWeb      String?
   
+  // BoardGameGeek Integration
+  bggId               Int?         // ID del juego en BoardGameGeek
+  bggRating           Decimal?     @db.Decimal(4, 2) // Rating promedio de BGG (0-10)
+  bggRatingCount      Int?         // Número de votos en BGG
+  bggRatingUpdatedAt  DateTime?    // Última vez que se actualizó el rating
+  
   activo              Boolean      @default(true)
   ventas              Venta[]
   itemPedidos         ItemPedido[]

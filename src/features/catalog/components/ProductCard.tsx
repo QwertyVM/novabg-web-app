@@ -39,7 +39,6 @@ export function ProductCard({ product }: ProductCardProps) {
 
   const { integer, cents } = formatPriceParts(finalPrice)
   const { integer: origInt, cents: origCents } = formatPriceParts(product.precioMercado)
-  const installmentValue = (finalPrice / 3).toFixed(2)
 
   // Stock status
   const isControlledStock = product.controlarStock === true
@@ -143,10 +142,7 @@ export function ProductCard({ product }: ProductCardProps) {
             </span>
           </div>
 
-          {/* Installment Info */}
-          <p className="text-[11px] text-[#10B981] font-bold mt-1">
-            en <span>3x S/ {installmentValue}</span> sin interés
-          </p>
+
 
           {/* Stock Indicator */}
           {isControlledStock ? (

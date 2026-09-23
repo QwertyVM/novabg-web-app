@@ -320,7 +320,6 @@ export default function CheckoutPage() {
                   />
                   <div>
                     <span className="font-bold text-[#2B231F] text-sm">Tarjeta de Débito o Crédito</span>
-                    <p className="text-[11px] text-[#6E655F]">Hasta 12 cuotas sin interés</p>
                   </div>
                 </div>
                 <span className="text-[#C85A32] font-bold text-xs px-2.5 py-1 bg-[#FDF4EE] border border-[#C85A32]/30 rounded-lg">

@@ -48,7 +48,6 @@ export function BuyBox({ product }: BuyBoxProps) {
   const { integer, cents } = formatPriceParts(finalPrice)
   const { integer: origInt, cents: origCents } = formatPriceParts(product.precioMercado)
   const estimatedDate = getEstimatedDeliveryDate()
-  const installmentValue = (finalPrice / 3).toFixed(2)
 
   // Stock status
   const isControlledStock = product.controlarStock === true
@@ -117,9 +116,6 @@ export function BuyBox({ product }: BuyBoxProps) {
             {cents}
           </span>
         </div>
-        <p className="text-xs text-[#10B981] font-bold mt-1">
-          en <span>3 cuotas de S/ {installmentValue}</span> sin interés
-        </p>
       </div>
 
       {/* Shipping & Delivery Box */}
