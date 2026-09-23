@@ -228,75 +228,53 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             )}
 
             {/* Technical Specifications — BG specs from DB, fallback for 3D */}
-            <div className="pt-4 border-t border-[#EBE5DF]">
-              <h3 className="font-bold text-sm text-[#2B231F] mb-3">Características principales</h3>
-              <div className="nova-table-container">
-                <table className="nova-table text-xs text-left border border-[#EBE5DF] rounded-2xl overflow-hidden">
-                  <tbody>
-                    <tr className="border-b border-[#EBE5DF] bg-[#FDFBF7]">
-                      <td className="p-2.5 font-bold text-[#6E655F] w-1/3">Categoría</td>
-                      <td className="p-2.5 text-[#2B231F] font-medium w-2/3">{product.lineaCategoria}</td>
-                    </tr>
-                    <tr className="border-b border-[#EBE5DF]">
-                      <td className="p-2.5 font-bold text-[#6E655F]">Modelo</td>
-                      <td className="p-2.5 text-[#2B231F] font-medium">{product.nombreModelo}</td>
-                    </tr>
-                    {product.editorialMarca && (
-                      <tr className="border-b border-[#EBE5DF] bg-[#FDFBF7]">
-                        <td className="p-2.5 font-bold text-[#6E655F]">Editorial</td>
-                        <td className="p-2.5 text-[#2B231F] font-medium">{product.editorialMarca}</td>
-                      </tr>
-                    )}
-                    {product.numJugadores && (
-                      <tr className="border-b border-[#EBE5DF]">
-                        <td className="p-2.5 font-bold text-[#6E655F]">Jugadores</td>
-                        <td className="p-2.5 text-[#2B231F] font-medium">{product.numJugadores}</td>
-                      </tr>
-                    )}
-                    {product.edadMinima && (
-                      <tr className="border-b border-[#EBE5DF] bg-[#FDFBF7]">
-                        <td className="p-2.5 font-bold text-[#6E655F]">Edad mínima</td>
-                        <td className="p-2.5 text-[#2B231F] font-medium">{product.edadMinima}+ años</td>
-                      </tr>
-                    )}
-                    {product.duracionMinutos && (
-                      <tr className="border-b border-[#EBE5DF]">
-                        <td className="p-2.5 font-bold text-[#6E655F]">Duración</td>
-                        <td className="p-2.5 text-[#2B231F] font-medium">{product.duracionMinutos} min aprox.</td>
-                      </tr>
-                    )}
-                    {product.idioma && (
-                      <tr className="border-b border-[#EBE5DF] bg-[#FDFBF7]">
-                        <td className="p-2.5 font-bold text-[#6E655F]">Idioma</td>
-                        <td className="p-2.5 text-[#2B231F] font-medium">{product.idioma}</td>
-                      </tr>
-                    )}
-                    {product.mecanicas && (
-                      <tr className="border-b border-[#EBE5DF]">
-                        <td className="p-2.5 font-bold text-[#6E655F]">Mecánicas</td>
-                        <td className="p-2.5 text-[#2B231F] font-medium">{product.mecanicas}</td>
-                      </tr>
-                    )}
-                    {!product.numJugadores && !product.editorialMarca && (
-                      <tr className="border-b border-[#EBE5DF] bg-[#FDFBF7]">
-                        <td className="p-2.5 font-bold text-[#6E655F]">Peso aproximado</td>
-                        <td className="p-2.5 text-[#2B231F] font-medium">
-                          {product.pesoGramos ? `${Number(product.pesoGramos)} g` : 'Optimizado'}
-                        </td>
-                      </tr>
-                    )}
-                    <tr className="border-b border-[#EBE5DF]">
-                      <td className="p-2.5 font-bold text-[#6E655F]">Disponibilidad</td>
-                      <td className="p-2.5 text-[#10B981] font-bold">En Stock Inmediato</td>
-                    </tr>
-                    <tr className="bg-[#FDFBF7]">
-                      <td className="p-2.5 font-bold text-[#6E655F]">Garantía</td>
-                      <td className="p-2.5 text-[#2B231F] font-semibold">NOVA (Tienda Oficial)</td>
-                    </tr>
-                  </tbody>
-                </table>
+            {[product.editorialMarca, product.numJugadores, product.edadMinima, product.duracionMinutos, product.idioma, product.mecanicas].some(Boolean) && (
+              <div className="pt-4 border-t border-[#EBE5DF]">
+                <h3 className="font-bold text-sm text-[#2B231F] mb-3">Características principales</h3>
+                <div className="nova-table-container">
+                  <table className="nova-table text-xs text-left border border-[#EBE5DF] rounded-2xl overflow-hidden w-full">
+                    <tbody>
+                      {product.editorialMarca && (
+                        <tr className="border-b border-[#EBE5DF] bg-[#FDFBF7]">
+                          <td className="p-2.5 font-bold text-[#6E655F] w-1/3">Editorial</td>
+                          <td className="p-2.5 text-[#2B231F] font-medium w-2/3">{product.editorialMarca}</td>
+                        </tr>
+                      )}
+                      {product.numJugadores && (
+                        <tr className="border-b border-[#EBE5DF]">
+                          <td className="p-2.5 font-bold text-[#6E655F] w-1/3">Jugadores</td>
+                          <td className="p-2.5 text-[#2B231F] font-medium w-2/3">{product.numJugadores}</td>
+                        </tr>
+                      )}
+                      {product.edadMinima && (
+                        <tr className="border-b border-[#EBE5DF] bg-[#FDFBF7]">
+                          <td className="p-2.5 font-bold text-[#6E655F] w-1/3">Edad mínima</td>
+                          <td className="p-2.5 text-[#2B231F] font-medium w-2/3">{product.edadMinima}+ años</td>
+                        </tr>
+                      )}
+                      {product.duracionMinutos && (
+                        <tr className="border-b border-[#EBE5DF]">
+                          <td className="p-2.5 font-bold text-[#6E655F] w-1/3">Duración</td>
+                          <td className="p-2.5 text-[#2B231F] font-medium w-2/3">{product.duracionMinutos} min aprox.</td>
+                        </tr>
+                      )}
+                      {product.idioma && (
+                        <tr className="border-b border-[#EBE5DF] bg-[#FDFBF7]">
+                          <td className="p-2.5 font-bold text-[#6E655F] w-1/3">Idioma</td>
+                          <td className="p-2.5 text-[#2B231F] font-medium w-2/3">{product.idioma}</td>
+                        </tr>
+                      )}
+                      {product.mecanicas && (
+                        <tr className="border-b border-[#EBE5DF]">
+                          <td className="p-2.5 font-bold text-[#6E655F] w-1/3">Mecánicas</td>
+                          <td className="p-2.5 text-[#2B231F] font-medium w-2/3">{product.mecanicas}</td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           {/* Right Column: Buy Box (3 cols) */}
