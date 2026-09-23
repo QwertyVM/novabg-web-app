@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { Star, Zap, MessageSquare } from 'lucide-react'
 import prisma from '@/core/database/prisma'
-import { ProductGallery, BuyBox, ProductItem } from '@/features/catalog'
+import { ProductGallery, BuyBox, ProductItem, ExpandableDescription } from '@/features/catalog'
 import { ProductRow } from '@/features/home'
 import { formatPriceParts, getProductImage, getEstimatedDeliveryDate } from '@/shared/utils'
 import { searchBggGame, fetchBggRating, needsBggRefresh } from '@/shared/utils/bgg'
@@ -256,11 +256,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               </div>
             )}
 
-            {/* Descripción Web */}
+            {/* Descripción Web con Ver más */}
             {product.descripcionWeb && (
-              <div className="pt-4 text-sm text-[#4E443E] leading-relaxed whitespace-pre-wrap">
-                {product.descripcionWeb}
-              </div>
+              <ExpandableDescription description={product.descripcionWeb} className="pt-4" />
             )}
           </div>
 
