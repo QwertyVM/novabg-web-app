@@ -213,14 +213,7 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             {/* Delivery Callout */}
             <div className="flex items-start gap-2.5 p-3.5 rounded-2xl bg-[#FDFBF7] border border-[#EBE5DF] text-xs">
               <Zap className="w-5 h-5 fill-[#C85A32] text-[#C85A32] shrink-0 mt-0.5" />
-              <div>
-                <p className="font-bold text-[#C85A32]">
-                  Envíos a todo el país con despacho rápido
-                </p>
-                <p className="text-[#6E655F] text-[11px]">
-                  Llega estimado el <strong className="text-[#2B231F]">{deliveryDate}</strong> (Lima y Provincias)
-                </p>
-              </div>
+              <p className="font-bold text-[#C85A32]">Enviamos a todo el país</p>
             </div>
 
             {/* Highlights bullet points - from DB */}

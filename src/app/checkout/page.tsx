@@ -2,11 +2,11 @@
 
 import React, { useState } from 'react'
 import Link from 'next/link'
-import { Lock, CheckCircle2, ShieldCheck, ShoppingBag } from 'lucide-react'
+import { Lock, CheckCircle2, ShieldCheck, ShoppingBag, MessageCircle } from 'lucide-react'
 import { useSession, signIn } from 'next-auth/react'
 import { useCart } from '@/features/cart'
 import { createOrder } from '@/features/orders'
-import { formatPrice, getEstimatedDeliveryDate } from '@/shared/utils'
+import { formatPrice } from '@/shared/utils'
 import { NovaLogo } from '@/shared/components/branding'
 import { toast } from 'sonner'
 
@@ -23,9 +23,11 @@ export default function CheckoutPage() {
   const [metodoPago, setMetodoPago] = useState('YAPE')
   const [notas, setNotas] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [orderComplete, setOrderComplete] = useState<{ codigo: string } | null>(null)
+  const [orderComplete, setOrderComplete] = useState<{ codigo: string; whatsappUrl: string } | null>(null)
 
-  const deliveryDate = getEstimatedDeliveryDate()
+  // WhatsApp number (replace with real number)
+  const WHATSAPP_NUMBER = '51999999999' // TODO: load from ConfiguracionTienda
+
   const formattedSubtotal = formatPrice(subtotal)
 
   const handleSubmitOrder = async (e: React.FormEvent) => {
@@ -63,9 +65,38 @@ export default function CheckoutPage() {
       })
 
       if (res.success && res.pedido) {
+        // Build WhatsApp message with all order details
+        const lineasProductos = items
+          .map((i) => `  • ${i.nombreModelo} x${i.cantidad} — S/ ${(i.precioMercado * i.cantidad).toFixed(2)}`)
+          .join('\n')
+
+        const mensaje = [
+          `🛒 *NUEVO PEDIDO — NOVA BG*`,
+          `Código: *${res.pedido.codigo}*`,
+          ``,
+          `👤 *Comprador:* ${nombre}${dni ? ` (DNI: ${dni})` : ''}`,
+          `📱 *WhatsApp:* ${telefono}`,
+          `📦 *Entrega:* ${direccion}, ${distrito}`,
+          `💳 *Pago preferido:* ${metodoPago}`,
+          notas ? `📝 *Nota:* ${notas}` : '',
+          ``,
+          `📦 *Productos:*`,
+          lineasProductos,
+          ``,
+          `💰 *Total: S/ ${subtotal.toFixed(2)}*`,
+          ``,
+          `— Enviado desde la tienda web novabg.pe`,
+        ]
+          .filter((l) => l !== '')
+          .join('\n')
+
+        const whatsappUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(mensaje)}`
+
         clearCart()
-        setOrderComplete({ codigo: res.pedido.codigo })
-        toast.success('¡Pedido confirmado con éxito!')
+        setOrderComplete({ codigo: res.pedido.codigo, whatsappUrl })
+        // Auto-redirect to WhatsApp
+        window.open(whatsappUrl, '_blank')
+        toast.success('¡Pedido confirmado! Abriendo WhatsApp...')
       } else {
         toast.error(res.error || 'Error al procesar el pedido')
       }
@@ -83,21 +114,24 @@ export default function CheckoutPage() {
           <div className="w-16 h-16 bg-[#EBF7F0] text-[#10B981] border border-[#10B981]/30 rounded-2xl flex items-center justify-center mx-auto shadow-xs">
             <CheckCircle2 className="w-10 h-10" />
           </div>
-          <h1 className="text-2xl font-black text-[#2B231F]">¡Gracias por tu compra en NOVA!</h1>
+          <h1 className="text-2xl font-black text-[#2B231F]">¡Pedido registrado en NOVA!</h1>
           <div className="bg-[#FDFBF7] border border-[#EBE5DF] rounded-2xl p-5 max-w-md mx-auto text-xs text-[#6E655F] space-y-1">
             <p className="text-[#6E655F]">Código de confirmación:</p>
             <p className="text-2xl font-black text-[#C85A32] tracking-wider py-1">{orderComplete.codigo}</p>
-            <p className="text-[#2B231F]">
-              Fecha estimada de entrega: <strong className="text-[#C85A32]">{deliveryDate}</strong>
-            </p>
           </div>
           <p className="text-xs text-[#6E655F] max-w-md mx-auto leading-relaxed">
-            Hemos registrado tu orden exitosamente. Te contactaremos vía WhatsApp al número <strong>{telefono}</strong> para coordinar el despacho inmediato.
+            Tu pedido fue registrado. Si no se abrió WhatsApp automáticamente, haz clic en el botón de abajo para enviarnos los detalles.
           </p>
-          <div className="pt-4 flex justify-center gap-3">
-            <Link href="/pedidos" className="btn-nova-primary text-xs">
-              Ver Mis Compras
-            </Link>
+          <div className="pt-2 flex flex-col items-center gap-3">
+            <a
+              href={orderComplete.whatsappUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-2 bg-[#25D366] hover:bg-[#1ebe5a] text-white font-bold text-sm px-6 py-3 rounded-2xl shadow-sm transition-colors"
+            >
+              <MessageCircle className="w-5 h-5" />
+              Enviar pedido por WhatsApp
+            </a>
             <Link href="/" className="btn-nova-outline text-xs">
               Seguir Explorando
             </Link>
@@ -299,31 +333,6 @@ export default function CheckoutPage() {
                 </div>
                 <span className="text-purple-700 font-black text-xs px-2.5 py-1 bg-purple-50 rounded-lg border border-purple-200">
                   YAPE / PLIN
-                </span>
-              </label>
-
-              <label
-                className={`flex items-center justify-between p-4 rounded-2xl border cursor-pointer transition-all ${
-                  metodoPago === 'TARJETA'
-                    ? 'border-[#C85A32] bg-[#FDF4EE] ring-1 ring-[#C85A32]'
-                    : 'border-[#EBE5DF] bg-[#FDFBF7] hover:border-[#C85A32]/40'
-                }`}
-              >
-                <div className="flex items-center gap-3">
-                  <input
-                    type="radio"
-                    name="pago"
-                    value="TARJETA"
-                    checked={metodoPago === 'TARJETA'}
-                    onChange={() => setMetodoPago('TARJETA')}
-                    className="accent-[#C85A32]"
-                  />
-                  <div>
-                    <span className="font-bold text-[#2B231F] text-sm">Tarjeta de Débito o Crédito</span>
-                  </div>
-                </div>
-                <span className="text-[#C85A32] font-bold text-xs px-2.5 py-1 bg-[#FDF4EE] border border-[#C85A32]/30 rounded-lg">
-                  VISA / MASTERCARD
                 </span>
               </label>
 

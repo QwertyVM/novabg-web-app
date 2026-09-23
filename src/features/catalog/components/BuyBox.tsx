@@ -3,7 +3,6 @@
 import React, { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  MapPin,
   ShieldCheck,
   RotateCcw,
   ShoppingCart,
@@ -47,7 +46,6 @@ export function BuyBox({ product }: BuyBoxProps) {
 
   const { integer, cents } = formatPriceParts(finalPrice)
   const { integer: origInt, cents: origCents } = formatPriceParts(product.precioMercado)
-  const estimatedDate = getEstimatedDeliveryDate()
 
   // Stock status
   const isControlledStock = product.controlarStock === true
@@ -118,18 +116,11 @@ export function BuyBox({ product }: BuyBoxProps) {
         </div>
       </div>
 
-      {/* Shipping & Delivery Box */}
-      <div className="p-3.5 bg-[#FDFBF7] rounded-2xl border border-[#EBE5DF] text-xs space-y-2">
+      {/* Shipping Box */}
+      <div className="p-3.5 bg-[#FDFBF7] rounded-2xl border border-[#EBE5DF] text-xs">
         <div className="flex items-center gap-1.5 font-bold text-[#C85A32]">
           <Truck className="w-4 h-4 text-[#C85A32]" />
-          <span>Envíos a Nivel Nacional</span>
-        </div>
-        <p className="text-[#6E655F] text-[11px] leading-snug">
-          Llega estimado el <strong className="text-[#2B231F]">{estimatedDate}</strong> (Lima y Provincias)
-        </p>
-        <div className="flex items-center gap-1 text-[11px] text-[#C85A32] font-bold hover:underline cursor-pointer">
-          <MapPin className="w-3 h-3 text-[#C85A32]" />
-          <span>Enviar a Lima, Perú</span>
+          <span>Enviamos a todo el país</span>
         </div>
       </div>
 
@@ -163,7 +154,7 @@ export function BuyBox({ product }: BuyBoxProps) {
           onChange={(e) => setQuantity(Number(e.target.value))}
           className="bg-[#FDFBF7] border border-[#EBE5DF] text-[#2B231F] text-xs rounded-xl px-3 py-1.5 outline-none font-bold cursor-pointer focus:ring-2 focus:ring-[#C85A32]/30"
         >
-          {[1, 2, 3, 4, 5, 10].map((num) => (
+          {Array.from({ length: Math.min(maxStock > 0 ? maxStock : 10, 10) }, (_, i) => i + 1).map((num) => (
             <option key={num} value={num}>
               {num} {num === 1 ? 'unidad' : 'unidades'}
             </option>
@@ -219,7 +210,7 @@ export function BuyBox({ product }: BuyBoxProps) {
         <div className="flex items-start gap-2">
           <CreditCard className="w-4 h-4 text-[#10B981] shrink-0 mt-0.5" />
           <p>
-            <strong className="text-[#231C18]">Medios de pago:</strong> Yape, Plin, Tarjetas y Transferencias bancarias.
+            <strong className="text-[#231C18]">Medios de pago:</strong> Yape, Plin y Transferencias bancarias.
           </p>
         </div>
       </div>
