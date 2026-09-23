@@ -214,24 +214,18 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             </div>
 
             {/* Highlights bullet points - from DB */}
-            <div className="space-y-2 pt-2">
-              <h3 className="font-bold text-sm text-[#2B231F]">Lo que tienes que saber de este producto</h3>
-              <ul className="text-xs text-[#6E655F] space-y-2 list-disc pl-4">
-                {[product.bulletPoint1, product.bulletPoint2, product.bulletPoint3, product.bulletPoint4]
-                  .filter(Boolean)
-                  .map((bp, i) => (
-                    <li key={i}><span className="text-[#2B231F]">{bp}</span></li>
-                  ))}
-                {![product.bulletPoint1, product.bulletPoint2, product.bulletPoint3, product.bulletPoint4].some(Boolean) && (
-                  <>
-                    <li><strong className="text-[#2B231F]">Compatibilidad:</strong> Diseñado a medida para {product.nombreModelo}.</li>
-                    <li><strong className="text-[#2B231F]">Material de calidad:</strong> Componentes de alta densidad y durabilidad para proteger tus cartas y fichas.</li>
-                    <li><strong className="text-[#2B231F]">Setup optimizado:</strong> Acomoda las piezas rápidamente sobre la mesa para empezar a jugar de inmediato.</li>
-                    <li><strong className="text-[#2B231F]">Acabado suave:</strong> Cuida tus cartas y las cajas de tus juegos de mesa.</li>
-                  </>
-                )}
-              </ul>
-            </div>
+            {[product.bulletPoint1, product.bulletPoint2, product.bulletPoint3, product.bulletPoint4].some(Boolean) && (
+              <div className="space-y-2 pt-2">
+                <h3 className="font-bold text-sm text-[#2B231F]">Lo que tienes que saber de este producto</h3>
+                <ul className="text-xs text-[#6E655F] space-y-2 list-disc pl-4">
+                  {[product.bulletPoint1, product.bulletPoint2, product.bulletPoint3, product.bulletPoint4]
+                    .filter(Boolean)
+                    .map((bp, i) => (
+                      <li key={i}><span className="text-[#2B231F]">{bp}</span></li>
+                    ))}
+                </ul>
+              </div>
+            )}
 
             {/* Technical Specifications — BG specs from DB, fallback for 3D */}
             <div className="pt-4 border-t border-[#EBE5DF]">
