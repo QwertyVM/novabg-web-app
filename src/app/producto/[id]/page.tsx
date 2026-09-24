@@ -5,7 +5,6 @@ import prisma from '@/core/database/prisma'
 import { ProductGallery, BuyBox, ProductItem, ExpandableDescription, ProductReviewsSection } from '@/features/catalog'
 import { ProductRow } from '@/features/home'
 import { formatPriceParts, getProductImage, getEstimatedDeliveryDate } from '@/shared/utils'
-import { searchBggGame, fetchBggRating, needsBggRefresh } from '@/shared/utils/bgg'
 import { BggStatsBadge } from '@/features/catalog/components/BggStatsBadge'
 
 export const dynamic = 'force-dynamic'
@@ -64,38 +63,9 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
   const finalPrice = isEnOferta ? tempPrice : Number(product.precioMercado)
   const displayDiscount = product.badgePromocion || `${calculatedDiscount || 15}% OFF`
 
-  // BGG Rating - fetch from BGG if not cached or stale
-  let bggRating: number | null = product.bggRating ? Number(product.bggRating) : null
-  let bggRatingCount: number | null = product.bggRatingCount ?? null
-
-  if (needsBggRefresh(product.bggRatingUpdatedAt)) {
-    try {
-      // Find BGG ID if we don't have one yet
-      let bggId = product.bggId ?? null
-      if (!bggId) {
-        bggId = await searchBggGame(product.nombreModelo)
-      }
-      if (bggId) {
-        const bggData = await fetchBggRating(bggId)
-        if (bggData) {
-          bggRating = bggData.rating
-          bggRatingCount = bggData.ratingCount
-          // Cache in DB in background (don't await - let it run asynchronously)
-          prisma.producto.update({
-            where: { id: product.id },
-            data: {
-              bggId: bggData.bggId,
-              bggRating: bggData.rating,
-              bggRatingCount: bggData.ratingCount,
-              bggRatingUpdatedAt: new Date(),
-            },
-          }).catch(() => {}) // silently ignore if fails
-        }
-      }
-    } catch {
-      // BGG unavailable - use cached value if any
-    }
-  }
+  // BGG Rating - leído directamente desde la base de datos local (0 llamadas a BGG)
+  const bggRating: number | null = product.bggRating ? Number(product.bggRating) : null
+  const bggRatingCount: number | null = product.bggRatingCount ?? null
 
   const imageSrc = product.imagenUrl || getProductImage(product.nombreModelo, product.lineaCategoria)
   const priceParts = formatPriceParts(finalPrice)

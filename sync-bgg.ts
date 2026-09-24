@@ -44,11 +44,24 @@ async function main() {
           bggMinPlayers: bggData.bggMinPlayers ?? null,
           bggMaxPlayers: bggData.bggMaxPlayers ?? null,
           bggPlaytime: bggData.bggPlaytime ?? null,
+          bggRatingCount: bggData.bggRatingCount ?? null,
           bggRatingUpdatedAt: new Date(),
+
+          // Ficha técnica
+          numJugadores: bggData.numJugadores ?? product.numJugadores ?? null,
+          edadMinima: bggData.edadMinima ?? product.edadMinima ?? null,
+          duracionMinutos: bggData.duracionMinutos ?? product.duracionMinutos ?? null,
+          editorialMarca: product.editorialMarca || bggData.editorialMarca || null,
+          mecanicas: product.mecanicas || bggData.mecanicas || null,
+          idioma: product.idioma || 'Español',
         },
       });
       console.log(
-        `✅ [${product.nombreModelo}] -> Rating: ${bggData.bggRating}★ | Peso: ${bggData.bggWeight}/5 | Jugadores: ${bggData.bggMinPlayers}-${bggData.bggMaxPlayers} | ${bggData.bggPlaytime} min`
+        `✅ [${product.nombreModelo}]\n` +
+        `   ⭐ Rating BGG: ${bggData.bggRating}★ | Peso: ${bggData.bggWeight}/5\n` +
+        `   📋 Ficha Técnica: ${bggData.numJugadores || 'N/A'} | ${bggData.edadMinima ? bggData.edadMinima + '+' : 'N/A'} años | ${bggData.duracionMinutos || 'N/A'} min\n` +
+        `   🏢 Editorial: ${product.editorialMarca || bggData.editorialMarca || 'N/A'}\n` +
+        `   🎲 Mecánicas: ${product.mecanicas || bggData.mecanicas || 'N/A'}\n`
       );
       successCount++;
     } else {
@@ -56,7 +69,7 @@ async function main() {
     }
   }
 
-  console.log(`\n🎉 Sincronización completada: ${successCount}/${validProducts.length} juegos actualizados en la base de datos.`);
+  console.log(`\n🎉 Sincronización completada: ${successCount}/${validProducts.length} juegos actualizados con Rating y Ficha Técnica.`);
 }
 
 main()

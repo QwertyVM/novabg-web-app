@@ -74,6 +74,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
     reviewsCount: 0,
     isBestSeller: false,
     isAmazonChoice: false,
+    bggId: p.bggId ?? undefined,
+    bggRating: p.bggRating ? Number(p.bggRating) : undefined,
+    bggWeight: p.bggWeight ? Number(p.bggWeight) : undefined,
+    bggMinPlayers: p.bggMinPlayers ?? undefined,
+    bggMaxPlayers: p.bggMaxPlayers ?? undefined,
+    bggPlaytime: p.bggPlaytime ?? undefined,
   }))
 
   return (

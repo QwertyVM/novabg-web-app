@@ -74,6 +74,12 @@ export default async function HomePage({ searchParams }: HomePageProps) {
     descripcionWeb: p.descripcionWeb || undefined,
     activo: p.activo ?? true,
     imagen: p.imagenUrl || getProductImage(p.nombreModelo, p.lineaCategoria),
+    bggId: p.bggId ?? undefined,
+    bggRating: p.bggRating ? Number(p.bggRating) : undefined,
+    bggWeight: p.bggWeight ? Number(p.bggWeight) : undefined,
+    bggMinPlayers: p.bggMinPlayers ?? undefined,
+    bggMaxPlayers: p.bggMaxPlayers ?? undefined,
+    bggPlaytime: p.bggPlaytime ?? undefined,
   }))
 
   // Products on offer

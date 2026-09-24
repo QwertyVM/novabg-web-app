@@ -167,6 +167,12 @@ export default async function CategoryPage({ params, searchParams }: CategoryPag
       // Solo los top 5 más vendidos con ventas reales reciben la etiqueta
       isBestSeller: top5ProductIds.has(p.id),
       isAmazonChoice: false,
+      bggId: p.bggId ?? undefined,
+      bggRating: p.bggRating ? Number(p.bggRating) : undefined,
+      bggWeight: p.bggWeight ? Number(p.bggWeight) : undefined,
+      bggMinPlayers: p.bggMinPlayers ?? undefined,
+      bggMaxPlayers: p.bggMaxPlayers ?? undefined,
+      bggPlaytime: p.bggPlaytime ?? undefined,
     }
   })
 

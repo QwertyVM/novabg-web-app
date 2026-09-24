@@ -175,8 +175,8 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          {/* Rating (Solo si tiene información real) */}
-          {product.rating !== undefined && product.rating > 0 && (product.reviewsCount ?? 0) > 0 && (
+          {/* Rating (Reseñas locales o Rating BGG) */}
+          {product.rating !== undefined && product.rating > 0 && (product.reviewsCount ?? 0) > 0 ? (
             <div className="flex items-center gap-1 mt-2 text-[11px] text-[#6E655F]">
               <div className="flex text-[#F59E0B]">
                 {[1, 2, 3, 4, 5].map((i) => (
@@ -195,7 +195,22 @@ export function ProductCard({ product }: ProductCardProps) {
               </span>
               <span className="text-[#6E655F]">({product.reviewsCount})</span>
             </div>
-          )}
+          ) : product.bggRating != null && Number(product.bggRating) > 0 ? (
+            <div className="flex items-center gap-1.5 mt-2 text-[11px]">
+              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-800 font-black">
+                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                <span>{Number(product.bggRating).toFixed(1)}</span>
+              </div>
+              <span className="text-[10px] font-black text-[#A36F4C] uppercase tracking-wider">
+                BGG
+              </span>
+              {product.bggWeight != null && Number(product.bggWeight) > 0 && (
+                <span className="text-[10px] text-[#75695D]">
+                  • {Number(product.bggWeight) <= 1.5 ? 'Familiar' : Number(product.bggWeight) <= 2.5 ? 'Medio' : 'Experto'}
+                </span>
+              )}
+            </div>
+          ) : null}
         </div>
 
         {/* Quick Add To Cart Button */}
