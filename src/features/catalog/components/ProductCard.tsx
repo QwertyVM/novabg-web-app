@@ -178,28 +178,26 @@ export function ProductCard({ product }: ProductCardProps) {
           {/* Ambos Ratings: 1. Calificación de Clientes + 2. Rating de BGG */}
           <div className="space-y-1.5 mt-2">
             {/* 1. Rating de Clientes */}
-            <div className="flex items-center gap-1 text-[11px] text-[#6E655F]">
-              <div className="flex text-[#F59E0B]">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star
-                    key={i}
-                    className={`w-3 h-3 ${
-                      product.rating !== undefined && (product.reviewsCount ?? 0) > 0
-                        ? i <= Math.floor(product.rating)
+            {product.rating !== undefined && (product.reviewsCount ?? 0) > 0 && (
+              <div className="flex items-center gap-1 text-[11px] text-[#6E655F]">
+                <div className="flex text-[#F59E0B]">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Star
+                      key={i}
+                      className={`w-3 h-3 ${
+                        i <= Math.floor(product.rating!)
                           ? 'fill-current text-[#F59E0B]'
                           : 'text-[#EBE5DF]'
-                        : 'fill-current text-[#F59E0B]'
-                    }`}
-                  />
-                ))}
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="text-xs font-bold text-[#2B231F] ml-0.5">
+                  {product.rating.toFixed(1)}
+                </span>
+                <span className="text-[#6E655F]">({product.reviewsCount})</span>
               </div>
-              <span className="text-xs font-bold text-[#2B231F] ml-0.5">
-                {product.rating !== undefined && (product.reviewsCount ?? 0) > 0
-                  ? product.rating.toFixed(1)
-                  : '5.0'}
-              </span>
-              <span className="text-[#6E655F]">({product.reviewsCount ?? 0})</span>
-            </div>
+            )}
 
             {/* 2. Rating de BoardGameGeek (BGG) */}
             {product.bggRating != null && Number(product.bggRating) > 0 && (

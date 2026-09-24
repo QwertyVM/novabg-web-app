@@ -147,28 +147,28 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
             </h1>
 
             {/* 1. Rating de Clientes de la Tienda */}
-            <div className="flex items-center gap-2 text-xs pt-1">
-              <div className="flex text-[#F59E0B]">
-                {[1, 2, 3, 4, 5].map((i) => (
-                  <Star
-                    key={i}
-                    className={`w-3.5 h-3.5 ${
-                      reviewsCount > 0
-                        ? i <= Math.floor(avgRating)
+            {reviewsCount > 0 && (
+              <div className="flex items-center gap-2 text-xs pt-1">
+                <div className="flex text-[#F59E0B]">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <Star
+                      key={i}
+                      className={`w-3.5 h-3.5 ${
+                        i <= Math.floor(avgRating)
                           ? 'fill-current text-[#F59E0B]'
                           : 'text-[#EBE5DF]'
-                        : 'fill-current text-[#F59E0B]'
-                    }`}
-                  />
-                ))}
+                      }`}
+                    />
+                  ))}
+                </div>
+                <span className="font-black text-[#2B231F]">
+                  {avgRating.toFixed(1)}
+                </span>
+                <span className="text-[#6E655F]">
+                  ({reviewsCount} {reviewsCount === 1 ? 'opinión' : 'opiniones'})
+                </span>
               </div>
-              <span className="font-black text-[#2B231F]">
-                {avgRating.toFixed(1)}
-              </span>
-              <span className="text-[#6E655F]">
-                ({reviewsCount} {reviewsCount === 1 ? 'opinión' : 'opiniones'})
-              </span>
-            </div>
+            )}
 
             {/* 2. Ratings y Estadísticas BGG - Desde Base de Datos local */}
             {(product.bggRating || product.bggWeight || product.bggPlaytime) ? (
