@@ -9,68 +9,94 @@ export interface BGGGameInfo {
   bggPlaytime?: number;
 }
 
+const BGG_API_TOKEN = process.env.BGG_API_TOKEN || 'f7ad4bda-0a75-4d1c-9ee0-bb8417ea409f';
+
 /**
- * Obtiene la información de un juego de mesa desde la API de BGG.
+ * Obtiene la información de múltiples juegos en UNA SOLA llamada HTTP a BGG.
+ * Admite lotes de hasta 50 juegos por llamada para máxima eficiencia y 0 spam.
+ * @param bggIds Lista de IDs de BGG a consultar.
+ * @returns Map indexado por bggId con las estadísticas del juego.
+ */
+export async function getBGGGamesBatch(bggIds: number[]): Promise<Map<number, BGGGameInfo>> {
+  const results = new Map<number, BGGGameInfo>();
+  const validIds = Array.from(new Set(bggIds.filter(id => typeof id === 'number' && id > 0)));
+
+  if (validIds.length === 0) return results;
+
+  // BGG soporta cómodamente hasta 50 IDs por llamada HTTP
+  const CHUNK_SIZE = 50;
+  const chunks: number[][] = [];
+  for (let i = 0; i < validIds.length; i += CHUNK_SIZE) {
+    chunks.push(validIds.slice(i, i + CHUNK_SIZE));
+  }
+
+  const parser = new XMLParser({
+    ignoreAttributes: false,
+    attributeNamePrefix: "@_"
+  });
+
+  for (let i = 0; i < chunks.length; i++) {
+    const chunk = chunks[i];
+    const idsParam = chunk.join(',');
+    const url = `https://boardgamegeek.com/xmlapi2/thing?id=${idsParam}&stats=1`;
+
+    try {
+      const response = await fetch(url, {
+        headers: {
+          'Authorization': `Bearer ${BGG_API_TOKEN}`,
+          'User-Agent': 'BGG-Personal-Collection-Tracker/1.0 (hobby project)',
+          'Accept': 'application/xml,text/xml,*/*',
+        },
+      });
+
+      if (!response.ok) {
+        console.error(`Error BGG API (${response.status}): ${response.statusText}`);
+        continue;
+      }
+
+      const xmlData = await response.text();
+      const parsed = parser.parse(xmlData);
+      const rawItems = parsed.items?.item;
+      const items = Array.isArray(rawItems) ? rawItems : rawItems ? [rawItems] : [];
+
+      for (const item of items) {
+        const id = parseInt(item['@_id'], 10);
+        if (!id) continue;
+
+        const bggRating = parseFloat(item.statistics?.ratings?.average?.['@_value']) || undefined;
+        const bggWeight = parseFloat(item.statistics?.ratings?.averageweight?.['@_value']) || undefined;
+        const bggMinPlayers = parseInt(item.minplayers?.['@_value'], 10) || undefined;
+        const maxPlayers = parseInt(item.maxplayers?.['@_value'], 10) || undefined;
+        const playtime = parseInt(item.playingtime?.['@_value'], 10) || undefined;
+
+        results.set(id, {
+          bggId: id,
+          bggRating: bggRating ? parseFloat(bggRating.toFixed(2)) : undefined,
+          bggWeight: bggWeight ? parseFloat(bggWeight.toFixed(2)) : undefined,
+          bggMinPlayers,
+          bggMaxPlayers: maxPlayers,
+          bggPlaytime: playtime,
+        });
+      }
+
+      // Si hubiera más de 50 juegos (múltiples chunks), pausa de cortesía entre peticiones
+      if (i < chunks.length - 1) {
+        await new Promise(r => setTimeout(r, 2000));
+      }
+    } catch (error) {
+      console.error('Error fetching/parsing BGG batch:', error);
+    }
+  }
+
+  return results;
+}
+
+/**
+ * Obtiene la información de un único juego de mesa desde la API de BGG.
  * @param bggId El ID del juego en BoardGameGeek.
  * @returns La información relevante del juego, o null si falla.
  */
 export async function getBGGGameInfo(bggId: number): Promise<BGGGameInfo | null> {
-  try {
-    const url = `https://boardgamegeek.com/xmlapi2/thing?id=${bggId}&stats=1`;
-    // Añadimos headers para simular un navegador real y evitar el bloqueo 401/403 en Vercel
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-      },
-      cache: 'no-store' // Forzar a no usar caché temporalmente para ver si funciona
-    });
-    
-    if (!response.ok) {
-      console.error(`Error fetching BGG data for ID ${bggId}: ${response.statusText}`);
-      return null;
-    }
-
-    const xmlData = await response.text();
-    
-    const parser = new XMLParser({
-      ignoreAttributes: false,
-      attributeNamePrefix: "@_"
-    });
-    
-    const result = parser.parse(xmlData);
-    
-    let item = result.items?.item;
-    
-    if (!item) {
-        return null;
-    }
-
-    // Si BGG devuelve un array, tomamos el primer elemento
-    if (Array.isArray(item)) {
-      item = item[0];
-    }
-
-    // El API de BGG puede devolver arrays u objetos dependiendo de la estructura
-    // Asumimos un parseo básico usando los atributos
-    
-    const bggRating = parseFloat(item.statistics?.ratings?.average?.['@_value']) || undefined;
-    const bggWeight = parseFloat(item.statistics?.ratings?.averageweight?.['@_value']) || undefined;
-    const bggMinPlayers = parseInt(item.minplayers?.['@_value'], 10) || undefined;
-    const bggMaxPlayers = parseInt(item.maxplayers?.['@_value'], 10) || undefined;
-    const bggPlaytime = parseInt(item.playingtime?.['@_value'], 10) || undefined;
-
-    return {
-      bggId,
-      bggRating,
-      bggWeight,
-      bggMinPlayers,
-      bggMaxPlayers,
-      bggPlaytime,
-    };
-  } catch (error) {
-    console.error('Error parsing BGG data:', error);
-    return null;
-  }
+  const map = await getBGGGamesBatch([bggId]);
+  return map.get(bggId) || null;
 }

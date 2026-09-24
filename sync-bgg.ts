@@ -1,58 +1,66 @@
 import { PrismaClient } from '@prisma/client';
-import { getBGGGameInfo } from './src/features/catalog/services/bgg.service';
+import { getBGGGamesBatch } from './src/features/catalog/services/bgg.service';
 
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Iniciando sincronización con BoardGameGeek...');
-  
+  console.log('🎲 Iniciando sincronización masiva con BoardGameGeek (1 sola llamada HTTP)...');
+
   // Buscar todos los productos que tengan un bggId
   const productos = await prisma.producto.findMany({
     where: {
       bggId: {
-        not: null
-      }
-    }
+        not: null,
+      },
+    },
   });
 
-  console.log(`Se encontraron ${productos.length} productos con ID de BGG.`);
+  const validProducts = productos.filter((p) => p.bggId != null && p.bggId > 0);
+  console.log(`📦 Se encontraron ${validProducts.length} productos con ID de BGG en la base de datos.`);
 
-  for (const product of productos) {
-    if (!product.bggId) continue;
-    
-    console.log(`\nConsultando BGG para: ${product.nombreModelo} (ID: ${product.bggId})`);
-    
-    // Obtenemos info usando nuestro servicio
-    const bggData = await getBGGGameInfo(product.bggId);
-    
+  if (validProducts.length === 0) {
+    console.log('ℹ️ No hay productos con BGG ID registrados para sincronizar.');
+    return;
+  }
+
+  const bggIds = validProducts.map((p) => p.bggId as number);
+  console.log(`🚀 Consultando BGG para los IDs: [${bggIds.join(', ')}] en una sola llamada...`);
+
+  const startTime = Date.now();
+  const bggDataMap = await getBGGGamesBatch(bggIds);
+  const elapsed = ((Date.now() - startTime) / 1000).toFixed(2);
+
+  console.log(`⚡ Respuesta recibida de BGG en ${elapsed}s. Guardando en base de datos PostgreSQL...`);
+
+  let successCount = 0;
+  for (const product of validProducts) {
+    const bggData = bggDataMap.get(product.bggId!);
     if (bggData) {
-      // Actualizamos la base de datos con los resultados
       await prisma.producto.update({
         where: { id: product.id },
         data: {
-          bggRating: bggData.bggRating ? parseFloat(bggData.bggRating.toFixed(2)) : null,
-          bggWeight: bggData.bggWeight ? parseFloat(bggData.bggWeight.toFixed(2)) : null,
-          bggMinPlayers: bggData.bggMinPlayers,
-          bggMaxPlayers: bggData.bggMaxPlayers,
-          bggPlaytime: bggData.bggPlaytime,
+          bggRating: bggData.bggRating ?? null,
+          bggWeight: bggData.bggWeight ?? null,
+          bggMinPlayers: bggData.bggMinPlayers ?? null,
+          bggMaxPlayers: bggData.bggMaxPlayers ?? null,
+          bggPlaytime: bggData.bggPlaytime ?? null,
           bggRatingUpdatedAt: new Date(),
-        }
+        },
       });
-      console.log(`✅ ¡Éxito! Base de datos actualizada para ${product.nombreModelo}.`);
-      console.log(`   Rating: ${bggData.bggRating} | Peso: ${bggData.bggWeight}`);
+      console.log(
+        `✅ [${product.nombreModelo}] -> Rating: ${bggData.bggRating}★ | Peso: ${bggData.bggWeight}/5 | Jugadores: ${bggData.bggMinPlayers}-${bggData.bggMaxPlayers} | ${bggData.bggPlaytime} min`
+      );
+      successCount++;
     } else {
-      console.log(`❌ No se pudo obtener la información de BGG para este producto.`);
+      console.log(`⚠️ [${product.nombreModelo}] (ID ${product.bggId}) no devolvió estadísticas en BGG.`);
     }
-
-    // Pequeña pausa para no saturar a BGG si hay muchos productos (1 segundo)
-    await new Promise(resolve => setTimeout(resolve, 1000));
   }
 
-  console.log('\nSincronización completada.');
+  console.log(`\n🎉 Sincronización completada: ${successCount}/${validProducts.length} juegos actualizados en la base de datos.`);
 }
 
 main()
-  .catch(e => {
+  .catch((e) => {
     console.error('Error general:', e);
     process.exit(1);
   })
