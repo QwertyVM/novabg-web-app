@@ -175,42 +175,50 @@ export function ProductCard({ product }: ProductCardProps) {
             </div>
           )}
 
-          {/* Rating (Reseñas locales o Rating BGG) */}
-          {product.rating !== undefined && product.rating > 0 && (product.reviewsCount ?? 0) > 0 ? (
-            <div className="flex items-center gap-1 mt-2 text-[11px] text-[#6E655F]">
+          {/* Ambos Ratings: 1. Calificación de Clientes + 2. Rating de BGG */}
+          <div className="space-y-1.5 mt-2">
+            {/* 1. Rating de Clientes */}
+            <div className="flex items-center gap-1 text-[11px] text-[#6E655F]">
               <div className="flex text-[#F59E0B]">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <Star
                     key={i}
                     className={`w-3 h-3 ${
-                      i <= Math.floor(product.rating || 5)
-                        ? 'fill-current text-[#F59E0B]'
-                        : 'text-[#EBE5DF]'
+                      product.rating !== undefined && (product.reviewsCount ?? 0) > 0
+                        ? i <= Math.floor(product.rating)
+                          ? 'fill-current text-[#F59E0B]'
+                          : 'text-[#EBE5DF]'
+                        : 'fill-current text-[#F59E0B]'
                     }`}
                   />
                 ))}
               </div>
               <span className="text-xs font-bold text-[#2B231F] ml-0.5">
-                {product.rating.toFixed(1)}
+                {product.rating !== undefined && (product.reviewsCount ?? 0) > 0
+                  ? product.rating.toFixed(1)
+                  : '5.0'}
               </span>
-              <span className="text-[#6E655F]">({product.reviewsCount})</span>
+              <span className="text-[#6E655F]">({product.reviewsCount ?? 0})</span>
             </div>
-          ) : product.bggRating != null && Number(product.bggRating) > 0 ? (
-            <div className="flex items-center gap-1.5 mt-2 text-[11px]">
-              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-800 font-black">
-                <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
-                <span>{Number(product.bggRating).toFixed(1)}</span>
-              </div>
-              <span className="text-[10px] font-black text-[#A36F4C] uppercase tracking-wider">
-                BGG
-              </span>
-              {product.bggWeight != null && Number(product.bggWeight) > 0 && (
-                <span className="text-[10px] text-[#75695D]">
-                  • {Number(product.bggWeight) <= 1.5 ? 'Familiar' : Number(product.bggWeight) <= 2.5 ? 'Medio' : 'Experto'}
+
+            {/* 2. Rating de BoardGameGeek (BGG) */}
+            {product.bggRating != null && Number(product.bggRating) > 0 && (
+              <div className="flex items-center gap-1.5 text-[11px]">
+                <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-amber-50 border border-amber-200 text-amber-800 font-black shadow-2xs">
+                  <Star className="w-3 h-3 fill-amber-500 text-amber-500" />
+                  <span>{Number(product.bggRating).toFixed(1)}</span>
+                </div>
+                <span className="text-[10px] font-black text-[#A36F4C] uppercase tracking-wider">
+                  BGG
                 </span>
-              )}
-            </div>
-          ) : null}
+                {product.bggWeight != null && Number(product.bggWeight) > 0 && (
+                  <span className="text-[10px] text-[#75695D]">
+                    • {Number(product.bggWeight) <= 1.5 ? 'Familiar' : Number(product.bggWeight) <= 2.5 ? 'Medio' : 'Experto'}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Quick Add To Cart Button */}

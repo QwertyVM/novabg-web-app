@@ -6,6 +6,7 @@ import { ProductGallery, BuyBox, ProductItem, ExpandableDescription, ProductRevi
 import { ProductRow } from '@/features/home'
 import { formatPriceParts, getProductImage, getEstimatedDeliveryDate } from '@/shared/utils'
 import { BggStatsBadge } from '@/features/catalog/components/BggStatsBadge'
+import { Star } from 'lucide-react'
 
 export const dynamic = 'force-dynamic'
 
@@ -43,6 +44,11 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
       orderBy: { createdAt: 'desc' }
     })
   ])
+
+  const reviewsCount = comentariosDb.length
+  const avgRating = reviewsCount > 0
+    ? comentariosDb.reduce((acc, c) => acc + c.calificacion, 0) / reviewsCount
+    : 5.0
 
   let tempPrice = Number(product.precioMercado)
   let calculatedDiscount = product.porcentajeDescuento
@@ -140,7 +146,31 @@ export default async function ProductDetailPage({ params }: ProductPageProps) {
               {product.nombreModelo}
             </h1>
 
-            {/* Ratings y Estadísticas BGG - Desde Base de Datos local */}
+            {/* 1. Rating de Clientes de la Tienda */}
+            <div className="flex items-center gap-2 text-xs pt-1">
+              <div className="flex text-[#F59E0B]">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <Star
+                    key={i}
+                    className={`w-3.5 h-3.5 ${
+                      reviewsCount > 0
+                        ? i <= Math.floor(avgRating)
+                          ? 'fill-current text-[#F59E0B]'
+                          : 'text-[#EBE5DF]'
+                        : 'fill-current text-[#F59E0B]'
+                    }`}
+                  />
+                ))}
+              </div>
+              <span className="font-black text-[#2B231F]">
+                {avgRating.toFixed(1)}
+              </span>
+              <span className="text-[#6E655F]">
+                ({reviewsCount} {reviewsCount === 1 ? 'opinión' : 'opiniones'})
+              </span>
+            </div>
+
+            {/* 2. Ratings y Estadísticas BGG - Desde Base de Datos local */}
             {(product.bggRating || product.bggWeight || product.bggPlaytime) ? (
               <BggStatsBadge 
                 bggId={product.bggId || undefined}
