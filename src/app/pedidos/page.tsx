@@ -1,14 +1,19 @@
 import React from 'react'
-import Link from 'next/link'
-import { CheckCircle2, ShoppingBag, Clock, X, MessageCircle } from 'lucide-react'
 import prisma from '@/core/database/prisma'
-import { formatPrice, getProductImage } from '@/shared/utils'
+import { OrdersClient, SerializedOrder, StoreConfigData } from './OrdersClient'
 
 export const dynamic = 'force-dynamic'
 
 export default async function OrdersPage() {
-  let pedidos: any[] = []
-  let storeWhatsapp = '51945398747'
+  let serializedPedidos: SerializedOrder[] = []
+  let storeConfigData: StoreConfigData = {
+    telefonoContacto: '51945398747',
+    yapeNumero: '945398747',
+    yapeTitular: 'Víctor Monzon Anglas',
+    bcpNumeroCuenta: '',
+    bcpCci: '',
+    bcpTitular: 'Víctor Monzon Anglas',
+  }
 
   try {
     const [pedidosDb, storeConfig] = await Promise.all([
@@ -22,209 +27,74 @@ export default async function OrdersPage() {
         },
         orderBy: { createdAt: 'desc' },
         include: {
-          items: true,
+          items: {
+            include: {
+              producto: true,
+            },
+          },
         },
-        take: 15,
+        take: 30,
       }),
       prisma.configuracionTienda.findUnique({
         where: { negocio: 'BG' },
-        select: { telefonoContacto: true },
       }),
     ])
 
-    pedidos = pedidosDb
-    if (storeConfig?.telefonoContacto) {
-      storeWhatsapp = storeConfig.telefonoContacto.replace(/\D/g, '') || storeWhatsapp
+    if (storeConfig) {
+      storeConfigData = {
+        telefonoContacto: storeConfig.telefonoContacto || '51945398747',
+        yapeNumero: storeConfig.yapeNumero || '945398747',
+        yapeTitular: storeConfig.yapeTitular || 'Víctor Monzon Anglas',
+        bcpNumeroCuenta: storeConfig.bcpNumeroCuenta || '',
+        bcpCci: storeConfig.bcpCci || '',
+        bcpTitular: storeConfig.bcpTitular || 'Víctor Monzon Anglas',
+      }
     }
+
+    serializedPedidos = pedidosDb.map((p) => ({
+      id: p.id,
+      codigo: p.codigo,
+      fecha: p.fecha.toISOString(),
+      createdAt: p.createdAt.toISOString(),
+      updatedAt: p.updatedAt.toISOString(),
+      cliente: p.cliente,
+      telefono: p.telefono,
+      dni: p.dni,
+      canalVenta: p.canalVenta,
+      destinoEnvio: p.destinoEnvio,
+      notas: p.notas,
+      metodoPago: p.metodoPago,
+      estado: p.estado,
+      costoEnvio: Number(p.costoEnvio),
+      subtotal: Number(p.subtotal),
+      total: Number(p.total),
+      montoPagado: Number(p.montoPagado),
+      saldoPendiente: Number(p.saldoPendiente),
+      items: p.items.map((it) => ({
+        id: it.id,
+        pedidoId: it.pedidoId,
+        productoId: it.productoId,
+        nombreProductoSnapshot: it.nombreProductoSnapshot || it.producto?.nombreModelo || 'Producto',
+        cantidad: it.cantidad,
+        precioUnitario: Number(it.precioUnitario),
+        subtotal: Number(it.subtotal),
+        producto: it.producto
+          ? {
+              id: it.producto.id,
+              nombreModelo: it.producto.nombreModelo,
+              lineaCategoria: it.producto.lineaCategoria,
+              imagenUrl: it.producto.imagenUrl,
+              precioMercado: Number(it.producto.precioMercado),
+              descripcionWeb: it.producto.descripcionWeb,
+              editorialMarca: it.producto.editorialMarca,
+            }
+          : null,
+      })),
+    }))
   } catch (e) {
-    console.error('Error cargando pedidos:', e)
+    console.error('Error cargando pedidos en OrdersPage:', e)
   }
 
-  return (
-    <div className="py-8 px-4 max-w-[1100px] mx-auto">
-      {/* Title */}
-      <div className="flex items-baseline justify-between mb-6">
-        <div>
-          <h1 className="text-2xl font-black text-[#2B231F]">Mis compras</h1>
-          <p className="text-xs text-[#6E655F] mt-0.5">Seguimiento de pedidos y compras en NOVA BG</p>
-        </div>
-        <Link href="/" className="btn-nova-primary text-xs">
-          Comprar más artículos
-        </Link>
-      </div>
-
-      {pedidos.length === 0 ? (
-        <div className="bg-white p-12 rounded-3xl border border-[#EBE5DF] text-center space-y-4 shadow-sm">
-          <div className="w-16 h-16 rounded-2xl bg-[#FDF4EE] text-[#C85A32] border border-[#C85A32]/20 flex items-center justify-center mx-auto shadow-xs">
-            <ShoppingBag className="w-8 h-8" />
-          </div>
-          <h2 className="text-lg font-black text-[#2B231F]">Aún no tienes compras realizadas</h2>
-          <p className="text-xs text-[#6E655F] max-w-sm mx-auto">
-            Explora nuestro catálogo de juegos de mesa, organizadores y accesorios para hacer tu primer pedido.
-          </p>
-          <Link href="/" className="btn-nova-primary text-xs inline-block mt-2">
-            Ver catálogo oficial
-          </Link>
-        </div>
-      ) : (
-        <div className="space-y-5">
-          {pedidos.map((pedido) => {
-            const formattedTotal = formatPrice(pedido.total)
-            const dateStr = new Date(pedido.createdAt).toLocaleDateString('es-PE', {
-              day: 'numeric',
-              month: 'long',
-              year: 'numeric',
-            })
-
-            const mensaje = [
-              `🎲 ¡Hola, Nova BG! Acabo de realizar un pedido en la web.`,
-              ``,
-              `Código de pedido: ${pedido.codigo}`,
-              ``,
-              `Quiero continuar con la coordinación para finalizar mi compra.`
-            ].join('\n')
-
-            const whatsappUrl = `https://wa.me/${storeWhatsapp}?text=${encodeURIComponent(mensaje)}`
-
-            return (
-              <div
-                key={pedido.id}
-                className="bg-white rounded-3xl border border-[#EBE5DF] shadow-sm overflow-hidden text-xs"
-              >
-                {/* Header */}
-                <div className="bg-[#FAF6F0] p-4.5 border-b border-[#EBE5DF] grid grid-cols-2 sm:grid-cols-4 gap-3 text-[#6E655F]">
-                  <div>
-                    <span className="block text-[10px] uppercase font-black text-[#6E655F]">
-                      Fecha de compra
-                    </span>
-                    <span className="text-[#2B231F] font-bold">{dateStr}</span>
-                  </div>
-
-                  <div>
-                    <span className="block text-[10px] uppercase font-black text-[#6E655F]">
-                      Total
-                    </span>
-                    <span className="text-[#2B231F] font-black">{formattedTotal}</span>
-                  </div>
-
-                  <div>
-                    <span className="block text-[10px] uppercase font-black text-[#6E655F]">
-                      Destinatario
-                    </span>
-                    <span className="text-[#2B231F] font-semibold truncate block" title={pedido.cliente}>
-                      {pedido.cliente}
-                    </span>
-                  </div>
-
-                  <div className="text-right sm:text-right">
-                    <span className="block text-[10px] uppercase font-black text-[#6E655F]">
-                      Orden NOVA
-                    </span>
-                    <span className="text-[#C85A32] font-black text-sm">
-                      #{pedido.codigo}
-                    </span>
-                  </div>
-                </div>
-
-                {/* Body Content */}
-                <div className="p-5 sm:p-6 space-y-4">
-                  {/* Status Banner & Action */}
-                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#EBE5DF]">
-                    <div className={`flex items-center gap-2 text-sm font-bold ${
-                      pedido.estado === 'PENDIENTE'
-                        ? 'text-[#854D0E]'
-                        : pedido.estado === 'PAGO_VALIDADO'
-                        ? 'text-[#065F46]'
-                        : pedido.estado === 'ENTREGADO'
-                        ? 'text-[#10B981]'
-                        : pedido.estado === 'CANCELADO'
-                        ? 'text-red-600'
-                        : 'text-[#2B6CB0]'
-                    }`}>
-                      {pedido.estado === 'PENDIENTE' ? (
-                        <Clock className="w-5 h-5 text-[#854D0E]" />
-                      ) : pedido.estado === 'CANCELADO' ? (
-                        <X className="w-5 h-5 text-red-600" />
-                      ) : (
-                        <CheckCircle2 className="w-5 h-5 text-current" />
-                      )}
-                      <span>
-                        {pedido.estado === 'PENDIENTE'
-                          ? 'Pendiente de pago / validación'
-                          : pedido.estado === 'PAGO_VALIDADO'
-                          ? 'Pago validado — Preparando despacho'
-                          : pedido.estado === 'ENTREGADO'
-                          ? 'Entregado con éxito'
-                          : pedido.estado === 'CANCELADO'
-                          ? 'Pedido cancelado'
-                          : 'En preparación y despacho FULL'}
-                      </span>
-                    </div>
-
-                    {/* Botón Avisar al Vendedor */}
-                    <a
-                      href={whatsappUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1ebe5a] text-white font-bold text-xs px-3.5 py-2 rounded-xl shadow-xs transition-all w-full sm:w-auto cursor-pointer"
-                    >
-                      <MessageCircle className="w-4 h-4 fill-white stroke-none" />
-                      <span>Avisar al vendedor</span>
-                    </a>
-                  </div>
-
-                  {/* Items List */}
-                  <div className="divide-y divide-[#EBE5DF]">
-                    {pedido.items.map((item: any) => {
-                      const itemImg = getProductImage(item.nombreProductoSnapshot || '')
-                      const itemPrice = formatPrice(item.precioUnitario)
-                      return (
-                        <div key={item.id} className="py-3.5 flex gap-4 items-center">
-                          {/* Thumbnail */}
-                          <div className="w-16 h-16 bg-[#FDFBF7] rounded-xl border border-[#EBE5DF] overflow-hidden shrink-0 p-1 flex items-center justify-center">
-                            {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img
-                              src={itemImg}
-                              alt={item.nombreProductoSnapshot}
-                              className="w-full h-full object-contain"
-                            />
-                          </div>
-
-                          {/* Info */}
-                          <div className="flex-1">
-                            <h4 className="font-bold text-[#2B231F] leading-snug">
-                              {item.nombreProductoSnapshot}
-                            </h4>
-                            <p className="text-[#6E655F] text-[11px] mt-0.5 font-medium">
-                              Cantidad: {item.cantidad} • Precio: {itemPrice}
-                            </p>
-                            <Link
-                              href={`/producto/${item.productoId}`}
-                              className="text-[#C85A32] hover:underline font-bold text-[11px] mt-1 inline-block"
-                            >
-                              Ver publicación
-                            </Link>
-                          </div>
-
-                          {/* Action Button */}
-                          <div className="shrink-0">
-                            <Link
-                              href={`/producto/${item.productoId}`}
-                              className="btn-nova-secondary text-[11px] py-1.5 px-3"
-                            >
-                              Volver a comprar
-                            </Link>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              </div>
-            )
-          })}
-        </div>
-      )}
-    </div>
-  )
+  return <OrdersClient pedidos={serializedPedidos} storeConfig={storeConfigData} />
 }
+
