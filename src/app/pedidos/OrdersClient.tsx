@@ -570,6 +570,14 @@ export function OrdersClient({ pedidos, storeConfig }: OrdersClientProps) {
                     </span>
                   </div>
 
+                  {/* Aviso: Delivery lo paga el cliente */}
+                  <div className="sm:col-span-2 bg-[#FFFBEB] p-2.5 rounded-xl border border-[#FDE68A] flex items-center gap-2 text-[11px] text-[#854D0E]">
+                    <AlertCircle className="w-4 h-4 text-[#854D0E] shrink-0" />
+                    <span>
+                      <strong>Importante sobre el envío:</strong> El costo del delivery lo paga el cliente (pago contra entrega o en destino).
+                    </span>
+                  </div>
+
                   {selectedOrder.notas && (
                     <div className="sm:col-span-2 bg-white/70 p-2.5 rounded-xl border border-[#EBE5DF]">
                       <span className="text-[#6E655F] block text-[10px] uppercase font-bold">
@@ -677,12 +685,12 @@ export function OrdersClient({ pedidos, storeConfig }: OrdersClientProps) {
                     {formatPrice(selectedOrder.subtotal)}
                   </span>
                 </div>
-                <div className="flex justify-between text-[#6E655F]">
-                  <span>Costo de envío</span>
-                  <span className="font-semibold text-[#2B231F]">
+                <div className="flex justify-between items-center text-[#6E655F]">
+                  <span>Delivery / Envío</span>
+                  <span className="font-bold text-[#C85A32] bg-[#FDF4EE] px-2 py-0.5 rounded-md border border-[#C85A32]/20 text-[11px]">
                     {selectedOrder.costoEnvio > 0
                       ? formatPrice(selectedOrder.costoEnvio)
-                      : 'Gratis'}
+                      : 'Lo paga el cliente (en destino / contra entrega)'}
                   </span>
                 </div>
                 <div className="flex justify-between text-base font-black text-[#2B231F] border-t border-[#EBE5DF] pt-2">
@@ -691,6 +699,9 @@ export function OrdersClient({ pedidos, storeConfig }: OrdersClientProps) {
                     {formatPrice(selectedOrder.total)}
                   </span>
                 </div>
+                <p className="text-[10px] text-[#6E655F] text-right mt-1">
+                  * El monto total corresponde a los productos. El delivery lo paga el cliente al recibir el pedido.
+                </p>
               </div>
             </div>
 

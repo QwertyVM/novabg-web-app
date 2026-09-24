@@ -19,6 +19,7 @@ import {
   Clock,
   Smartphone,
   Landmark,
+  AlertCircle,
 } from 'lucide-react'
 import { useSession, signIn } from 'next-auth/react'
 import { useCart } from '@/features/cart'
@@ -294,6 +295,12 @@ export default function CheckoutPage() {
                 {formatPrice(pendingOrder.total)}
               </span>
             </div>
+          </div>
+
+          {/* Aviso: Delivery lo paga el cliente */}
+          <div className="p-3 bg-[#FFFBEB] rounded-2xl border border-[#FDE68A] flex items-center justify-center gap-2 text-xs text-[#854D0E] font-semibold text-center">
+            <AlertCircle className="w-4 h-4 text-[#854D0E] shrink-0" />
+            <span>El delivery lo paga el cliente (pago contra entrega al recibir el pedido o coordinado con el vendedor).</span>
           </div>
 
           {/* Opciones de Pago (Yape y BCP) */}
@@ -905,10 +912,15 @@ export default function CheckoutPage() {
                 <span>Productos ({totalCount}):</span>
                 <span className="font-bold text-[#2B231F]">{formattedSubtotal}</span>
               </div>
-              <div className="flex justify-between text-[#6E655F]">
-                <span>Costo de Envío:</span>
-                <span className="font-bold text-[#C85A32]">A coordinar por WhatsApp</span>
+              <div className="flex justify-between items-center text-[#6E655F]">
+                <span>Costo de Envío / Delivery:</span>
+                <span className="font-bold text-[#C85A32] bg-[#FDF4EE] px-2 py-0.5 rounded-md border border-[#C85A32]/20 text-[11px]">
+                  Lo paga el cliente
+                </span>
               </div>
+              <p className="text-[10px] text-[#6E655F]">
+                * El costo de delivery se cancela contra entrega o se coordina con el vendedor.
+              </p>
             </div>
 
             <div className="border-t border-[#EBE5DF] pt-4 flex justify-between items-baseline">

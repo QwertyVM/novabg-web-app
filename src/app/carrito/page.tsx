@@ -169,9 +169,11 @@ export default function CartPage() {
                 <span>Productos ({totalCount})</span>
                 <span className="text-[#2B231F] font-bold">{formattedSubtotal}</span>
               </div>
-              <div className="flex justify-between text-[#6E655F] font-medium">
-                <span>Envío</span>
-                <span className="text-[#C85A32] font-semibold">A coordinar en checkout</span>
+              <div className="flex justify-between items-center text-[#6E655F] font-medium">
+                <span>Delivery</span>
+                <span className="text-[#C85A32] font-bold bg-[#FDF4EE] px-2 py-0.5 rounded-md border border-[#C85A32]/20 text-[11px]">
+                  Lo paga el cliente
+                </span>
               </div>
             </div>
 
