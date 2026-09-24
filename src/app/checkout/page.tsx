@@ -300,7 +300,7 @@ export default function CheckoutPage() {
           {/* Aviso: Delivery lo paga el cliente */}
           <div className="p-3 bg-[#FFFBEB] rounded-2xl border border-[#FDE68A] flex items-center justify-center gap-2 text-xs text-[#854D0E] font-semibold text-center">
             <AlertCircle className="w-4 h-4 text-[#854D0E] shrink-0" />
-            <span>El delivery lo paga el cliente (pago contra entrega al recibir el pedido o coordinado con el vendedor).</span>
+            <span>El delivery lo paga el cliente.</span>
           </div>
 
           {/* Opciones de Pago (Yape y BCP) */}
@@ -918,9 +918,6 @@ export default function CheckoutPage() {
                   Lo paga el cliente
                 </span>
               </div>
-              <p className="text-[10px] text-[#6E655F]">
-                * El costo de delivery se cancela contra entrega o se coordina con el vendedor.
-              </p>
             </div>
 
             <div className="border-t border-[#EBE5DF] pt-4 flex justify-between items-baseline">

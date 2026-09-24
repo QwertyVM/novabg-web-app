@@ -9,8 +9,11 @@ import {
   Check,
   CreditCard,
   Truck,
+  Heart,
+  MessageCircle,
 } from 'lucide-react'
 import { useCart } from '@/features/cart/context/CartContext'
+import { useFavorites } from '@/features/favorites'
 import { formatPriceParts, getEstimatedDeliveryDate } from '@/shared/utils/utils'
 import { ProductItem } from '../types/catalog.types'
 
@@ -21,8 +24,10 @@ interface BuyBoxProps {
 export function BuyBox({ product }: BuyBoxProps) {
   const router = useRouter()
   const { addItem } = useCart()
+  const { isFavorite, toggleFavorite, requestStockAlert } = useFavorites()
   const [quantity, setQuantity] = useState(1)
   const [added, setAdded] = useState(false)
+  const isFav = isFavorite(product.id)
 
   // Calculate effective price
   let tempPrice = product.precioMercado
@@ -146,47 +151,92 @@ export function BuyBox({ product }: BuyBoxProps) {
         </p>
       </div>
 
-      {/* Quantity Selector */}
-      <div className="flex items-center gap-3 pt-1">
-        <label className="text-xs font-bold text-[#2B231F]">Cantidad:</label>
-        <select
-          value={quantity}
-          onChange={(e) => setQuantity(Number(e.target.value))}
-          className="bg-[#FDFBF7] border border-[#EBE5DF] text-[#2B231F] text-xs rounded-xl px-3 py-1.5 outline-none font-bold cursor-pointer focus:ring-2 focus:ring-[#C85A32]/30"
-        >
-          {Array.from({ length: Math.min(maxStock > 0 ? maxStock : 10, 10) }, (_, i) => i + 1).map((num) => (
-            <option key={num} value={num}>
-              {num} {num === 1 ? 'unidad' : 'unidades'}
-            </option>
-          ))}
-        </select>
-      </div>
+      {/* Quantity Selector (Only when in stock) */}
+      {!isOutOfStock && (
+        <div className="flex items-center gap-3 pt-1">
+          <label className="text-xs font-bold text-[#2B231F]">Cantidad:</label>
+          <select
+            value={quantity}
+            onChange={(e) => setQuantity(Number(e.target.value))}
+            className="bg-[#FDFBF7] border border-[#EBE5DF] text-[#2B231F] text-xs rounded-xl px-3 py-1.5 outline-none font-bold cursor-pointer focus:ring-2 focus:ring-[#C85A32]/30"
+          >
+            {Array.from({ length: Math.min(maxStock > 0 ? maxStock : 10, 10) }, (_, i) => i + 1).map((num) => (
+              <option key={num} value={num}>
+                {num} {num === 1 ? 'unidad' : 'unidades'}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
 
       {/* CTA Action Buttons */}
       <div className="space-y-2.5 pt-2">
-        <button
-          onClick={handleBuyNow}
-          className="w-full btn-nova-primary text-xs py-3 shadow-xs font-bold cursor-pointer"
-        >
-          Comprar ahora
-        </button>
+        {isOutOfStock ? (
+          <>
+            <button
+              onClick={async () => {
+                const res = await requestStockAlert(product.id, product.nombreModelo)
+                if (res.whatsappUrl) {
+                  window.open(res.whatsappUrl, '_blank')
+                }
+              }}
+              className="w-full bg-[#25D366] hover:bg-[#1ebe5a] text-white text-xs py-3.5 px-4 rounded-2xl shadow-sm font-bold flex items-center justify-center gap-2 transition-all cursor-pointer active:scale-[0.99]"
+            >
+              <MessageCircle className="w-4 h-4 fill-white stroke-none" />
+              <span>Avisarme cuando haya stock</span>
+            </button>
 
-        <button
-          onClick={handleAddToCart}
-          className="w-full btn-nova-secondary text-xs py-3 shadow-2xs font-bold flex items-center justify-center gap-2 cursor-pointer"
-        >
-          {added ? (
-            <>
-              <Check className="w-4 h-4 text-[#C85A32]" />
-              <span>¡Agregado al Carrito!</span>
-            </>
-          ) : (
-            <>
-              <ShoppingCart className="w-4 h-4 text-[#C85A32]" />
-              <span>Agregar al carrito</span>
-            </>
-          )}
-        </button>
+            <button
+              onClick={() => toggleFavorite({ id: product.id, nombreModelo: product.nombreModelo })}
+              className={`w-full text-xs py-2.5 rounded-2xl border font-bold flex items-center justify-center gap-2 transition-all cursor-pointer ${
+                isFav
+                  ? 'bg-[#FDF4EE] border-[#C85A32]/40 text-[#C85A32]'
+                  : 'bg-white border-[#EBE5DF] hover:bg-[#FAF6F0] text-[#2B231F]'
+              }`}
+            >
+              <Heart className={`w-4 h-4 ${isFav ? 'fill-[#C85A32] text-[#C85A32]' : 'text-[#6E655F]'}`} />
+              <span>{isFav ? 'En tus favoritos' : 'Guardar en favoritos'}</span>
+            </button>
+          </>
+        ) : (
+          <>
+            <button
+              onClick={handleBuyNow}
+              className="w-full btn-nova-primary text-xs py-3 shadow-xs font-bold cursor-pointer"
+            >
+              Comprar ahora
+            </button>
+
+            <button
+              onClick={handleAddToCart}
+              className="w-full btn-nova-secondary text-xs py-3 shadow-2xs font-bold flex items-center justify-center gap-2 cursor-pointer"
+            >
+              {added ? (
+                <>
+                  <Check className="w-4 h-4 text-[#C85A32]" />
+                  <span>¡Agregado al Carrito!</span>
+                </>
+              ) : (
+                <>
+                  <ShoppingCart className="w-4 h-4 text-[#C85A32]" />
+                  <span>Agregar al carrito</span>
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => toggleFavorite({ id: product.id, nombreModelo: product.nombreModelo })}
+              className={`w-full text-xs py-2 rounded-xl font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                isFav
+                  ? 'text-[#C85A32] bg-[#FDF4EE]'
+                  : 'text-[#6E655F] hover:text-[#C85A32] hover:bg-[#FAF6F0]'
+              }`}
+            >
+              <Heart className={`w-3.5 h-3.5 ${isFav ? 'fill-[#C85A32] text-[#C85A32]' : 'text-current'}`} />
+              <span>{isFav ? 'Guardado en favoritos' : 'Guardar en favoritos'}</span>
+            </button>
+          </>
+        )}
       </div>
 
       <hr className="border-[#EBE5DF]" />

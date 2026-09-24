@@ -17,9 +17,11 @@ import {
   Layers,
   MessageCircle,
   X,
+  Heart,
 } from 'lucide-react'
 import { useSession, signIn, signOut } from 'next-auth/react'
 import { useCart } from '@/features/cart/context/CartContext'
+import { useFavorites } from '@/features/favorites'
 import { NovaCategory } from '@/features/catalog/types/catalog.types'
 import { StorePublicConfig } from '@/features/catalog/services/store-config.service'
 import { NovaLogo } from '@/shared/components/branding'
@@ -40,6 +42,7 @@ export function StoreHeader({
   const router = useRouter()
   const { data: session } = useSession()
   const { totalCount } = useCart()
+  const { totalFavorites } = useFavorites()
 
   const [topBannerDismissed, setTopBannerDismissed] = useState(false)
   const [department, setDepartment] = useState('todos')
@@ -193,8 +196,64 @@ export function StoreHeader({
         </form>
 
         {/* Right Action Icons & User Menu */}
-        <div className="flex items-center gap-1 sm:gap-2.5 text-xs text-[#2B231F]">
-          {/* User Account / Login */}
+        <div className="flex items-center gap-1 sm:gap-2 text-xs text-[#2B231F]">
+          {/* 1. WhatsApp Button (Success #10B981) */}
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-bold transition-all shadow-2xs shrink-0"
+            title="Atención por WhatsApp"
+          >
+            <MessageCircle className="w-4 h-4 fill-white text-[#10B981]" />
+            <span className="hidden xl:inline">WhatsApp</span>
+          </a>
+
+          {/* 2. Mis Compras Link */}
+          <Link
+            href="/pedidos"
+            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl hover:bg-[#F4EDE5] text-[#2B231F] transition-colors font-bold"
+            title="Ver mis pedidos y compras"
+          >
+            <Package className="w-4 h-4 text-[#6E655F]" />
+            <span className="hidden sm:inline">Mis compras</span>
+          </Link>
+
+          {/* 3. Favoritos Link */}
+          <Link
+            href="/favoritos"
+            className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl hover:bg-[#F4EDE5] text-[#2B231F] transition-colors font-bold relative"
+            title="Ver mis favoritos"
+          >
+            <div className="relative">
+              <Heart className="w-4 h-4 text-[#6E655F]" />
+              {totalFavorites > 0 && (
+                <span className="absolute -top-1.5 -right-2 bg-[#C85A32] text-white font-black text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center shadow-xs">
+                  {totalFavorites}
+                </span>
+              )}
+            </div>
+            <span className="hidden md:inline">Favoritos</span>
+          </Link>
+
+          {/* 4. Cart with Badge */}
+          <Link
+            href="/carrito"
+            className="flex items-center justify-center sm:justify-start gap-1.5 py-1.5 px-2.5 rounded-xl hover:bg-[#F4EDE5] text-[#2B231F] transition-colors relative"
+            title="Mi Carrito de compras"
+          >
+            <div className="relative">
+              <ShoppingCart className="w-4 h-4 text-[#2B231F]" />
+              {totalCount > 0 && (
+                <span className="absolute -top-1.5 -right-2 bg-[#C85A32] text-white font-black text-[9px] w-3.5 h-3.5 rounded-full flex items-center justify-center shadow-xs">
+                  {totalCount}
+                </span>
+              )}
+            </div>
+            <span className="font-bold hidden sm:inline text-[#2B231F]">Carrito</span>
+          </Link>
+
+          {/* 5. User Account / Login */}
           <div
             className="relative"
             onMouseEnter={() => setShowAccountMenu(true)}
@@ -203,9 +262,9 @@ export function StoreHeader({
             <button
               onClick={() => {
                 if (!session) handleSignIn()
-                else router.push('/pedidos')
+                else router.push('/perfil')
               }}
-              className="flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl hover:bg-[#F4EDE5] text-[#2B231F] transition-colors cursor-pointer"
+              className="flex items-center gap-1.5 py-1.5 px-2 rounded-xl hover:bg-[#F4EDE5] text-[#2B231F] transition-colors cursor-pointer"
             >
               {session?.user?.image ? (
                 // eslint-disable-next-line @next/next/no-img-element
@@ -227,7 +286,7 @@ export function StoreHeader({
               </div>
             </button>
 
-            {/* Account Popover */}
+            {/* Account Popover - Solo detalle de cuenta y cerrar sesión */}
             {showAccountMenu && (
               <div className="absolute right-0 top-full pt-2 w-64 z-50">
                 <div className="bg-white text-[#2B231F] rounded-2xl shadow-xl border border-[#EBE5DF] py-3 px-4 animate-in fade-in duration-150">
@@ -275,35 +334,16 @@ export function StoreHeader({
                     )}
                   </div>
 
-                  <div className="pt-2 text-xs space-y-1">
-                    {session && (
-                      <>
-                        <Link
-                          href="/perfil"
-                          className="flex items-center gap-2.5 p-2 rounded-xl text-[#2B231F] hover:bg-[#FDFBF7] hover:text-[#C85A32] transition-colors"
-                        >
-                          <UserIcon className="w-4 h-4 text-[#6E655F]" />
-                          <span className="font-semibold">Mi Perfil</span>
-                        </Link>
-                        <Link
-                          href="/pedidos"
-                          className="flex items-center gap-2.5 p-2 rounded-xl text-[#2B231F] hover:bg-[#FDFBF7] hover:text-[#C85A32] transition-colors"
-                        >
-                          <Package className="w-4 h-4 text-[#6E655F]" />
-                          <span className="font-semibold">Mis Compras</span>
-                        </Link>
-                      </>
-                    )}
-                    <Link
-                      href="/carrito"
-                      className="flex items-center gap-2.5 p-2 rounded-xl text-[#2B231F] hover:bg-[#FDFBF7] hover:text-[#C85A32] transition-colors"
-                    >
-                      <ShoppingCart className="w-4 h-4 text-[#6E655F]" />
-                      <span className="font-semibold">Mi Carrito</span>
-                    </Link>
+                  {session && (
+                    <div className="pt-2 text-xs space-y-1">
+                      <Link
+                        href="/perfil"
+                        className="flex items-center gap-2.5 p-2 rounded-xl text-[#2B231F] hover:bg-[#FDFBF7] hover:text-[#C85A32] transition-colors"
+                      >
+                        <UserIcon className="w-4 h-4 text-[#6E655F]" />
+                        <span className="font-semibold">Detalle de cuenta</span>
+                      </Link>
 
-
-                    {session && (
                       <div className="pt-2 border-t border-[#EBE5DF] mt-1">
                         <button
                           onClick={() => signOut()}
@@ -313,51 +353,12 @@ export function StoreHeader({
                           <span>Cerrar sesión</span>
                         </button>
                       </div>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
           </div>
-
-          {/* WhatsApp Button (Success #10B981) */}
-          <a
-            href={whatsappUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="flex items-center gap-1.5 py-1.5 px-3 rounded-xl bg-[#10B981] hover:bg-[#059669] text-white font-bold transition-all shadow-2xs shrink-0"
-            title="Atención por WhatsApp"
-          >
-            <MessageCircle className="w-4 h-4 fill-white text-[#10B981]" />
-            <span className="hidden xl:inline">WhatsApp</span>
-          </a>
-
-          {/* Mis Compras Link */}
-          {session && (
-            <Link
-              href="/pedidos"
-              className="hidden sm:flex items-center gap-1.5 py-1.5 px-2.5 rounded-xl hover:bg-[#F4EDE5] text-[#2B231F] transition-colors font-bold"
-            >
-              <Package className="w-4 h-4 text-[#6E655F]" />
-              <span className="hidden md:inline">Mis compras</span>
-            </Link>
-          )}
-
-          {/* Cart with Badge in Primary #C85A32 */}
-          <Link
-            href="/carrito"
-            className="flex items-center justify-center sm:justify-start gap-1.5 w-11 h-11 sm:w-auto sm:h-auto sm:py-1.5 sm:px-2.5 rounded-xl hover:bg-[#F4EDE5] text-[#2B231F] transition-colors relative"
-          >
-            <div className="relative">
-              <ShoppingCart className="w-5 h-5 text-[#2B231F]" />
-              {totalCount > 0 && (
-                <span className="absolute -top-2 -right-2 bg-[#C85A32] text-white font-black text-[10px] w-4 h-4 rounded-full flex items-center justify-center shadow-xs">
-                  {totalCount}
-                </span>
-              )}
-            </div>
-            <span className="font-bold hidden lg:inline text-[#2B231F]">Carrito</span>
-          </Link>
         </div>
       </div>
 
@@ -427,13 +428,6 @@ export function StoreHeader({
                 {cat.nombre}
               </Link>
             ))}
-
-
-            {session && (
-              <Link href="/pedidos" className="nova-nav-link font-semibold text-[#2B231F]">
-                Mis Compras
-              </Link>
-            )}
           </nav>
 
           {/* NOVA Despacho Seguro Badge */}

@@ -1,9 +1,10 @@
 'use client'
 
-import React, { useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
 import { Star, Zap, Heart, Flame, AlertCircle } from 'lucide-react'
 import { useCart } from '@/features/cart/context/CartContext'
+import { useFavorites } from '@/features/favorites'
 import { formatPriceParts } from '@/shared/utils/utils'
 import { ProductItem } from '../types/catalog.types'
 
@@ -15,7 +16,8 @@ interface ProductCardProps {
 
 export function ProductCard({ product }: ProductCardProps) {
   const { addItem } = useCart()
-  const [isFavorite, setIsFavorite] = useState(false)
+  const { isFavorite: checkFavorite, toggleFavorite } = useFavorites()
+  const isFavorite = checkFavorite(product.id)
 
   // Calculate effective price
   let tempPrice = product.precioMercado
@@ -67,10 +69,10 @@ export function ProductCard({ product }: ProductCardProps) {
         onClick={(e) => {
           e.preventDefault()
           e.stopPropagation()
-          setIsFavorite(!isFavorite)
+          toggleFavorite({ id: product.id, nombreModelo: product.nombreModelo })
         }}
         className="absolute top-3.5 right-3.5 z-10 p-1.5 rounded-full bg-white/90 backdrop-blur-xs text-[#6E655F] hover:text-[#C85A32] hover:bg-white shadow-2xs border border-[#EBE5DF] transition-colors cursor-pointer"
-        title="Guardar en favoritos"
+        title={isFavorite ? 'Quitar de favoritos' : 'Guardar en favoritos'}
         aria-label="Favorito"
       >
         <Heart

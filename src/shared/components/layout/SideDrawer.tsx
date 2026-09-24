@@ -112,6 +112,14 @@ export function SideDrawer({ isOpen, onClose, categories = [] }: SideDrawerProps
             Mi Cuenta
           </div>
           <Link
+            href="/favoritos"
+            onClick={onClose}
+            className="flex items-center justify-between px-5 py-3 hover:bg-white transition-colors"
+          >
+            <span className="font-semibold text-[#2B231F]">Mis Favoritos</span>
+            <ChevronRight className="w-4 h-4 text-[#D9B89C]" />
+          </Link>
+          <Link
             href="/pedidos"
             onClick={onClose}
             className="flex items-center justify-between px-5 py-3 hover:bg-white transition-colors"

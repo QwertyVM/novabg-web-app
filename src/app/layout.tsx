@@ -3,6 +3,7 @@ import { Inter } from 'next/font/google'
 import './globals.css'
 import { AuthProvider } from '@/shared/providers'
 import { CartProvider } from '@/features/cart'
+import { FavoritesProvider } from '@/features/favorites'
 import { StoreLayout } from '@/shared/components/layout'
 import { getNovaBgCategories } from '@/features/catalog'
 import { getStorePublicConfig } from '@/features/catalog/services/store-config.service'
@@ -32,10 +33,12 @@ export default async function RootLayout({
       <body className={inter.className}>
         <AuthProvider>
           <CartProvider>
-            <StoreLayout categories={categories} storeConfig={storeConfig}>
-              {children}
-            </StoreLayout>
-            <Toaster position="top-right" richColors />
+            <FavoritesProvider>
+              <StoreLayout categories={categories} storeConfig={storeConfig}>
+                {children}
+              </StoreLayout>
+              <Toaster position="top-right" richColors />
+            </FavoritesProvider>
           </CartProvider>
         </AuthProvider>
       </body>

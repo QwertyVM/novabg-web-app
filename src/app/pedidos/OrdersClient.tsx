@@ -574,7 +574,7 @@ export function OrdersClient({ pedidos, storeConfig }: OrdersClientProps) {
                   <div className="sm:col-span-2 bg-[#FFFBEB] p-2.5 rounded-xl border border-[#FDE68A] flex items-center gap-2 text-[11px] text-[#854D0E]">
                     <AlertCircle className="w-4 h-4 text-[#854D0E] shrink-0" />
                     <span>
-                      <strong>Importante sobre el envío:</strong> El costo del delivery lo paga el cliente (pago contra entrega o en destino).
+                      <strong>Importante sobre el envío:</strong> El delivery lo paga el cliente.
                     </span>
                   </div>
 
@@ -690,7 +690,7 @@ export function OrdersClient({ pedidos, storeConfig }: OrdersClientProps) {
                   <span className="font-bold text-[#C85A32] bg-[#FDF4EE] px-2 py-0.5 rounded-md border border-[#C85A32]/20 text-[11px]">
                     {selectedOrder.costoEnvio > 0
                       ? formatPrice(selectedOrder.costoEnvio)
-                      : 'Lo paga el cliente (en destino / contra entrega)'}
+                      : 'Lo paga el cliente'}
                   </span>
                 </div>
                 <div className="flex justify-between text-base font-black text-[#2B231F] border-t border-[#EBE5DF] pt-2">
@@ -700,7 +700,7 @@ export function OrdersClient({ pedidos, storeConfig }: OrdersClientProps) {
                   </span>
                 </div>
                 <p className="text-[10px] text-[#6E655F] text-right mt-1">
-                  * El monto total corresponde a los productos. El delivery lo paga el cliente al recibir el pedido.
+                  * El delivery lo paga el cliente.
                 </p>
               </div>
             </div>
